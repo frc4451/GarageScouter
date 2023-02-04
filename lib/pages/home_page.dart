@@ -1,9 +1,11 @@
 // ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:robotz_garage_scouting/components/drawer/navigation_tile.dart';
-import 'package:robotz_garage_scouting/pages/csv_loader.dart';
+import 'package:robotz_garage_scouting/archive/csv_loader.dart';
+import 'package:robotz_garage_scouting/pages/match_scouting.dart';
+import 'package:robotz_garage_scouting/pages/photo_collecting.dart';
 
-import 'csv_loader.v2.dart';
+import 'csv_manager.dart';
 import 'pit_scouting_form.dart';
 
 GlobalKey<ScaffoldState> _key = new GlobalKey<ScaffoldState>();
@@ -62,10 +64,22 @@ class _MyHomePageState extends State<MyHomePage> {
         .push(MaterialPageRoute(builder: (context) => const CsvTestPage()));
   }
 
-  void _gotoCsvTestPage2() {
+  void _goToCSVManager() {
+    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const CsvManagerPage()));
+  }
+
+  void _gotToPhotoCollection() {
     (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
     Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const CsvLoadingPageV2()));
+        MaterialPageRoute(builder: (context) => const PhotoCollectionPage()));
+  }
+
+  void _goToMatchScouting() {
+    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const MatchScoutingPage()));
   }
 
   @override
@@ -95,11 +109,14 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             DrawerTile(
                 tileText: "Pit Scouting Form", onTap: _navigateToFormsPage),
+            // DrawerTile(
+            //     tileText: "Supposed to show snack bar", onTap: showSnackbar),
+            // DrawerTile(tileText: "CSV Test Page", onTap: _gotoCsvTestPage),
             DrawerTile(
-                tileText: "Supposed to show snack bar", onTap: showSnackbar),
-            DrawerTile(tileText: "CSV Test Page", onTap: _gotoCsvTestPage),
+                tileText: "Match Scouting Form", onTap: _goToMatchScouting),
+            DrawerTile(tileText: "CSV Manager", onTap: _goToCSVManager),
             DrawerTile(
-                tileText: "CSV Test Page: Redo", onTap: _gotoCsvTestPage2),
+                tileText: "Photo Collection", onTap: _gotToPhotoCollection),
           ],
         ),
       ),

@@ -12,16 +12,16 @@ import '../components/layout/padded_list_element.dart';
 import '../utils/dataframe_helpers.dart';
 import '../utils/file_io_helpers.dart';
 
-class CsvLoadingPageV2 extends StatefulWidget {
-  const CsvLoadingPageV2({super.key});
+class CsvManagerPage extends StatefulWidget {
+  const CsvManagerPage({super.key});
 
   @override
-  State<CsvLoadingPageV2> createState() => _CsvLoadingPageV2State();
+  State<CsvManagerPage> createState() => _CsvManagerPageState();
 }
 
 /// Second Attempt at making a CSV Management Panel
 /// Still very much a work in progress.
-class _CsvLoadingPageV2State extends State<CsvLoadingPageV2> {
+class _CsvManagerPageState extends State<CsvManagerPage> {
   // Required State Variables
   final String title = "CSV Loading/Management Panel";
 
