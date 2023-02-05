@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 // for accessibility, or custom themes per team.
 // enum AvailableThemes { kLight, kDark, kHighContrast }
 
+/// Provider model used to help read and manage Themes for the application
 class ThemeModel extends ChangeNotifier {
   ThemeMode theme = ThemeMode.light;
 
