@@ -3,10 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/models/theme_model.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-// const List<Widget> themes = <Widget>[Text('Light'), Text('Dark')];
-
-const List<String> themes = <String>["Light", "Dark"];
-
+/// Handles Settings for the Scouting App. Heavily relies on formatting from
+/// the `settings_ui` package in order to make the UI look consistent with
+/// other applications.
 class SettingsPage extends StatefulWidget {
   final String title = "Settings";
 
@@ -24,8 +23,7 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text("Settings"),
         ),
         body: Consumer<ThemeModel>(
-          builder: (context, model, __) => // ThemeModel(),child:
-              SettingsList(
+          builder: (context, model, __) => SettingsList(
             sections: [
               SettingsSection(
                 title: const Text('Theme'),
