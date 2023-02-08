@@ -4,6 +4,7 @@ import 'package:robotz_garage_scouting/components/drawer/navigation_tile.dart';
 import 'package:robotz_garage_scouting/archive/csv_loader.dart';
 import 'package:robotz_garage_scouting/pages/match_scouting.dart';
 import 'package:robotz_garage_scouting/pages/photo_collecting.dart';
+import 'package:robotz_garage_scouting/pages/settings.dart';
 
 import 'csv_manager.dart';
 import 'pit_scouting_form.dart';
@@ -82,6 +83,12 @@ class _MyHomePageState extends State<MyHomePage> {
         MaterialPageRoute(builder: (context) => const MatchScoutingPage()));
   }
 
+  void _goToSettingsPage() {
+    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const SettingsPage()));
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -101,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: EdgeInsets.zero,
           children: [
             const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.amberAccent),
+              decoration: BoxDecoration(color: Colors.red),
               child: Center(
                 // child: Image(image: image),
                 child: Text("Robotz Garage Scouting App"),
@@ -117,6 +124,8 @@ class _MyHomePageState extends State<MyHomePage> {
             DrawerTile(tileText: "CSV Manager", onTap: _goToCSVManager),
             DrawerTile(
                 tileText: "Photo Collection", onTap: _gotToPhotoCollection),
+
+            DrawerTile(tileText: "Settings", onTap: _goToSettingsPage),
           ],
         ),
       ),
