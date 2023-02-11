@@ -104,6 +104,53 @@ Future<DataFrame> joinContentOfFilesToDataFrame(
     return csvData;
   }));
 
+  Set<String> headers = {};
+  results.forEach((csvData) {
+    headers.addAll(csvData.header);
+  });
+
+  print("headers :: $headers");
+
+  DataFrame wip = DataFrame([headers]);
+  List<List<dynamic>> temp = [headers.toList()];
+  headers.forEach((element) {
+    temp.add([]);
+  });
+
+  print("wip :: $wip");
+  print("wip :: headers :: ${wip.header}");
+
+  results.forEach((csvData) {
+    Set<String> missingColumns =
+        headers.toSet().difference(csvData.header.toSet());
+
+    missingColumns.forEach((column) {
+      csvData = csvData.addSeries(
+          Series(column, List<String>.filled(csvData.rows.length, "")));
+    });
+
+    print("missing columns post :: $missingColumns");
+    print("missing columns post :: $csvData");
+
+    // if (wip.rows.isEmpty) {
+    //   wip = DataFrame([headers.toList(), csvData.rows.toList()]);
+    // }
+    wip.header.forEach((column) {
+      List<dynamic> wipColumnData = wip[column].data.toList();
+      // wipColumnData.addAll(csvData[column].data.toList());
+      wip = wip.dropSeries(names: [column]);
+      wip = wip.addSeries(Series(column, wipColumnData));
+    });
+
+    // wip = DataFrame([
+    //   headers.toList(),
+    //   ...(wip.rows.isNotEmpty ? wip.rows.toList() : []),
+    //   ...(csvData.rows.isNotEmpty ? csvData.rows.toList() : [])
+    // ]);
+  });
+
+  print("wip :: end results :: $wip");
+
   // This is crude, and will not work when we scale up and change the data
   // between versions of CSVs. Please be wary of this and adjust when we get
   // to that point.
@@ -134,5 +181,5 @@ Future<DataFrame> joinContentOfFilesToDataFrame(
     // }
   });
 
-  return finaldata;
+  return wip;
 }
