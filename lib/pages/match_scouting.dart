@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:robotz_garage_scouting/components/forms/question_label.dart';
 import 'package:robotz_garage_scouting/components/layout/match_counter.dart';
 import 'package:robotz_garage_scouting/components/layout/padded_text.dart';
 
@@ -64,6 +66,13 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
               // labelText: "Number of Cones Collected",
               counter: conesAutonomous,
             ),
+            const QuestionLabel(text: "Notes"),
+            FormBuilderTextField(
+                name: "Notes",
+                decoration: const InputDecoration(
+                  labelText: "Notes",
+                  prefixIcon: Icon(Icons.abc),
+                )),
           ],
         ),
       )
