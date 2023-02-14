@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:robotz_garage_scouting/components/drawer/navigation_tile.dart';
 import 'package:robotz_garage_scouting/archive/csv_loader.dart';
-import 'package:robotz_garage_scouting/components/layout/padded_text.dart';
 import 'package:robotz_garage_scouting/pages/match_scouting.dart';
 import 'package:robotz_garage_scouting/pages/photo_collecting.dart';
 import 'package:robotz_garage_scouting/pages/settings.dart';
@@ -103,14 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Center(child: Text(widget.title)),
-        actions: [
-          Padding(
-              padding: EdgeInsets.fromLTRB(0, 0, 50, 0),
-              child: IconButton(
-                  onPressed: _goToSettingsPage, icon: Icon(Icons.settings)))
-        ],
       ),
-
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,

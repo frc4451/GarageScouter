@@ -48,7 +48,6 @@ dependencies:
   collection: ^1.17.0
   provider: ^6.0.5
   settings_ui: ^2.0.2
-  form_builder_validators: ^8.4.0
 
 dev_dependencies:
   flutter_test:

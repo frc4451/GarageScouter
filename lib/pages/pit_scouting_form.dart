@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:robotz_garage_scouting/components/forms/choice_helpers.dart';
 import 'package:robotz_garage_scouting/components/forms/question_label.dart';
 import 'package:robotz_garage_scouting/components/forms/radio_helpers.dart';
@@ -18,7 +17,6 @@ import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:robotz_garage_scouting/validators/is_numeric.dart';
 
 class FormsTest extends StatefulWidget {
   const FormsTest({super.key});
@@ -59,38 +57,24 @@ class _FormsTestState extends State<FormsTest> {
   void kSuccessMessage(File value) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.green,
-        content: Center(
-          child: Text("Successfully wrote file ${value.path}"),
-        )));
+        content: Text("Successfully wrote file ${value.path}")));
   }
 
   void kFailureMessage(error) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.red,
-        content: Center(
-          child: Text(error.toString()),
-        )));
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(backgroundColor: Colors.red, content: Text(error.toString())));
   }
 
   /// Handles form submission
   Future<void> submitForm() async {
     ScaffoldMessenger.of(context).clearSnackBars();
-
-    _formKey.currentState!.save();
-
-    if (!_formKey.currentState!.validate()) {
-      String? error = _formKey.currentState!.fields.values
-          .where((field) => field.hasError)
-          .first
-          .errorText;
-      kFailureMessage(error);
-      return;
-    }
+    _formKey.currentState?.save();
 
     DataFrame df = convertFormStateToDataFrame(_formKey.currentState!);
 
     // adds timestamp
-    df = df.addSeries(Series("timestamp", [DateTime.now().toString()]));
+    df.addSeries(Series("timestamp", [DateTime.now().toString()]));
+    // df["timestamp"] = DateTime.now()
 
     final String teamNumber =
         _formKey.currentState!.value["team_number"] ?? "no_team_number";
@@ -150,20 +134,6 @@ class _FormsTestState extends State<FormsTest> {
                     const QuestionLabel(text: "What is the Team Number?"),
                     FormBuilderTextField(
                       name: "team_number",
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(),
-                        isNumeric(),
-                      ]),
-                      onChanged: (newValue) {
-                        print("newValue :: $newValue");
-                        // _formKey.currentState?.save();
-                        // if () {
-                        //   kFailureMessage("error");
-                        // }
-                        print(
-                            "state :: ${_formKey.currentState!.fields["team_number"]!.value}");
-                        // print("state :: ${_formKey.currentState}");
-                      },
                       decoration: const InputDecoration(
                           labelText: "Team Number",
                           prefixIcon: Icon(Icons.numbers)),
