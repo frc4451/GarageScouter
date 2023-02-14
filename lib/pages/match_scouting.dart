@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
-import 'package:robotz_garage_scouting/components/layout/match_counter.dart';
-import 'package:robotz_garage_scouting/components/layout/padded_text.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:robotz_garage_scouting/components/forms/increment_field.dart';
 
 class MatchScoutingPage extends StatefulWidget {
   const MatchScoutingPage({super.key});
@@ -13,32 +11,11 @@ class MatchScoutingPage extends StatefulWidget {
 
 class _MatchScoutingPageState extends State<MatchScoutingPage> {
   final String title = "Match Scouting Form";
+  final _formKey = GlobalKey<FormBuilderState>();
 
-  int cubesAutonomous = 0;
-  int conesAutonomous = 0;
-
-  void _incrementCubes() {
-    print("_incrementCubes");
-    cubesAutonomous += 1;
-  }
-
-  void _decrementCubes() {
-    print("_decrementCubes");
-    cubesAutonomous -= 1;
-  }
-
-  void _incrementCones() {
-    print("_incrementCones");
-    conesAutonomous += 1;
-  }
-
-  void _decrementCones() {
-    print("_decrementCones");
-    conesAutonomous -= 1;
-
-    setState() {
-      conesAutonomous -= 1;
-    }
+  submitForm() {
+    _formKey.currentState!.save();
+    print("current state :: ${_formKey.currentState!.value}");
   }
 
   @override
@@ -50,23 +27,17 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
         title: Center(child: Text(title)),
       ),
       SliverToBoxAdapter(
-        child: Column(
-          children: [
-            // Text("Number of Cubes Collected"),
-            const PaddedTextElement(
-              labelText: "Number of Cubes Collected",
-            ),
-            MatchCounter(
-                // labelText: "Number of Cubes Collected",
-                counter: cubesAutonomous),
-            const PaddedTextElement(labelText: "Number of Cones Collected"),
-            MatchCounter(
-              // labelText: "Number of Cones Collected",
-              counter: conesAutonomous,
-            ),
-          ],
-        ),
-      )
+          child: FormBuilder(
+        key: _formKey,
+        child: Column(children: [
+          const Text("Cubes Collected"),
+          IncrementFormBuilderField(name: "cubes_collected"),
+          const Text("Cones Collected"),
+          IncrementFormBuilderField(name: "cones_collected"),
+          IconButton(
+              onPressed: submitForm, icon: const Icon(Icons.send_rounded))
+        ]),
+      ))
     ]));
   }
 }
