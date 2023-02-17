@@ -13,6 +13,11 @@ class MatchEndgameScreen extends StatefulWidget {
 class _MatchEndgameScreenState extends State<MatchEndgameScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Column(children: [const Text("END GAME")]));
+    return Scaffold(
+        body: Center(
+      child: Column(children: const [
+        Text("END GAME"),
+      ]),
+    ));
   }
 }

@@ -12,16 +12,10 @@ class _MatchSummaryScreenState extends State<MatchSummaryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(children: [
-        const Text("SUMMARY"),
+        body: Center(
+      child: Column(children: const [
+        Text("SUMMARY"),
       ]),
-      // bottomSheet: BottomAppBar(
-      //   child: Center(
-      //       child: ElevatedButton(
-      //     onPressed: () => widget.submitForm(),
-      //     child: const Text("Submit"),
-      //   )),
-      // ),
-    );
+    ));
   }
 }

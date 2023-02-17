@@ -24,6 +24,11 @@ class _MatchInitialScreenState extends State<MatchInitialScreen> {
         decoration: const InputDecoration(
             labelText: "Team Name", prefixIcon: Icon(Icons.abc)),
       ),
+      FormBuilderTextField(
+        name: "match_number",
+        decoration: const InputDecoration(
+            labelText: "Match Number", prefixIcon: Icon(Icons.numbers)),
+      ),
       FormBuilderDropdown(
           name: "team_alliance",
           decoration: const InputDecoration(

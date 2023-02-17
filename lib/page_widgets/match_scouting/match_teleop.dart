@@ -14,10 +14,8 @@ class _MatchTeleopScreenState extends State<MatchTeleopScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: Column(children: [
-      const Text("TELE OPERATED"),
-      const Text("Cubes Collected"),
+      const Text("TELE-OPERATED"),
       IncrementFormBuilderField(name: "cubes_collected"),
-      const Text("Cones Collected"),
       IncrementFormBuilderField(name: "cones_collected"),
     ]));
   }
