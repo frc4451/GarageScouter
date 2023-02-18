@@ -27,7 +27,7 @@ String convertDataFrameToString(DataFrame df) =>
 /// @returns DataFrame containing the form names as headers and the form values
 /// as the row data.
 DataFrame convertFormStateToDataFrame(FormBuilderState state) {
-  Iterable<String> headers = state.value.keys;
+  Iterable<String> headers = state.fields.keys;
   Iterable<dynamic> row = headers.map((key) => state.value[key]);
   return DataFrame([headers, row]);
 }
