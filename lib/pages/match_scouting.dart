@@ -58,19 +58,28 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
   int _currentPage = 0;
 
   void _kSuccessMessage(File value) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.green,
         content: Text("Successfully wrote file ${value.path}")));
   }
 
   void _kFailureMessage(error) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(backgroundColor: Colors.red, content: Text(error.toString())));
   }
 
   /// Handles form submission
   Future<void> _submitForm() async {
-    _formKey.currentState?.save();
+    bool isValid = _formKey.currentState!.saveAndValidate();
+
+    if (!isValid) {
+      _kFailureMessage(
+          "Form is missing inputs. Check Initial page and verify inputs.");
+      _resetPage();
+      return;
+    }
 
     DataFrame df = convertFormStateToDataFrame(_formKey.currentState!);
 
@@ -83,7 +92,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
 
     final String filePath = await generateUniqueFilePath(
         extension: "csv",
-        prefix: "match_${matchNumber}_${alliance}_${teamNumber}_$timestamp");
+        prefix: "match_${matchNumber}_${alliance}_$teamNumber",
+        timestamp: timestamp);
 
     final File file = File(filePath);
 
@@ -110,6 +120,15 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
   /// Handles Next Page functionality for desktop/accessibility
   void _nextPage() {
     _onPageChanged(_controller.page!.toInt(), direction: PageDirection.right);
+  }
+
+  void _resetPage() {
+    setState(() {
+      _currentPage = _controller.initialPage;
+      _controller.animateToPage(_currentPage,
+          duration: Duration(milliseconds: durationMilliseconds),
+          curve: Curves.ease);
+    });
   }
 
   /// Handles page change events, but optionally accepts a "direction" parameter to allow
@@ -148,13 +167,10 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
         appBar: AppBar(title: const Text("Match Scouting")),
         body: FormBuilder(
             key: _formKey,
-            // child: Column(
-            //   children: [
-            //     FormBuilderCheckbox(name: "Somethign", title: Text("title"))
-            //   ],
-            // )),
+            // NOTE: You must implement AutomaticKeepAliveClientMixin in every
+            // page component you plan to show in the PageView, or else you
+            // will lose your FormValidation support
             child: PageView(
-              // key: _formKey,
               controller: _controller,
               onPageChanged: _onPageChanged,
               children: pages,

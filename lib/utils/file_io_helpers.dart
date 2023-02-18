@@ -25,14 +25,14 @@ import 'package:sanitize_filename/sanitize_filename.dart';
 ///
 /// @param prefix - Optional string prefix we want to have on the filename
 Future<String> generateUniqueFilePath(
-    {required String extension, String? prefix = ""}) async {
+    {required String extension, String? prefix = "", String? timestamp}) async {
   // Extensions need to start with "." to be recognized correctly. We want to
   // accept both "csv" and ".csv" and not blame the developer.
   if (!extension.startsWith(".")) {
     extension = ".$extension";
   }
 
-  final String currentTime = DateTime.now().toString();
+  final String currentTime = timestamp ?? DateTime.now().toString();
   final String filePrefix = prefix!.isNotEmpty ? "${prefix}_" : "";
   final String directory = (await getApplicationSupportDirectory()).path;
 
