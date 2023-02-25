@@ -32,13 +32,6 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
         autovalidateMode: AutovalidateMode.onUserInteraction,
       ),
       FormBuilderTextField(
-        name: "team_name",
-        decoration: const InputDecoration(
-            labelText: "Team Name", prefixIcon: Icon(Icons.abc)),
-        validator: FormBuilderValidators.required(),
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-      ),
-      FormBuilderTextField(
         name: "match_number",
         decoration: const InputDecoration(
             labelText: "Match Number", prefixIcon: Icon(Icons.numbers)),
