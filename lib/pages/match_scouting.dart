@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
+import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/models/scroll_model.dart';
 import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_auto.dart';
 import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_endgame.dart';
 import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_initial.dart';
@@ -170,11 +172,15 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
             // NOTE: You must implement AutomaticKeepAliveClientMixin in every
             // page component you plan to show in the PageView, or else you
             // will lose your FormValidation support
-            child: PageView(
-              controller: _controller,
-              onPageChanged: _onPageChanged,
-              children: pages,
-            )),
+            child: Consumer<ScrollModel>(
+                builder: (context, model, _) => PageView(
+                      physics: model.canSwipe()
+                          ? const NeverScrollableScrollPhysics()
+                          : null,
+                      controller: _controller,
+                      onPageChanged: _onPageChanged,
+                      children: pages,
+                    ))),
         persistentFooterButtons: <Widget>[
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,

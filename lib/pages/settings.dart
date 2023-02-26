@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/models/scroll_model.dart';
 import 'package:robotz_garage_scouting/models/theme_model.dart';
 import 'package:settings_ui/settings_ui.dart';
 
@@ -22,24 +23,46 @@ class _SettingsPageState extends State<SettingsPage> {
         appBar: AppBar(
           title: const Text("Settings"),
         ),
-        body: Consumer<ThemeModel>(
-          builder: (context, model, __) => SettingsList(
+        body: Consumer2<ThemeModel, ScrollModel>(
+          builder: (context, theme, scroll, __) => SettingsList(
             sections: [
               SettingsSection(
-                title: const Text('Theme'),
+                title: const Text('Appearance'),
                 tiles: <SettingsTile>[
                   SettingsTile.switchTile(
                     onToggle: (isDarkMode) {
                       setState(() => isDarkMode
-                          ? model.setDarkMode()
-                          : model.setLightMode());
+                          ? theme.setDarkMode()
+                          : theme.setLightMode());
                     },
-                    initialValue: model.isDarkMode(),
+                    initialValue: theme.isDarkMode(),
                     leading: const Icon(Icons.dark_mode),
                     title: const Text('Dark Mode'),
                   ),
+                  SettingsTile.switchTile(
+                    onToggle: (isHighContrast) {
+                      setState(() => theme.setHighContrast(isHighContrast));
+                    },
+                    initialValue: theme.isHighContrast(),
+                    leading: const Icon(Icons.contrast),
+                    title: const Text('High Contrast'),
+                  ),
                 ],
               ),
+              SettingsSection(
+                  title: const Text('Match Scouting'),
+                  tiles: <SettingsTile>[
+                    SettingsTile.switchTile(
+                      onToggle: (value) {
+                        setState(() => scroll.setDisableSwiping(value));
+                      },
+                      initialValue: scroll.canSwipe(),
+                      leading: const Icon(Icons.swipe),
+                      title: const Text('Disable Swiping'),
+                      description: const Text(
+                          "Disables the swipe to navigate feature of Match Scouting. Uses the bottom buttons to navigate between pages."),
+                    )
+                  ]),
             ],
           ),
         ));
