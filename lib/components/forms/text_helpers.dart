@@ -32,6 +32,7 @@ class GeneralTextInputField extends StatelessWidget {
           name: name,
           validator: validator,
           initialValue: initialValue,
+          textInputAction: TextInputAction.done,
           decoration: InputDecoration(
               labelText: labelText, prefixIcon: Icon(prefixIcon)),
         ),

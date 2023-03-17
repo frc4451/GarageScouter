@@ -48,6 +48,13 @@ dependencies:
   collection: ^1.17.0
   provider: ^6.0.5
   settings_ui: ^2.0.2
+  form_builder_validators: ^8.4.0
+  firebase_core: ^2.7.0
+  image_picker: ^0.8.6+4
+  flutter_archive: ^5.0.0
+  flutter_launcher_icons: ^0.12.0
+  qr_flutter: ^4.0.0
+  mobile_scanner: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -101,3 +108,16 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/robotz_garage_scouting_icon.jpg"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  windows:
+    generate: true
+    image_path: "assets/robotz_garage_scouting_icon.jpg"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/robotz_garage_scouting_icon.jpg"

@@ -10,6 +10,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sanitize_filename/sanitize_filename.dart';
 
+/// Helper method to get the extension of a file
+String getExtension(File file) => p.extension(file.path);
+
+/// Helper method to get the basename of a file
+String getBaseName(File file) => p.basename(file.path);
+
 /// Used as a a way to generate unique file paths for files we want to manage
 /// or move within/outside of the application.
 ///
@@ -25,14 +31,14 @@ import 'package:sanitize_filename/sanitize_filename.dart';
 ///
 /// @param prefix - Optional string prefix we want to have on the filename
 Future<String> generateUniqueFilePath(
-    {required String extension, String? prefix = ""}) async {
+    {required String extension, String? prefix = "", String? timestamp}) async {
   // Extensions need to start with "." to be recognized correctly. We want to
   // accept both "csv" and ".csv" and not blame the developer.
   if (!extension.startsWith(".")) {
     extension = ".$extension";
   }
 
-  final String currentTime = DateTime.now().toString();
+  final String currentTime = timestamp ?? DateTime.now().toString();
   final String filePrefix = prefix!.isNotEmpty ? "${prefix}_" : "";
   final String directory = (await getApplicationSupportDirectory()).path;
 
@@ -70,12 +76,13 @@ Future<String?> getNewFilePath(File file) async {
 /// @param newFilePath - New file path (probably from getNewFilePath)
 ///
 /// @returns Future<File> representing the file at the final location
-Future<File> copyFileToNewPath(File file, String? newFilePath) async {
+Future<File> copyFileToNewPath(File file, String? newFilePath,
+    {String extension = ".csv"}) async {
   if (newFilePath == null) {
     throw Exception("User cancelled operation");
   }
 
-  return file.copy(p.setExtension(newFilePath, ".csv"));
+  return file.copy(p.setExtension(newFilePath, extension));
 }
 
 /// Utilizes the file_picker and path packages to open the file dialogs for

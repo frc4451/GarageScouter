@@ -32,3 +32,8 @@ Runner/GeneratedPluginRegistrant.*
 !default.mode2v3
 !default.pbxuser
 !default.perspectivev3
+
+# Workarounds for Fastlane until we figure out how to digital signing work
+# with Fastlane and _not_ have the Runner.ipa end up in this directory
+*.ipa
+*.app.*.zip

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:path/path.dart' as p;
@@ -29,7 +28,8 @@ String convertDataFrameToString(DataFrame df) =>
 /// as the row data.
 DataFrame convertFormStateToDataFrame(FormBuilderState state) {
   Iterable<String> headers = state.fields.keys;
-  Iterable<dynamic> row = headers.map((key) => state.value[key]);
+  Iterable<dynamic> row =
+      headers.map((key) => state.value[key].toString().trim());
   return DataFrame([headers, row]);
 }
 

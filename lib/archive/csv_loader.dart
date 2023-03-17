@@ -126,9 +126,6 @@ class _CsvTestPageState extends State<CsvTestPage> {
     final String filename = _fileName ?? "";
     final String directory = _directoryPath ?? "";
 
-    print("filename :: $filename");
-    print("directory :: $directory");
-
     if (filename.isNotEmpty) {
       _paths?.forEach((element) async {
         if (element.path != null) {
@@ -138,7 +135,6 @@ class _CsvTestPageState extends State<CsvTestPage> {
       });
     } else if (directory.isNotEmpty) {
       df = await joinDataFramesFromDirectory(directory);
-      print("df after assignment :: ${df.header.toString()}");
     }
   }
 
@@ -163,7 +159,6 @@ class _CsvTestPageState extends State<CsvTestPage> {
   }
 
   void _logException(String message) {
-    print(message);
     _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
     _scaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(

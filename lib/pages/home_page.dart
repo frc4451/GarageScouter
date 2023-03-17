@@ -1,12 +1,14 @@
 // ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:robotz_garage_scouting/components/drawer/navigation_tile.dart';
-import 'package:robotz_garage_scouting/archive/csv_loader.dart';
+import 'package:robotz_garage_scouting/pages/export_manager.dart';
 import 'package:robotz_garage_scouting/pages/match_scouting.dart';
 import 'package:robotz_garage_scouting/pages/photo_collecting.dart';
 import 'package:robotz_garage_scouting/pages/settings.dart';
+import 'package:robotz_garage_scouting/pages/super_scouting.dart';
 
 import 'csv_manager.dart';
+import 'import_manager.dart';
 import 'pit_scouting_form.dart';
 
 GlobalKey<ScaffoldState> _key = new GlobalKey<ScaffoldState>();
@@ -59,12 +61,6 @@ class _MyHomePageState extends State<MyHomePage> {
     const SnackBar(content: Text("Some Popup"));
   }
 
-  void _gotoCsvTestPage() {
-    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => const CsvTestPage()));
-  }
-
   void _goToCSVManager() {
     (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
     Navigator.of(context)
@@ -77,10 +73,28 @@ class _MyHomePageState extends State<MyHomePage> {
         MaterialPageRoute(builder: (context) => const PhotoCollectionPage()));
   }
 
+  void _gotToExportManager() {
+    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const ExportManagerPage()));
+  }
+
+  void _gotToImportManager() {
+    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const ImportManagerPage()));
+  }
+
   void _goToMatchScouting() {
     (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
     Navigator.of(context).push(
         MaterialPageRoute(builder: (context) => const MatchScoutingPage()));
+  }
+
+  void _goToSuperScouting() {
+    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const SuperScoutingPage()));
   }
 
   void _goToSettingsPage() {
@@ -91,27 +105,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Center(child: Text(widget.title)),
+        title: Center(
+            child: Text(
+          widget.title,
+          textAlign: TextAlign.center,
+        )),
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.red),
-              child: Center(
-                // child: Image(image: image),
-                child: Text("Robotz Garage Scouting App"),
+            DrawerHeader(
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+              child: const Center(
+                child: Text(
+                  "Robotz Garage Scouting",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
             DrawerTile(
@@ -121,7 +133,11 @@ class _MyHomePageState extends State<MyHomePage> {
             // DrawerTile(tileText: "CSV Test Page", onTap: _gotoCsvTestPage),
             DrawerTile(
                 tileText: "Match Scouting Form", onTap: _goToMatchScouting),
-            DrawerTile(tileText: "CSV Manager", onTap: _goToCSVManager),
+            DrawerTile(
+                tileText: "Super Scouting Form", onTap: _goToSuperScouting),
+            // DrawerTile(tileText: "CSV Manager", onTap: _goToCSVManager),
+            DrawerTile(tileText: "Export Manager", onTap: _gotToExportManager),
+            DrawerTile(tileText: "Import Manager", onTap: _gotToImportManager),
             DrawerTile(
                 tileText: "Photo Collection", onTap: _gotToPhotoCollection),
 
@@ -130,53 +146,48 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times ashbie:',
+          children: const [
+            Padding(
+              padding: EdgeInsets.all(25),
+              child: Text("Welcome to the Robotz Garage Scouting App!"),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            ButtonBar(
-              alignment: MainAxisAlignment.center,
-              children: <Widget>[
-                IconButton(
-                  onPressed: _incrementCounter,
-                  tooltip: 'Increment',
-                  icon: const Icon(Icons.exposure_plus_1),
-                  // icon: const Icon(Icons.access_alarms),
-                ),
-                IconButton(
-                  onPressed: _decrementCounter,
-                  tooltip: 'decrement',
-                  style: IconButton.styleFrom(
-                      foregroundColor: Colors.purple,
-                      backgroundColor: Colors.purpleAccent),
-                  icon: const Icon(Icons.exposure_minus_1),
-                  // icon: const Icon(Icons.bed),
-                ),
-              ],
+            Padding(
+              padding: EdgeInsets.all(25),
+              child: Text(
+                  "Open the Navigation Button in the Top Left to access different parts of the app."),
             ),
           ],
+          // children: <Widget>[
+          //   const Text(
+          //     'You have pushed the button this many times ashbie:',
+          //   ),
+          //   Text(
+          //     '$_counter',
+          //     style: Theme.of(context).textTheme.headline4,
+          //   ),
+          //   ButtonBar(
+          //     alignment: MainAxisAlignment.center,
+          //     children: <Widget>[
+          //       IconButton(
+          //         onPressed: _incrementCounter,
+          //         tooltip: 'Increment',
+          //         icon: const Icon(Icons.exposure_plus_1),
+          //         // icon: const Icon(Icons.access_alarms),
+          //       ),
+          //       IconButton(
+          //         onPressed: _decrementCounter,
+          //         tooltip: 'decrement',
+          //         style: IconButton.styleFrom(
+          //             foregroundColor: Colors.purple,
+          //             backgroundColor: Colors.purpleAccent),
+          //         icon: const Icon(Icons.exposure_minus_1),
+          //         // icon: const Icon(Icons.bed),
+          //       ),
+          //     ],
+          // ),
+          // ],
         ),
       ),
       // This trailing comma makes auto-formatting nicer for build methods. // This trailing comma makes auto-formatting nicer for build methods.
