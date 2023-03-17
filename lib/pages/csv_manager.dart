@@ -3,9 +3,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:robotz_garage_scouting/constants/platform_check.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
 
 import '../components/layout/padded_list_element.dart';
@@ -86,9 +83,7 @@ class _CsvManagerPageState extends State<CsvManagerPage> {
   void showContents() async {
     if (directory != null && directory!.isNotEmpty) {
       DataFrame df = await joinDataFramesFromDirectory(directory!);
-      print("showing data frame headers :: ${df.header.toString()}");
       String data = convertDataFrameToString(df);
-      print("showContents :: $data");
       if (data.isEmpty) {
         kFailureMessage("This hasn't been implemented yet.");
       }

@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Opens file system to save files</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Opens Camera to take pictures for the Robot and QR Codes</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Used for Video to record videos for the Robot</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

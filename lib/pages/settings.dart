@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/models/scroll_model.dart';
 import 'package:robotz_garage_scouting/models/theme_model.dart';
 import 'package:settings_ui/settings_ui.dart';
@@ -21,10 +22,13 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Settings"),
+          title: const Text(
+            "Settings",
+            textAlign: TextAlign.center,
+          ),
         ),
-        body: Consumer2<ThemeModel, ScrollModel>(
-          builder: (context, theme, scroll, __) => SettingsList(
+        body: Consumer3<ThemeModel, ScrollModel, RetainInfoModel>(
+          builder: (context, theme, scroll, retainInfo, __) => SettingsList(
             sections: [
               SettingsSection(
                 title: const Text('Appearance'),
@@ -50,7 +54,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
               ),
               SettingsSection(
-                  title: const Text('Match Scouting'),
+                  title: const Text('Usability'),
                   tiles: <SettingsTile>[
                     SettingsTile.switchTile(
                       onToggle: (value) {
@@ -60,7 +64,17 @@ class _SettingsPageState extends State<SettingsPage> {
                       leading: const Icon(Icons.swipe),
                       title: const Text('Disable Swiping'),
                       description: const Text(
-                          "Disables the swipe to navigate feature of Match Scouting. Uses the bottom buttons to navigate between pages."),
+                          "Disables the swipe to navigate feature of Scouting Pages. Uses the bottom buttons to navigate between pages."),
+                    ),
+                    SettingsTile.switchTile(
+                      onToggle: (value) {
+                        setState(() => retainInfo.setRetainInfo(value));
+                      },
+                      initialValue: retainInfo.doesRetainInfo(),
+                      leading: const Icon(Icons.cached),
+                      title: const Text('Retain Form Data'),
+                      description: const Text(
+                          "Retains data from forms when you press the back button. Enables the 'Clear' button."),
                     )
                   ]),
             ],

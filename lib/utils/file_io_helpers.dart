@@ -10,6 +10,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sanitize_filename/sanitize_filename.dart';
 
+/// Helper method to get the extension of a file
+String getExtension(File file) => p.extension(file.path);
+
+/// Helper method to get the basename of a file
+String getBaseName(File file) => p.basename(file.path);
+
 /// Used as a a way to generate unique file paths for files we want to manage
 /// or move within/outside of the application.
 ///
@@ -70,12 +76,13 @@ Future<String?> getNewFilePath(File file) async {
 /// @param newFilePath - New file path (probably from getNewFilePath)
 ///
 /// @returns Future<File> representing the file at the final location
-Future<File> copyFileToNewPath(File file, String? newFilePath) async {
+Future<File> copyFileToNewPath(File file, String? newFilePath,
+    {String extension = ".csv"}) async {
   if (newFilePath == null) {
     throw Exception("User cancelled operation");
   }
 
-  return file.copy(p.setExtension(newFilePath, ".csv"));
+  return file.copy(p.setExtension(newFilePath, extension));
 }
 
 /// Utilizes the file_picker and path packages to open the file dialogs for
