@@ -52,6 +52,9 @@ class ThemeModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  ThemeData getCurrentTheme() =>
+      isDarkMode() ? getDarkTheme() : getLightTheme();
+
   ThemeData getLightTheme() => ThemeData.from(
       colorScheme: highContrast
           ? const ColorScheme.highContrastLight()

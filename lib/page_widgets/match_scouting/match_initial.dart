@@ -75,6 +75,17 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
             .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
             .toList(),
         initialValue: widget._matchData["team_position"],
+      ),
+      FormBuilderDropdown(
+        name: "field_position",
+        decoration: const InputDecoration(
+            labelText: "Field Position", prefixIcon: Icon(Icons.map)),
+        validator: FormBuilderValidators.required(),
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        items: ["Center", "Bump", "Lane"]
+            .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
+            .toList(),
+        initialValue: widget._matchData["field_position"],
       )
     ]));
   }

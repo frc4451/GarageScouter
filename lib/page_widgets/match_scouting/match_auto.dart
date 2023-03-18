@@ -19,6 +19,9 @@ class _MatchAutonomousScreenState extends State<MatchAutonomousScreen>
   final double spaceBetween = 10;
   final double spaceOutside = 10;
 
+  final MaterialColor coneColor = Colors.amber;
+  final MaterialColor cubeColor = Colors.deepPurple;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -40,13 +43,7 @@ class _MatchAutonomousScreenState extends State<MatchAutonomousScreen>
             label: "High Cubes",
             max: 3,
             spaceBetween: spaceBetween,
-          ),
-          IncrementFormBuilderField(
-            name: "auto_high_cones",
-            initialValue: widget.matchData["auto_high_cones"] ?? 0,
-            label: "High Cones",
-            max: 3,
-            spaceBetween: spaceBetween,
+            color: cubeColor,
           ),
           IncrementFormBuilderField(
             name: "auto_mid_cubes",
@@ -54,26 +51,39 @@ class _MatchAutonomousScreenState extends State<MatchAutonomousScreen>
             label: "Mid Cubes",
             max: 3,
             spaceBetween: spaceBetween,
-          ),
-          IncrementFormBuilderField(
-            name: "auto_mid_cones",
-            initialValue: widget.matchData["auto_mid_cones"] ?? 0,
-            label: "Mid Cones",
-            max: 3,
-            spaceBetween: spaceBetween,
+            color: cubeColor,
           ),
           IncrementFormBuilderField(
             name: "auto_hybrid_cubes",
             initialValue: widget.matchData["auto_hybrid_cubes"] ?? 0,
             label: "Hybrid Cubes",
-            max: 3,
+            max: 9,
+            spaceBetween: spaceBetween,
+            color: cubeColor,
+          ),
+          const Divider(),
+          IncrementFormBuilderField(
+            name: "auto_high_cones",
+            initialValue: widget.matchData["auto_high_cones"] ?? 0,
+            label: "High Cones",
+            max: 6,
+            color: coneColor,
+            spaceBetween: spaceBetween,
+          ),
+          IncrementFormBuilderField(
+            name: "auto_mid_cones",
+            initialValue: widget.matchData["auto_mid_cones"] ?? 0,
+            label: "Mid Cones",
+            max: 6,
+            color: coneColor,
             spaceBetween: spaceBetween,
           ),
           IncrementFormBuilderField(
             name: "auto_hybrid_cones",
             initialValue: widget.matchData["auto_hybrid_cones"] ?? 0,
             label: "Hybrid Cones",
-            max: 3,
+            max: 9,
+            color: coneColor,
             spaceBetween: spaceBetween,
           ),
           FormBuilderCheckbox(

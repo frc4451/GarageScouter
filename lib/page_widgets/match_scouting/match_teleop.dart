@@ -22,6 +22,9 @@ class _MatchTeleopScreenState extends State<MatchTeleopScreen>
   final double spaceBetween = 10;
   final double spaceOutside = 10;
 
+  final MaterialColor coneColor = Colors.amber;
+  final MaterialColor cubeColor = Colors.deepPurple;
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -33,13 +36,7 @@ class _MatchTeleopScreenState extends State<MatchTeleopScreen>
         initialValue: widget._matchData["teleop_high_cubes"] ?? 0,
         label: "High Cubes",
         max: 3,
-        spaceBetween: spaceBetween,
-      ),
-      IncrementFormBuilderField(
-        name: "teleop_high_cones",
-        initialValue: widget._matchData["teleop_high_cones"] ?? 0,
-        label: "High Cones",
-        max: 6,
+        color: cubeColor,
         spaceBetween: spaceBetween,
       ),
       IncrementFormBuilderField(
@@ -47,13 +44,7 @@ class _MatchTeleopScreenState extends State<MatchTeleopScreen>
         initialValue: widget._matchData["teleop_mid_cubes"] ?? 0,
         label: "Mid Cubes",
         max: 3,
-        spaceBetween: spaceBetween,
-      ),
-      IncrementFormBuilderField(
-        name: "teleop_mid_cones",
-        initialValue: widget._matchData["teleop_mid_cones"] ?? 0,
-        label: "Mid Cones",
-        max: 6,
+        color: cubeColor,
         spaceBetween: spaceBetween,
       ),
       IncrementFormBuilderField(
@@ -61,6 +52,24 @@ class _MatchTeleopScreenState extends State<MatchTeleopScreen>
         initialValue: widget._matchData["teleop_hybrid_cubes"] ?? 0,
         label: "Hybrid Cubes",
         max: 9,
+        color: cubeColor,
+        spaceBetween: spaceBetween,
+      ),
+      const Divider(),
+      IncrementFormBuilderField(
+        name: "teleop_high_cones",
+        initialValue: widget._matchData["teleop_high_cones"] ?? 0,
+        label: "High Cones",
+        max: 6,
+        color: coneColor,
+        spaceBetween: spaceBetween,
+      ),
+      IncrementFormBuilderField(
+        name: "teleop_mid_cones",
+        initialValue: widget._matchData["teleop_mid_cones"] ?? 0,
+        label: "Mid Cones",
+        max: 6,
+        color: coneColor,
         spaceBetween: spaceBetween,
       ),
       IncrementFormBuilderField(
@@ -68,6 +77,7 @@ class _MatchTeleopScreenState extends State<MatchTeleopScreen>
         initialValue: widget._matchData["teleop_hybrid_cones"] ?? 0,
         label: "Hybrid Cones",
         max: 9,
+        color: coneColor,
         spaceBetween: spaceBetween,
       ),
       FormBuilderCheckbox(

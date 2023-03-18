@@ -237,7 +237,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
                                     actionsAlignment:
                                         MainAxisAlignment.spaceEvenly,
                                     actions: [
-                                      ElevatedButton(
+                                      OutlinedButton(
                                         onPressed: () {
                                           Navigator.of(context).pop();
                                         },
