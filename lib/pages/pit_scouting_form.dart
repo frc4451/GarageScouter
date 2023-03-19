@@ -297,6 +297,7 @@ class _FormsTestState extends State<FormsTest> {
                                 label: "Do they have an arm?",
                                 initialValue: pitData['has_arm'],
                                 validators: FormBuilderValidators.required(),
+                                onChanged: _saveFormState,
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
                               ),
@@ -396,6 +397,7 @@ class _FormsTestState extends State<FormsTest> {
                                 name: "teleop_score_cones",
                                 initialValue: pitData['teleop_score_cones'],
                                 decoration: const InputDecoration(
+                                    icon: Icon(Icons.score),
                                     labelText:
                                         "Can they score Cones in Teleop?"),
                                 options: ["Low", "Mid", "High"]
@@ -407,6 +409,7 @@ class _FormsTestState extends State<FormsTest> {
                                 name: "teleop_score_cubes",
                                 initialValue: pitData['teleop_score_cubes'],
                                 decoration: const InputDecoration(
+                                    icon: Icon(Icons.score),
                                     labelText:
                                         "Can they score Cubes in Teleop?"),
                                 options: ["Low", "Mid", "High"]
@@ -433,6 +436,7 @@ class _FormsTestState extends State<FormsTest> {
                               const Text("Endgame Questions"),
                               const Divider(),
                               YesOrNoAnswers(
+                                icon: Icons.balance,
                                 name: "endgame_balance",
                                 label: "Can they balance in autonomous?",
                                 initialValue: pitData['endgame_balance'],

@@ -15,6 +15,8 @@ class RadioButtonInputs extends StatelessWidget {
 
   final void Function(String?)? onChanged;
 
+  final IconData? icon;
+
   const RadioButtonInputs(
       {super.key,
       required this.name,
@@ -23,13 +25,14 @@ class RadioButtonInputs extends StatelessWidget {
       this.initialValue,
       this.validators,
       this.autovalidateMode,
-      this.onChanged});
+      this.onChanged,
+      this.icon});
 
   @override
   Widget build(BuildContext context) {
     return FormBuilderRadioGroup(
       name: name,
-      decoration: InputDecoration(label: Text(label)),
+      decoration: InputDecoration(label: Text(label), icon: Icon(icon)),
       options: options
           .map((e) => FormBuilderFieldOption(value: e, child: Text(e)))
           .toList(growable: false),
@@ -49,6 +52,7 @@ class YesOrNoAnswers extends StatelessWidget {
   final String? Function(dynamic)? validators;
   final AutovalidateMode? autovalidateMode;
   final void Function(String?)? onChanged;
+  final IconData? icon;
 
   const YesOrNoAnswers(
       {super.key,
@@ -57,19 +61,20 @@ class YesOrNoAnswers extends StatelessWidget {
       this.initialValue,
       this.validators,
       this.autovalidateMode,
-      this.onChanged});
+      this.onChanged,
+      this.icon});
 
   @override
   Widget build(BuildContext context) {
     return RadioButtonInputs(
-      name: name,
-      options: const ["yes", "no"],
-      label: label,
-      initialValue: initialValue,
-      autovalidateMode: autovalidateMode,
-      validators: validators,
-      onChanged: onChanged,
-    );
+        name: name,
+        options: const ["yes", "no"],
+        label: label,
+        initialValue: initialValue,
+        autovalidateMode: autovalidateMode,
+        validators: validators,
+        onChanged: onChanged,
+        icon: icon);
   }
 }
 
