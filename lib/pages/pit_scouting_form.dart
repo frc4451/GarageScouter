@@ -306,8 +306,36 @@ class _FormsTestState extends State<FormsTest> {
                                 label: "Do they have an intake system?",
                                 initialValue: pitData['has_intake'],
                                 validators: FormBuilderValidators.required(),
+                                onChanged: _saveFormState,
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
+                              ),
+
+                              ConditionalHiddenField(
+                                  showWhen: _canShowFieldFromMatch(pitData,
+                                      key: 'has_intake', match: "yes"),
+                                  child: FormBuilderCheckboxGroup(
+                                    name: "pickup_from_intake",
+                                    initialValue: pitData['pickup_from_intake'],
+                                    decoration: const InputDecoration(
+                                        labelText:
+                                            "Where does the robot intake from?"),
+                                    options: ["Floor", "Substation", "Chute"]
+                                        .map((e) => FormBuilderFieldOption(
+                                            value: e.toString()))
+                                        .toList(),
+                                  )),
+
+                              FormBuilderCheckboxGroup(
+                                name: "scorable_pieces",
+                                initialValue: pitData['scorable_pieces'],
+                                decoration: const InputDecoration(
+                                    labelText:
+                                        "What game pieces can the robot score?"),
+                                options: ["Cones", "Cubes"]
+                                    .map((e) => FormBuilderFieldOption(
+                                        value: e.toString()))
+                                    .toList(),
                               ),
 
                               const Divider(),
@@ -322,6 +350,52 @@ class _FormsTestState extends State<FormsTest> {
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
                                 onChanged: _saveFormState,
+                              ),
+                              ConditionalHiddenField(
+                                showWhen: _canShowFieldFromMatch(pitData,
+                                    key: "has_autonomous", match: "yes"),
+                                child: YesOrNoAnswers(
+                                  name: "can_score_autonomous",
+                                  label:
+                                      "Are they able to score in autonomous?",
+                                  initialValue: pitData['can_score_autonomous'],
+                                  validators: FormBuilderValidators.required(),
+                                  onChanged: _saveFormState,
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
+                                ),
+                              ),
+                              ConditionalHiddenField(
+                                showWhen: _canShowFieldFromMatch(pitData,
+                                    key: "can_score_autonomous", match: "yes"),
+                                child: FormBuilderCheckboxGroup(
+                                  name: "auto_score_cones",
+                                  initialValue: pitData['auto_score_cones'],
+                                  decoration: const InputDecoration(
+                                      icon: Icon(Icons.score),
+                                      labelText:
+                                          "What Cones can they score in Autonomous?"),
+                                  options: ["Low", "Mid", "High"]
+                                      .map((e) => FormBuilderFieldOption(
+                                          value: e.toString()))
+                                      .toList(),
+                                ),
+                              ),
+                              ConditionalHiddenField(
+                                showWhen: _canShowFieldFromMatch(pitData,
+                                    key: "can_score_autonomous", match: "yes"),
+                                child: FormBuilderCheckboxGroup(
+                                  name: "auto_score_cubes",
+                                  initialValue: pitData['auto_score_cubes'],
+                                  decoration: const InputDecoration(
+                                      icon: Icon(Icons.score),
+                                      labelText:
+                                          "What Cubes can they score in Autonomous?"),
+                                  options: ["Low", "Mid", "High"]
+                                      .map((e) => FormBuilderFieldOption(
+                                          value: e.toString()))
+                                      .toList(),
+                                ),
                               ),
                               ConditionalHiddenField(
                                 showWhen: _canShowFieldFromMatch(pitData,
@@ -365,7 +439,7 @@ class _FormsTestState extends State<FormsTest> {
                                         pitData['auto_starting_positions'],
                                     decoration: const InputDecoration(
                                         labelText:
-                                            "Where do they start in Autonomous?"),
+                                            "Where can they start in Autonomous?"),
                                     options: ["Center", "Bump", "Lane"]
                                         .map((e) => FormBuilderFieldOption(
                                             value: e.toString()))
@@ -418,6 +492,25 @@ class _FormsTestState extends State<FormsTest> {
                                     .toList(),
                               ),
 
+                              YesOrNoAnswers(
+                                name: "can_defend",
+                                label: "Can the robot defend?",
+                                initialValue: pitData['can_defend'],
+                                validators: FormBuilderValidators.required(),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                              ),
+
+                              YesOrNoAnswers(
+                                name: "can_shuttle",
+                                label:
+                                    "Can their robot shuttle pieces for other robots?",
+                                initialValue: pitData['can_shuttle'],
+                                validators: FormBuilderValidators.required(),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                              ),
+
                               FormBuilderTextField(
                                 name: "teleop_notes",
                                 initialValue: pitData['teleop_notes'],
@@ -446,12 +539,14 @@ class _FormsTestState extends State<FormsTest> {
                               ),
 
                               const Divider(),
+                              const Text("Other Questions"),
+                              const Divider(),
 
                               FormBuilderTextField(
-                                name: "notes",
-                                initialValue: pitData['notes'],
+                                name: "final_notes",
+                                initialValue: pitData['final_notes'],
                                 decoration: const InputDecoration(
-                                    labelText: "Notes (if needed)?",
+                                    labelText: "Any other Notes (if needed)?",
                                     prefixIcon: Icon(Icons.note)),
                                 textInputAction: TextInputAction.next,
                                 autovalidateMode:

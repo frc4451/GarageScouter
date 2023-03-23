@@ -32,7 +32,8 @@ class RadioButtonInputs extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilderRadioGroup(
       name: name,
-      decoration: InputDecoration(label: Text(label), icon: Icon(icon)),
+      decoration: InputDecoration(
+          label: Text(label), icon: icon != null ? Icon(icon) : null),
       options: options
           .map((e) => FormBuilderFieldOption(value: e, child: Text(e)))
           .toList(growable: false),
