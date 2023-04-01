@@ -17,6 +17,8 @@ class RadioButtonInputs extends StatelessWidget {
 
   final IconData? icon;
 
+  final void Function(String?)? onSaved;
+
   const RadioButtonInputs(
       {super.key,
       required this.name,
@@ -26,7 +28,8 @@ class RadioButtonInputs extends StatelessWidget {
       this.validators,
       this.autovalidateMode,
       this.onChanged,
-      this.icon});
+      this.icon,
+      this.onSaved});
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +44,7 @@ class RadioButtonInputs extends StatelessWidget {
       initialValue: initialValue,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       onChanged: onChanged,
+      onSaved: onSaved,
     );
   }
 }
@@ -54,6 +58,7 @@ class YesOrNoAnswers extends StatelessWidget {
   final AutovalidateMode? autovalidateMode;
   final void Function(String?)? onChanged;
   final IconData? icon;
+  final void Function(String?)? onSaved;
 
   const YesOrNoAnswers(
       {super.key,
@@ -63,7 +68,8 @@ class YesOrNoAnswers extends StatelessWidget {
       this.validators,
       this.autovalidateMode,
       this.onChanged,
-      this.icon});
+      this.icon,
+      this.onSaved});
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +81,8 @@ class YesOrNoAnswers extends StatelessWidget {
         autovalidateMode: autovalidateMode,
         validators: validators,
         onChanged: onChanged,
-        icon: icon);
+        icon: icon,
+        onSaved: onSaved);
   }
 }
 

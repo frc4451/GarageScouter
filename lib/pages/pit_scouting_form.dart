@@ -74,17 +74,6 @@ class _FormsTestState extends State<FormsTest> {
       _formKey.currentState?.save();
     }
 
-    // Help clean up the input by removing spaces on both ends of the string
-    Map<String, dynamic> trimmedInputs =
-        _formKey.currentState!.value.map((key, value) {
-      return (value is String)
-          ? MapEntry(key, value.trim())
-          : MapEntry(key, value);
-    });
-
-    _formKey.currentState?.patchValue(trimmedInputs);
-    _formKey.currentState?.save();
-
     DataFrame df = convertFormStateToDataFrame(_formKey.currentState!);
 
     // adds timestamp
@@ -149,11 +138,12 @@ class _FormsTestState extends State<FormsTest> {
   /// field. We wait for the file system to complete and then reset/save the form.
   Future<void> _clearForm(RetainInfoModel retain) async {
     _formKey.currentState?.save();
-    final Map<String, dynamic> blanks =
-        convertListToDefaultMap(_formKey.currentState?.value.keys);
-    await retain.setPitScouting(blanks);
+
+    Map<String, dynamic> initialValues =
+        createEmptyFormState(_formKey.currentState?.value ?? {});
+    await retain.setPitScouting(initialValues);
     setState(() {
-      _formKey.currentState?.patchValue(blanks);
+      _formKey.currentState?.patchValue(initialValues);
       _formKey.currentState?.save();
     });
   }
@@ -248,7 +238,7 @@ class _FormsTestState extends State<FormsTest> {
                               ),
                               FormBuilderTextField(
                                 name: "team_number",
-                                initialValue: pitData['team_number'],
+                                initialValue: pitData['team_number'] ?? "",
                                 decoration: const InputDecoration(
                                     labelText: "What is the Team Number?",
                                     prefixIcon: Icon(Icons.numbers)),
@@ -358,8 +348,8 @@ class _FormsTestState extends State<FormsTest> {
                                   name: "can_score_autonomous",
                                   label:
                                       "Are they able to score in autonomous?",
-                                  initialValue: pitData['can_score_autonomous'],
-                                  validators: FormBuilderValidators.required(),
+                                  initialValue:
+                                      pitData['can_score_autonomous'] ?? "no",
                                   onChanged: _saveFormState,
                                   autovalidateMode:
                                       AutovalidateMode.onUserInteraction,
@@ -405,8 +395,7 @@ class _FormsTestState extends State<FormsTest> {
                                   label:
                                       "Are they able to use the charge station in autonomous?",
                                   initialValue:
-                                      pitData['can_charge_autonomous'],
-                                  validators: FormBuilderValidators.required(),
+                                      pitData['can_charge_autonomous'] ?? "no",
                                   autovalidateMode:
                                       AutovalidateMode.onUserInteraction,
                                 ),
@@ -495,7 +484,7 @@ class _FormsTestState extends State<FormsTest> {
                               YesOrNoAnswers(
                                 name: "can_defend",
                                 label: "Can the robot defend?",
-                                initialValue: pitData['can_defend'],
+                                initialValue: pitData['can_defend'] ?? "no",
                                 validators: FormBuilderValidators.required(),
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,

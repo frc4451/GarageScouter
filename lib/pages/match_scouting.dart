@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/models/input_helper_model.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/models/scroll_model.dart';
 import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_auto.dart';
@@ -25,7 +26,8 @@ class MatchScoutingPage extends StatefulWidget {
   State<MatchScoutingPage> createState() => _MatchScoutingPageState();
 }
 
-class _MatchScoutingPageState extends State<MatchScoutingPage> {
+class _MatchScoutingPageState extends State<MatchScoutingPage>
+    with SingleTickerProviderStateMixin {
   final String title = "Match Scouting Form";
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   final PageController _controller =
@@ -35,6 +37,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
 
   // Widgets we plan to show during the match. Swipe or click nav buttons as needed.
   final List<Widget> pages = [];
+
+  late TabController _tabController;
 
   // We can't rely on _controller.page because the page is not fully updated
   // until _after_ the page has transitioned. Because of that, we need an
@@ -63,7 +67,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
 
   /// Handles form submission
   Future<void> _submitForm() async {
-    bool isValid = _formKey.currentState!.saveAndValidate();
+    bool isValid = _formKey.currentState?.saveAndValidate() ?? false;
 
     if (!isValid) {
       _kFailureMessage(
@@ -71,17 +75,6 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
       _resetPage();
       return;
     }
-
-    // Help clean up the input by removing spaces on both ends of the string
-    Map<String, dynamic> trimmedInputs =
-        _formKey.currentState!.value.map((key, value) {
-      return (value is String)
-          ? MapEntry(key, value.trim().replaceAll(",", ""))
-          : MapEntry(key, value);
-    });
-
-    _formKey.currentState?.patchValue(trimmedInputs);
-    _formKey.currentState?.save();
 
     DataFrame df = convertFormStateToDataFrame(_formKey.currentState!);
 
@@ -117,20 +110,22 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
 
   /// Handles Previous Page functionality for desktop/accessibility
   void _prevPage() {
-    _onPageChanged(_controller.page!.toInt(), direction: PageDirection.left);
+    _onPageChanged(_tabController.index, direction: PageDirection.left);
   }
 
   /// Handles Next Page functionality for desktop/accessibility
   void _nextPage() {
-    _onPageChanged(_controller.page!.toInt(), direction: PageDirection.right);
+    _onPageChanged(_tabController.index, direction: PageDirection.right);
   }
 
   void _resetPage() {
     setState(() {
-      _currentPage = _controller.initialPage;
-      _controller.animateToPage(_currentPage,
-          duration: Duration(milliseconds: durationMilliseconds),
-          curve: Curves.ease);
+      _currentPage = 0;
+      _tabController.animateTo(_currentPage);
+      // _currentPage = _controller.initialPage;
+      // _controller.animateToPage(_currentPage,
+      //     duration: Duration(milliseconds: durationMilliseconds),
+      //     curve: Curves.ease);
     });
   }
 
@@ -150,9 +145,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
       if (direction != PageDirection.none &&
           (pageNumber + direction.value) >= 0) {
         _currentPage = pageNumber + direction.value;
-        _controller.animateToPage(_currentPage,
-            duration: Duration(milliseconds: durationMilliseconds),
-            curve: Curves.ease);
+        _tabController.animateTo(_currentPage);
       }
     });
   }
@@ -163,12 +156,25 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
   /// but we also patch all values with null values to forcibly reset the form state.
   Future<void> _clearForm() async {
     _formKey.currentState?.save();
-    Map<String, dynamic> blanks =
-        convertListToDefaultMap(_formKey.currentState?.value.keys);
-    await context.read<RetainInfoModel>().setMatchScouting(blanks);
+
+    Map<String, dynamic> initialValues =
+        createEmptyFormState(_formKey.currentState?.value ?? {});
+
+    if (context.read<InputHelperModel>().isIterativeMatchInput()) {
+      initialValues['team_alliance'] =
+          _formKey.currentState?.value['team_alliance'];
+
+      initialValues['team_position'] =
+          _formKey.currentState?.value['team_position'];
+
+      initialValues['match_number'] =
+          (int.parse(_formKey.currentState?.value['match_number']) + 1)
+              .toString();
+    }
+
+    await context.read<RetainInfoModel>().setMatchScouting(initialValues);
     setState(() {
-      _formKey.currentState?.reset();
-      _formKey.currentState?.patchValue(blanks);
+      _formKey.currentState?.patchValue(initialValues);
       _formKey.currentState?.save();
       _resetPage();
     });
@@ -190,6 +196,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
       MatchEndgameScreen(matchData: matchData),
       MatchSummaryScreen(matchData: matchData)
     ]);
+
+    _tabController = TabController(length: pages.length, vsync: this);
   }
 
   /// We use the deactivate life-cycle hook since State is available and we can
@@ -209,6 +217,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
   @override
   void dispose() {
     _controller.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -260,17 +269,42 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
           ),
           body: FormBuilder(
               key: _formKey,
-              // NOTE: You must implement AutomaticKeepAliveClientMixin in every
-              // page component you plan to show in the PageView, or else you
-              // will lose your FormValidation support
-              child: PageView(
-                physics: scroll.canSwipe()
-                    ? const NeverScrollableScrollPhysics()
-                    : null,
-                controller: _controller,
-                onPageChanged: _onPageChanged,
-                children: pages,
+              child: Column(
+                children: [
+                  TabBar(
+                    controller: _tabController,
+                    onTap: _onPageChanged,
+                    isScrollable: true,
+                    labelPadding: const EdgeInsets.symmetric(
+                        vertical: 12.0, horizontal: 24.0),
+                    tabs: const [
+                      Text('Initial'),
+                      Text('Auto'),
+                      Text('Teleop'),
+                      Text('End'),
+                      Text('Summary')
+                    ],
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: pages,
+                    ),
+                  )
+                ],
               )),
+
+          // NOTE: You must implement AutomaticKeepAliveClientMixin in every
+          // page component you plan to show in the PageView, or else you
+          // will lose your FormValidation support
+          // child: PageView(
+          //   physics: scroll.canSwipe()
+          //       ? const NeverScrollableScrollPhysics()
+          //       : null,
+          //   controller: _controller,
+          //   onPageChanged: _onPageChanged,
+          //   children: pages,
+          // )),
           persistentFooterButtons: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,

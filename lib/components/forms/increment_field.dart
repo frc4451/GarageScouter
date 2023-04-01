@@ -106,8 +106,8 @@ class _IncrementFormBuilderFieldState
       } else if (change == PageDirection.none.value) {
         widget._counter = PageDirection.none.value;
       }
+      super.didChange(widget._counter);
     });
-    super.didChange(widget._counter);
   }
 
   /// Overrides the counter to reset to zero, regardless of what the temp

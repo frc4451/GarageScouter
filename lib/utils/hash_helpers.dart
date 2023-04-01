@@ -9,6 +9,21 @@ Map<String, dynamic> convertListToDefaultMap(Iterable<String>? list,
         {String? value}) =>
     {for (final key in list ?? const Iterable.empty()) key: value};
 
+/// We don't have a native way in Dart to reset a non-null value to
+/// each non string element. So for types we expect, we've implemented
+/// a basic 'reset' function to clear the form state.
+Map<String, dynamic> createEmptyFormState(Map<String, dynamic> form) {
+  Map<Type, dynamic> defaultValues = {num: 0, bool: false, String: null};
+
+  Map<String, dynamic> defaultForm = {};
+
+  form.keys.forEach((key) {
+    defaultForm[key] = defaultValues[form[key].runtimeType];
+  });
+
+  return defaultForm;
+}
+
 /// Takes a Map<String, dynamic> object we want to convert to Json,
 /// encodes it to UTF8 -> GZIP Compression -> B64 string so we can
 /// reduce the overall footprint of the text data being sent over

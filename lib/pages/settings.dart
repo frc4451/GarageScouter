@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/models/input_helper_model.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/models/scroll_model.dart';
 import 'package:robotz_garage_scouting/models/theme_model.dart';
@@ -27,8 +28,10 @@ class _SettingsPageState extends State<SettingsPage> {
             textAlign: TextAlign.center,
           ),
         ),
-        body: Consumer3<ThemeModel, ScrollModel, RetainInfoModel>(
-          builder: (context, theme, scroll, retainInfo, __) => SettingsList(
+        body: Consumer4<ThemeModel, ScrollModel, RetainInfoModel,
+            InputHelperModel>(
+          builder: (context, theme, scroll, retainInfo, inputHelperModel, __) =>
+              SettingsList(
             sections: [
               SettingsSection(
                 title: const Text('Appearance'),
@@ -75,6 +78,17 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: const Text('Retain Form Data'),
                       description: const Text(
                           "Retains data from forms when you press the back button. Enables the 'Clear' button."),
+                    ),
+                    SettingsTile.switchTile(
+                      onToggle: (value) {
+                        setState(() =>
+                            inputHelperModel.setIterativeMatchInput(value));
+                      },
+                      initialValue: inputHelperModel.isIterativeMatchInput(),
+                      leading: const Icon(Icons.repeat_one),
+                      title: const Text('Iterative Match Input'),
+                      description: const Text(
+                          "On Match Scouting, retain Team Alliance and Position, increment Match Number."),
                     )
                   ]),
             ],

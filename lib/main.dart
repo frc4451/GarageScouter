@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/models/input_helper_model.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/pages/home_page.dart';
 import 'package:robotz_garage_scouting/models/theme_model.dart';
@@ -11,6 +12,7 @@ Future<void> main() async {
   ThemeModel initialTheme = await getInitialTheme();
   ScrollModel initialScrollModel = await getInitialScrollModel();
   RetainInfoModel initialRetainInfoModel = await getInitialRetainModel();
+  InputHelperModel intiialInputHelperModel = await getInitialInputHelperModel();
 
   runApp(MultiProvider(
     providers: [
@@ -18,6 +20,8 @@ Future<void> main() async {
       ChangeNotifierProvider<ScrollModel>(create: (_) => initialScrollModel),
       ChangeNotifierProvider<RetainInfoModel>(
           create: (_) => initialRetainInfoModel),
+      ChangeNotifierProvider<InputHelperModel>(
+          create: (_) => intiialInputHelperModel),
     ],
     child: const RobotzGarageScoutingApp(),
   ));

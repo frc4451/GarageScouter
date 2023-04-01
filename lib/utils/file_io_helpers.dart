@@ -106,15 +106,12 @@ Future<File> saveFilesForDesktopApplication(File file) async {
 ///
 /// @returns resulting File from final file path
 Future<File> saveFilesForMobileApplication(File finalFile) async {
-  PermissionStatus status = await Permission.storage.status;
-
   final DirectoryLocation? pickedDirectory =
       await FlutterFileDialog.pickDirectory();
 
   if (pickedDirectory == null) {
     throw Exception("User cancelled operation");
   }
-
   final String? newFilePath = await FlutterFileDialog.saveFileToDirectory(
       directory: pickedDirectory,
       data: finalFile.readAsBytesSync(),

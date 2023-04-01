@@ -36,7 +36,6 @@ class _MatchAutonomousScreenState extends State<MatchAutonomousScreen>
       builder: (context, model, _) {
         return Scaffold(
             body: Column(children: [
-          const Text("AUTONOMOUS"),
           IncrementFormBuilderField(
             name: "auto_high_cubes",
             initialValue: widget.matchData["auto_high_cubes"] ?? 0,

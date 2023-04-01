@@ -30,7 +30,6 @@ class _MatchTeleopScreenState extends State<MatchTeleopScreen>
     super.build(context);
     return Scaffold(
         body: Column(children: [
-      const Text("TELE-OPERATED"),
       IncrementFormBuilderField(
         name: "teleop_high_cubes",
         initialValue: widget._matchData["teleop_high_cubes"] ?? 0,

@@ -196,6 +196,21 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(30),
+                      child: Column(children: [
+                        ElevatedButton(
+                            onPressed: () async =>
+                                await _takePictures("pit_exterior"),
+                            child: const Text("Open Picture for Pit Exterior")),
+                        Text(_photos["pit_exterior"]?.path != null
+                            ? getBaseName(_photos["pit_exterior"]!)
+                            : "Waiting for image..."),
+                        if (_photos["pit_exterior"] != null &&
+                            _photos["pit_exterior"]!.existsSync())
+                          Image.file(_photos["pit_exterior"]!)
+                      ]),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(30),
                       child: ElevatedButton(
                         onPressed: () async => _createZip(),
                         child: const Text("Download ZIP Archive"),

@@ -69,6 +69,7 @@ class _ExportManagerPageState extends State<ExportManagerPage> {
         data: encodeJsonForQRCode(fileData),
         version: QrVersions.auto,
         backgroundColor: Colors.white,
+        padding: const EdgeInsets.all(25.0),
       );
     });
   }

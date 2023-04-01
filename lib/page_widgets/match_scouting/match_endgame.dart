@@ -25,7 +25,6 @@ class _MatchEndgameScreenState extends State<MatchEndgameScreen>
     return Scaffold(
         body: Center(
       child: Column(children: [
-        const Text("END GAME"),
         FormBuilderCheckbox(
             name: "end_balance",
             title: const Text("End Balance"),
