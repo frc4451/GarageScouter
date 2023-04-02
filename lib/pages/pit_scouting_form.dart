@@ -74,6 +74,15 @@ class _FormsTestState extends State<FormsTest> {
       _formKey.currentState?.save();
     }
 
+    _formKey.currentState?.fields.forEach((key, value) {
+      print("value :: ${value.runtimeType}");
+      if (value.runtimeType.toString() ==
+              "_FormBuilderRadioGroupState<String>" &&
+          _formKey.currentState?.value[key] == null) {
+        _formKey.currentState?.patchValue({key: "no"});
+      }
+    });
+
     DataFrame df = convertFormStateToDataFrame(_formKey.currentState!);
 
     // adds timestamp
@@ -221,7 +230,6 @@ class _FormsTestState extends State<FormsTest> {
                               const Divider(),
                               const Text("General Questions"),
                               const Divider(),
-
                               FormBuilderTextField(
                                 name: "team_name",
                                 initialValue: pitData['team_name'] ?? "",
@@ -300,13 +308,14 @@ class _FormsTestState extends State<FormsTest> {
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
                               ),
-
                               ConditionalHiddenField(
                                   showWhen: _canShowFieldFromMatch(pitData,
                                       key: 'has_intake', match: "yes"),
                                   child: FormBuilderCheckboxGroup(
                                     name: "pickup_from_intake",
-                                    initialValue: pitData['pickup_from_intake'],
+                                    initialValue:
+                                        pitData['pickup_from_intake'] ??
+                                            <String>[],
                                     decoration: const InputDecoration(
                                         labelText:
                                             "Where does the robot intake from?"),
@@ -315,10 +324,10 @@ class _FormsTestState extends State<FormsTest> {
                                             value: e.toString()))
                                         .toList(),
                                   )),
-
                               FormBuilderCheckboxGroup(
                                 name: "scorable_pieces",
-                                initialValue: pitData['scorable_pieces'],
+                                initialValue:
+                                    pitData['scorable_pieces'] ?? <String>[],
                                 decoration: const InputDecoration(
                                     labelText:
                                         "What game pieces can the robot score?"),
@@ -327,11 +336,9 @@ class _FormsTestState extends State<FormsTest> {
                                         value: e.toString()))
                                     .toList(),
                               ),
-
                               const Divider(),
                               const Text("Autonomous Questions"),
                               const Divider(),
-
                               YesOrNoAnswers(
                                 name: "has_autonomous",
                                 label: "Do they have autonomous?",
@@ -360,7 +367,8 @@ class _FormsTestState extends State<FormsTest> {
                                     key: "can_score_autonomous", match: "yes"),
                                 child: FormBuilderCheckboxGroup(
                                   name: "auto_score_cones",
-                                  initialValue: pitData['auto_score_cones'],
+                                  initialValue:
+                                      pitData['auto_score_cones'] ?? <String>[],
                                   decoration: const InputDecoration(
                                       icon: Icon(Icons.score),
                                       labelText:
@@ -376,7 +384,8 @@ class _FormsTestState extends State<FormsTest> {
                                     key: "can_score_autonomous", match: "yes"),
                                 child: FormBuilderCheckboxGroup(
                                   name: "auto_score_cubes",
-                                  initialValue: pitData['auto_score_cubes'],
+                                  initialValue:
+                                      pitData['auto_score_cubes'] ?? <String>[],
                                   decoration: const InputDecoration(
                                       icon: Icon(Icons.score),
                                       labelText:
@@ -400,32 +409,14 @@ class _FormsTestState extends State<FormsTest> {
                                       AutovalidateMode.onUserInteraction,
                                 ),
                               ),
-                              // ConditionalHiddenField(
-                              //     showWhen: _canShowFieldFromMatch(pitData,
-                              //         key: "has_autonomous", match: "yes"),
-                              //     child: FormBuilderDropdown(
-                              //       name: "field_position",
-                              //       decoration: const InputDecoration(
-                              //           labelText:
-                              //               "Autonomous Starting Position",
-                              //           prefixIcon: Icon(Icons.map)),
-                              //       validator: FormBuilderValidators.required(),
-                              //       autovalidateMode:
-                              //           AutovalidateMode.onUserInteraction,
-                              //       items: ["Center", "Bump", "Lane"]
-                              //           .map((e) => DropdownMenuItem(
-                              //               value: e,
-                              //               child: Text(e.toString())))
-                              //           .toList(),
-                              //       initialValue: pitData["field_position"],
-                              //     )),
                               ConditionalHiddenField(
                                   showWhen: _canShowFieldFromMatch(pitData,
                                       key: "has_autonomous", match: "yes"),
                                   child: FormBuilderCheckboxGroup(
                                     name: "auto_starting_positions",
                                     initialValue:
-                                        pitData['auto_starting_positions'],
+                                        pitData['auto_starting_positions'] ??
+                                            <String>[],
                                     decoration: const InputDecoration(
                                         labelText:
                                             "Where can they start in Autonomous?"),
@@ -439,7 +430,7 @@ class _FormsTestState extends State<FormsTest> {
                                     key: "has_autonomous", match: "yes"),
                                 child: FormBuilderTextField(
                                   name: "auto_notes",
-                                  initialValue: pitData['auto_notes'],
+                                  initialValue: pitData['auto_notes'] ?? "",
                                   decoration: const InputDecoration(
                                       labelText: "Autonmous Notes (if needed)?",
                                       prefixIcon: Icon(Icons.note)),
@@ -451,14 +442,13 @@ class _FormsTestState extends State<FormsTest> {
                                   ]),
                                 ),
                               ),
-
                               const Divider(),
                               const Text("Teleop Questions"),
                               const Divider(),
-
                               FormBuilderCheckboxGroup(
                                 name: "teleop_score_cones",
-                                initialValue: pitData['teleop_score_cones'],
+                                initialValue:
+                                    pitData['teleop_score_cones'] ?? <String>[],
                                 decoration: const InputDecoration(
                                     icon: Icon(Icons.score),
                                     labelText:
@@ -470,7 +460,8 @@ class _FormsTestState extends State<FormsTest> {
                               ),
                               FormBuilderCheckboxGroup(
                                 name: "teleop_score_cubes",
-                                initialValue: pitData['teleop_score_cubes'],
+                                initialValue:
+                                    pitData['teleop_score_cubes'] ?? <String>[],
                                 decoration: const InputDecoration(
                                     icon: Icon(Icons.score),
                                     labelText:
@@ -480,16 +471,14 @@ class _FormsTestState extends State<FormsTest> {
                                         value: e.toString()))
                                     .toList(),
                               ),
-
                               YesOrNoAnswers(
                                 name: "can_defend",
                                 label: "Can the robot defend?",
-                                initialValue: pitData['can_defend'] ?? "no",
+                                initialValue: pitData['can_defend'],
                                 validators: FormBuilderValidators.required(),
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
                               ),
-
                               YesOrNoAnswers(
                                 name: "can_shuttle",
                                 label:
@@ -499,10 +488,9 @@ class _FormsTestState extends State<FormsTest> {
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
                               ),
-
                               FormBuilderTextField(
                                 name: "teleop_notes",
-                                initialValue: pitData['teleop_notes'],
+                                initialValue: pitData['teleop_notes'] ?? "",
                                 decoration: const InputDecoration(
                                     labelText: "Teleop Notes (if needed)?",
                                     prefixIcon: Icon(Icons.note)),
@@ -513,7 +501,6 @@ class _FormsTestState extends State<FormsTest> {
                                   CustomTextValidators.doesNotHaveCommas(),
                                 ]),
                               ),
-
                               const Divider(),
                               const Text("Endgame Questions"),
                               const Divider(),
@@ -526,14 +513,12 @@ class _FormsTestState extends State<FormsTest> {
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
                               ),
-
                               const Divider(),
                               const Text("Other Questions"),
                               const Divider(),
-
                               FormBuilderTextField(
                                 name: "final_notes",
-                                initialValue: pitData['final_notes'],
+                                initialValue: pitData['final_notes'] ?? "",
                                 decoration: const InputDecoration(
                                     labelText: "Any other Notes (if needed)?",
                                     prefixIcon: Icon(Icons.note)),

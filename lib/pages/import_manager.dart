@@ -77,7 +77,8 @@ class _ImportManagerPageState extends State<ImportManagerPage> {
         [headers, ...rowsJson.values],
       );
 
-      final File file = await createCSVFromDataFrame(df, prefix: key);
+      final File file =
+          await createCSVFromDataFrame(df, prefix: key, prefixIsFileName: true);
       files.add(file);
     }).then((value) async {
       // generate a temporary zipfile location we plan to give to the user.
