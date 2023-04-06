@@ -96,7 +96,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       File finalFile = await file.writeAsString(convertDataFrameToString(df));
 
       saveFileToDevice(finalFile).then((File file) {
-        _clearForm();
+        _clearForm(isSubmission: true);
         _kSuccessMessage(file);
       }).catchError(_kFailureMessage);
     } on Exception catch (_, exception) {
@@ -154,7 +154,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   /// immediately shown on the screen. For Match Scouting, the fields on pages
   /// that aren't active. We save, then reset using the based form management,
   /// but we also patch all values with null values to forcibly reset the form state.
-  Future<void> _clearForm() async {
+  Future<void> _clearForm({isSubmission = false}) async {
     _formKey.currentState?.save();
 
     Map<String, dynamic> initialValues =
@@ -168,7 +168,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
           _formKey.currentState?.value['team_position'];
 
       initialValues['match_number'] =
-          (int.parse(_formKey.currentState?.value['match_number']) + 1)
+          (int.parse(_formKey.currentState?.value['match_number']) +
+                  (isSubmission ? 1 : 0))
               .toString();
     }
 
