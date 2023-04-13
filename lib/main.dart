@@ -5,23 +5,30 @@ import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/pages/home_page.dart';
 import 'package:robotz_garage_scouting/models/theme_model.dart';
 import 'package:robotz_garage_scouting/models/scroll_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  ThemeModel initialTheme = await getInitialTheme();
-  ScrollModel initialScrollModel = await getInitialScrollModel();
-  RetainInfoModel initialRetainInfoModel = await getInitialRetainModel();
-  InputHelperModel intiialInputHelperModel = await getInitialInputHelperModel();
+  final prefs = await SharedPreferences.getInstance();
+  final ThemeModel themeModel = ThemeModel(prefs);
+  themeModel.initialize();
+
+  final ScrollModel scrollModel = ScrollModel(prefs);
+  scrollModel.initialize();
+
+  final InputHelperModel inputHelperModel = InputHelperModel(prefs);
+  inputHelperModel.initialize();
+
+  final RetainInfoModel retainInfoModel = RetainInfoModel(prefs);
+  retainInfoModel.initialize();
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider<ThemeModel>(create: (_) => initialTheme),
-      ChangeNotifierProvider<ScrollModel>(create: (_) => initialScrollModel),
-      ChangeNotifierProvider<RetainInfoModel>(
-          create: (_) => initialRetainInfoModel),
-      ChangeNotifierProvider<InputHelperModel>(
-          create: (_) => intiialInputHelperModel),
+      ChangeNotifierProvider<ThemeModel>(create: (_) => themeModel),
+      ChangeNotifierProvider<ScrollModel>(create: (_) => scrollModel),
+      ChangeNotifierProvider<RetainInfoModel>(create: (_) => retainInfoModel),
+      ChangeNotifierProvider<InputHelperModel>(create: (_) => inputHelperModel),
     ],
     child: const RobotzGarageScoutingApp(),
   ));

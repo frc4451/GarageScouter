@@ -4,6 +4,13 @@ import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 
+/// Export Management Page for Mobile Devices that may not have wireless
+/// communications (IE Fire Tablets) and solely provides a QR Code to make
+/// data transfer easier for these offline devices.
+///
+/// NOTE: this will not support Web due to the usage of ml_dataframe. But
+/// for those will be using the web app. They're not likely to use the export
+/// manager anyway.
 class ExportManagerPage extends StatefulWidget {
   const ExportManagerPage({super.key});
 
@@ -66,7 +73,7 @@ class _ExportManagerPageState extends State<ExportManagerPage> {
 
     setState(() {
       image = QrImage(
-        data: encodeJsonForQRCode(fileData),
+        data: encodeJsonToB64(fileData),
         version: QrVersions.auto,
         backgroundColor: Colors.white,
         padding: const EdgeInsets.all(25.0),

@@ -1,13 +1,18 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:robotz_garage_scouting/constants/platform_check.dart';
-import 'package:robotz_garage_scouting/utils/dataframe_helpers.dart';
-import 'package:flutter_file_dialog/flutter_file_dialog.dart';
+import 'package:file_saver/file_saver.dart';
+import 'package:flutter/foundation.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
+import 'package:robotz_garage_scouting/constants/platform_check.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
+// ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:robotz_garage_scouting/utils/dataframe_helpers.dart';
+import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:sanitize_filename/sanitize_filename.dart';
 
 /// Helper method to get the extension of a file
@@ -43,7 +48,9 @@ Future<String> generateUniqueFilePath(
 
   final String currentTime = timestamp ?? DateTime.now().toString();
   final String filePrefix = prefix!.isNotEmpty ? "${prefix}_" : "";
-  final String directory = (await getApplicationSupportDirectory()).path;
+
+  final String directory =
+      kIsWeb ? "" : (await getApplicationSupportDirectory()).path;
 
   // We check if the file prefix is the name of the file. This is a workaround
   // for how we handle file saving on the import manager.
@@ -132,8 +139,7 @@ Future<File> saveFilesForMobileApplication(File finalFile) async {
 }
 
 /// "Agnostic" way of saving files to the device without looking for which
-/// platform we're using to begin with. This could probably be made more
-/// straight forward in the future
+/// platform we're using to begin with. This does not support Web.
 Future<File> saveFileToDevice(File file) async {
   if (isDesktopPlatform()) {
     return saveFilesForDesktopApplication(file);
@@ -158,12 +164,88 @@ Future<File> createCSVFromDataFrame(DataFrame df,
       .writeAsString(convertDataFrameToString(df));
 }
 
+/// Converts a Map State to a CSV so we can write to a File
+Future<File> createCSVFromMapState(Map<String, dynamic> state,
+    {String? prefix = "default", bool? prefixIsFileName}) async {
+  return File((await generateUniqueFilePath(
+          extension: ".csv",
+          prefix: prefix,
+          prefixIsFileName: prefixIsFileName)))
+      .writeAsString(convertMapStateToString(state));
+}
+
 Future<FilePickerResult?> selectCSVFiles(
     {bool allowMultiple = true,
     List<String> allowedExtensions = const ["csv"]}) async {
   return FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowMultiple: allowMultiple,
-      onFileLoading: (FilePickerStatus status) => print(status),
       allowedExtensions: allowedExtensions);
+}
+
+/// Accepts a File object and reads the File as a Matrix that
+/// can be read like a CSV.
+Future<List<List<dynamic>>> readCSVFromFile(File file) async {
+// Future<Map<String, List<dynamic>>> readCSVFromFile(File file) async {
+  final input = file.openRead();
+  final fields = await input
+      .transform(utf8.decoder)
+      .transform(const CsvToListConverter())
+      .toList();
+
+  return fields;
+
+  // print("fields :: $fields");
+
+  // // final data = await input
+  // //     .transform(utf8.decoder)
+  // //     .transform(const CsvToListConverter())
+  // //     .toList();
+
+  // final result = <String, List<dynamic>>{};
+
+  // // fields.first.forEach((key) {
+  // //   result[key] = [];
+  // // });
+
+  // // for (int i = 0; i < fields.length; ++i) {
+  // //   for (int j = 0; j < fields[i].length; ++i) {}
+  // // }
+
+  // for (int i = 0; i < fields[0].length; i++) {
+  //   String key = fields[0][i].toString();
+  //   List<dynamic> values = [];
+  //   for (int j = 1; j < fields.length; j++) {
+  //     values.add(fields[j][i]);
+  //   }
+  //   result[key] = values;
+  // }
+
+  // for (var i = 0; i < fields.length; i++) {
+  //   final fieldName = fields[i].toString();
+  //   result[fieldName] = data.map((row) => row[i]).toList();
+  // }
+  // return result;
+}
+
+/// Web has special edge cases that are needed to handle file saving on
+/// web platforms. There's the possibility we can integrate this within
+/// `saveFileToDevice` since we can read a Uint8List from File.readAsBytes,
+/// but I haven't gotten the `readAsBytes` method to work on web yet.
+Future<File> saveFileFromWeb(
+    {required String contents, required String filePath}) async {
+  final Uint8List uint8list = Uint8List.fromList(utf8.encode(contents));
+
+  final String name = p.basename(filePath);
+  final String ext = p.extension(name);
+  final Map<String, MimeType> knownMimeTypes = {
+    'csv': MimeType.csv,
+  };
+
+  final MimeType mimeType = knownMimeTypes[ext] ?? MimeType.other;
+
+  final String newFilePath = await FileSaver.instance
+      .saveFile(name: name, ext: ext, mimeType: mimeType, bytes: uint8list);
+
+  return File(newFilePath);
 }

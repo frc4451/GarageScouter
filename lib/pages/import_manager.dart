@@ -42,7 +42,7 @@ class _ImportManagerPageState extends State<ImportManagerPage> {
   void _detectInput(capture) {
     final List<Barcode> barcodes = capture.barcodes;
     setState(() {
-      input = decodeJsonFromQRCode(barcodes[0].rawValue!);
+      input = decodeJsonFromB64(barcodes[0].rawValue!);
     });
   }
 
@@ -70,6 +70,7 @@ class _ImportManagerPageState extends State<ImportManagerPage> {
     List<File> files = [];
     Future.forEach(input!.keys, (key) async {
       final Map<String, dynamic> fileData = input?[key];
+
       final List<dynamic> headers = fileData['header'];
       final Map<String, dynamic> rowsJson = fileData['rows'];
 

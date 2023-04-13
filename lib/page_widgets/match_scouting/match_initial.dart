@@ -32,6 +32,7 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
           decoration: const InputDecoration(
               labelText: "Team Number", prefixIcon: Icon(Icons.numbers)),
           textInputAction: TextInputAction.next,
+          keyboardType: TextInputType.number,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(),
             FormBuilderValidators.integer(),
@@ -45,6 +46,7 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
           decoration: const InputDecoration(
               labelText: "Match Number", prefixIcon: Icon(Icons.numbers)),
           textInputAction: TextInputAction.next,
+          keyboardType: TextInputType.number,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(),
             FormBuilderValidators.integer(),
