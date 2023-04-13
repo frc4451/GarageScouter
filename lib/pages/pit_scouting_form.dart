@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -73,14 +74,28 @@ class _FormsTestState extends State<FormsTest> {
       _formKey.currentState?.save();
     }
 
-    // This is was a last minute hacky fix. Please fix this later.
+    // We can't rely on FlutterFormBuilder to assign a true default value to
+    // their fields, so we go back and verify that the ones we know cause
+    // issues are forced to be reset to a default value before we try to
+    // write the data to CSV.
     _formKey.currentState?.fields.forEach((key, value) {
-      if (value.runtimeType.toString() ==
-              "_FormBuilderRadioGroupState<String>" &&
-          _formKey.currentState?.value[key] == null) {
+      if (value.widget is FormBuilderRadioGroup && value.value == null) {
         _formKey.currentState?.patchValue({key: "no"});
       }
+
+      if (value.widget is FormBuilderTextField && value.value == null) {
+        _formKey.currentState?.patchValue({key: ""});
+      }
+
+      if (value.widget is FormBuilderCheckboxGroup) {
+        if (value.value == null) {
+          _formKey.currentState?.patchValue({key: <String>[]});
+        }
+        _formKey.currentState
+            ?.patchValue({key: (value.value as List<String>).sorted()});
+      }
     });
+    _formKey.currentState?.save();
 
     Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
 
@@ -99,9 +114,8 @@ class _FormsTestState extends State<FormsTest> {
         saveFileFromWeb(
                 filePath: filePath, contents: convertMapStateToString(state))
             .then((value) {
-          context.read<RetainInfoModel>().resetPitScouting();
-          _formKey.currentState?.reset();
-          _kSuccessMessage("Successfully saved file");
+          _clearForm();
+          _kSuccessMessage("Successfully saved file to Downloads folder");
         }).catchError(_kFailureMessage);
 
         return;
@@ -110,8 +124,7 @@ class _FormsTestState extends State<FormsTest> {
       File finalFile = await file.writeAsString(convertMapStateToString(state));
 
       saveFileToDevice(finalFile).then((File file) {
-        context.read<RetainInfoModel>().resetPitScouting();
-        _formKey.currentState?.reset();
+        _clearForm();
         _kSuccessfulFileMessage(file);
       }).catchError(_kFailureMessage);
     } on Exception catch (_, exception) {
@@ -137,8 +150,6 @@ class _FormsTestState extends State<FormsTest> {
   ///    "Other" previously for "drive_train"
   bool _canShowFieldFromMatch(pitData,
       {String key = "drive_train", String match = "Other"}) {
-    // const String key = "drive_train";
-    // const String match = "Other";
     final String current = _formKey.currentState?.value[key] ?? "";
 
     // On the first load, the currentState will be empty, so we need
@@ -155,15 +166,16 @@ class _FormsTestState extends State<FormsTest> {
   /// This is a fairly hacky workaround to work around form fields that aren't
   /// immediately shown on the screen. For Pit Scouting, the "Other Drive Train"
   /// field. We wait for the file system to complete and then reset/save the form.
-  Future<void> _clearForm(RetainInfoModel retain) async {
+  Future<void> _clearForm() async {
     _formKey.currentState?.save();
 
-    Map<String, dynamic> initialValues =
-        createEmptyFormState(_formKey.currentState?.value ?? {});
-    retain.setPitScouting(initialValues);
     setState(() {
-      _formKey.currentState?.patchValue(initialValues);
+      _formKey.currentState!.fields.forEach((key, field) {
+        field.didChange(null);
+      });
       _formKey.currentState?.save();
+
+      context.read<RetainInfoModel>().resetPitScouting();
     });
   }
 
@@ -211,7 +223,7 @@ class _FormsTestState extends State<FormsTest> {
                                     ),
                                     ElevatedButton(
                                       onPressed: () async {
-                                        await _clearForm(retain);
+                                        await _clearForm();
                                         Navigator.pop(context);
                                       },
                                       child: const Text("Confirm"),
@@ -373,8 +385,7 @@ class _FormsTestState extends State<FormsTest> {
                                   key: "can_score_autonomous", match: "yes"),
                               child: FormBuilderCheckboxGroup(
                                 name: "auto_score_cones",
-                                initialValue:
-                                    pitData['auto_score_cones'] ?? <String>[],
+                                initialValue: pitData['auto_score_cones'],
                                 decoration: const InputDecoration(
                                     icon: Icon(Icons.score),
                                     labelText:
@@ -390,8 +401,7 @@ class _FormsTestState extends State<FormsTest> {
                                   key: "can_score_autonomous", match: "yes"),
                               child: FormBuilderCheckboxGroup(
                                 name: "auto_score_cubes",
-                                initialValue:
-                                    pitData['auto_score_cubes'] ?? <String>[],
+                                initialValue: pitData['auto_score_cubes'],
                                 decoration: const InputDecoration(
                                     icon: Icon(Icons.score),
                                     labelText:
@@ -421,8 +431,7 @@ class _FormsTestState extends State<FormsTest> {
                                 child: FormBuilderCheckboxGroup(
                                   name: "auto_starting_positions",
                                   initialValue:
-                                      pitData['auto_starting_positions'] ??
-                                          <String>[],
+                                      pitData['auto_starting_positions'],
                                   decoration: const InputDecoration(
                                       labelText:
                                           "Where can they start in Autonomous?"),
@@ -453,8 +462,7 @@ class _FormsTestState extends State<FormsTest> {
                             const Divider(),
                             FormBuilderCheckboxGroup(
                               name: "teleop_score_cones",
-                              initialValue:
-                                  pitData['teleop_score_cones'] ?? <String>[],
+                              initialValue: pitData['teleop_score_cones'],
                               decoration: const InputDecoration(
                                   icon: Icon(Icons.score),
                                   labelText: "Can they score Cones in Teleop?"),
@@ -465,8 +473,7 @@ class _FormsTestState extends State<FormsTest> {
                             ),
                             FormBuilderCheckboxGroup(
                               name: "teleop_score_cubes",
-                              initialValue:
-                                  pitData['teleop_score_cubes'] ?? <String>[],
+                              initialValue: pitData['teleop_score_cubes'],
                               decoration: const InputDecoration(
                                   icon: Icon(Icons.score),
                                   labelText: "Can they score Cubes in Teleop?"),

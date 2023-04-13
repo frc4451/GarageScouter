@@ -183,55 +183,10 @@ Future<FilePickerResult?> selectCSVFiles(
       allowedExtensions: allowedExtensions);
 }
 
-/// Accepts a File object and reads the File as a Matrix that
-/// can be read like a CSV.
-Future<List<List<dynamic>>> readCSVFromFile(File file) async {
-// Future<Map<String, List<dynamic>>> readCSVFromFile(File file) async {
-  final input = file.openRead();
-  final fields = await input
-      .transform(utf8.decoder)
-      .transform(const CsvToListConverter())
-      .toList();
-
-  return fields;
-
-  // print("fields :: $fields");
-
-  // // final data = await input
-  // //     .transform(utf8.decoder)
-  // //     .transform(const CsvToListConverter())
-  // //     .toList();
-
-  // final result = <String, List<dynamic>>{};
-
-  // // fields.first.forEach((key) {
-  // //   result[key] = [];
-  // // });
-
-  // // for (int i = 0; i < fields.length; ++i) {
-  // //   for (int j = 0; j < fields[i].length; ++i) {}
-  // // }
-
-  // for (int i = 0; i < fields[0].length; i++) {
-  //   String key = fields[0][i].toString();
-  //   List<dynamic> values = [];
-  //   for (int j = 1; j < fields.length; j++) {
-  //     values.add(fields[j][i]);
-  //   }
-  //   result[key] = values;
-  // }
-
-  // for (var i = 0; i < fields.length; i++) {
-  //   final fieldName = fields[i].toString();
-  //   result[fieldName] = data.map((row) => row[i]).toList();
-  // }
-  // return result;
-}
-
-/// Web has special edge cases that are needed to handle file saving on
-/// web platforms. There's the possibility we can integrate this within
+/// Web has special edge cases that are needed to handle file saving.
+/// There's the possibility we can integrate this within
 /// `saveFileToDevice` since we can read a Uint8List from File.readAsBytes,
-/// but I haven't gotten the `readAsBytes` method to work on web yet.
+/// but that can be done later. We don't want to break something we know works.
 Future<File> saveFileFromWeb(
     {required String contents, required String filePath}) async {
   final Uint8List uint8list = Uint8List.fromList(utf8.encode(contents));

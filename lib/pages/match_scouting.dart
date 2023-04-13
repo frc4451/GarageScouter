@@ -167,33 +167,40 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     });
   }
 
-  /// This is a fairly hacky workaround to work around form fields that aren't
-  /// immediately shown on the screen. For Match Scouting, the fields on pages
-  /// that aren't active. We save, then reset using the based form management,
-  /// but we also patch all values with null values to forcibly reset the form state.
+  /// When we clear the form, we need to check to see if the form
+  /// is a submission, and if `iterative match input` was enabled
+  /// in the settings. If iterative match input is enabled we need
+  /// to make sure that the page increments the match number as well
+  /// as retains team alliance and position for the scouter. If the
+  /// form was _not_ a submission and instead a form clear, then we
+  /// just retain the previous match number
   Future<void> _clearForm({isSubmission = false}) async {
-    _formKey.currentState?.saveAndValidate() ?? false;
+    _formKey.currentState?.save();
 
-    Map<String, dynamic> initialValues =
-        convertListToDefaultMap(_formKey.currentState!.value.keys);
+    Map<String, dynamic> patchedValues = {};
 
     if (context.read<InputHelperModel>().isIterativeMatchInput()) {
-      initialValues['team_alliance'] =
+      patchedValues['team_alliance'] =
           _formKey.currentState?.value['team_alliance'];
 
-      initialValues['team_position'] =
+      patchedValues['team_position'] =
           _formKey.currentState?.value['team_position'];
 
-      initialValues['match_number'] =
+      patchedValues['match_number'] =
           (int.parse(_formKey.currentState?.value['match_number'] ?? "0") +
                   (isSubmission ? 1 : 0))
               .toString();
     }
 
-    context.read<RetainInfoModel>().setMatchScouting(initialValues);
     setState(() {
-      _formKey.currentState?.patchValue(initialValues);
+      _formKey.currentState!.fields.forEach((key, field) {
+        field.didChange(null);
+      });
+      _formKey.currentState?.save();
       _formKey.currentState?.reset();
+
+      context.read<RetainInfoModel>().resetMatchScouting();
+      _formKey.currentState?.patchValue(patchedValues);
       _formKey.currentState?.save();
       _resetPage();
     });
@@ -297,21 +304,24 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
               child: Column(
                 children: [
                   Consumer<ThemeModel>(
-                      builder: (context, model, _) => TabBar(
-                            controller: _tabController,
-                            labelColor: model.getLabelColor(),
-                            indicatorColor: model.getLabelColor(),
-                            isScrollable: true,
-                            labelPadding: const EdgeInsets.symmetric(
-                                vertical: 12.0, horizontal: 24.0),
-                            tabs: const [
-                              Text('Initial'),
-                              Text('Auto'),
-                              Text('Teleop'),
-                              Text('End'),
-                              Text('Summary')
-                            ],
-                          )),
+                    builder: (context, model, _) => IgnorePointer(
+                        ignoring: true,
+                        child: TabBar(
+                          controller: _tabController,
+                          labelColor: model.getLabelColor(),
+                          indicatorColor: model.getLabelColor(),
+                          isScrollable: true,
+                          labelPadding: const EdgeInsets.symmetric(
+                              vertical: 12.0, horizontal: 24.0),
+                          tabs: const [
+                            Text('Initial'),
+                            Text('Auto'),
+                            Text('Teleop'),
+                            Text('End'),
+                            Text('Summary')
+                          ],
+                        )),
+                  ),
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,
