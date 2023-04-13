@@ -175,14 +175,14 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     _formKey.currentState?.saveAndValidate() ?? false;
 
     Map<String, dynamic> initialValues =
-        createEmptyFormState(_formKey.currentState?.value ?? {});
+        convertListToDefaultMap(_formKey.currentState!.value.keys);
 
     if (context.read<InputHelperModel>().isIterativeMatchInput()) {
       initialValues['team_alliance'] =
           _formKey.currentState?.value['team_alliance'];
 
       initialValues['team_position'] =
-          _formKey.currentState?.value['team_position'] ?? 1;
+          _formKey.currentState?.value['team_position'];
 
       initialValues['match_number'] =
           (int.parse(_formKey.currentState?.value['match_number'] ?? "0") +
@@ -193,6 +193,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     context.read<RetainInfoModel>().setMatchScouting(initialValues);
     setState(() {
       _formKey.currentState?.patchValue(initialValues);
+      _formKey.currentState?.reset();
       _formKey.currentState?.save();
       _resetPage();
     });

@@ -76,8 +76,6 @@ class RetainInfoModel extends ChangeNotifier {
 
   /// Writes data to disk with specification for the TempFilePath provided.
   void _writeData() {
-    print("match scouting :: $_matchScouting");
-
     prefs.setBool(kRetainInfoConfigKey, _retainInfo);
     prefs.setString(
         kRetainInfoDataKey,

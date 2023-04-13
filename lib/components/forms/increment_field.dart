@@ -110,6 +110,20 @@ class _IncrementFormBuilderFieldState
     });
   }
 
+  /// There is an edge case where we don't actually reset the value of the
+  /// counter to zero when we clear the form. Since we know the configuration
+  /// of the widget will change by calling `patchValues`, we can force the value
+  /// of the widget to go to zero when the initialValue changes.
+  @override
+  void didUpdateWidget(covariant FormBuilderField<int> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialValue != oldWidget.initialValue) {
+      setState(() {
+        widget._counter = 0;
+      });
+    }
+  }
+
   /// Overrides the counter to reset to zero, regardless of what the temp
   /// value in the RetainInfoModel specifies.
   @override

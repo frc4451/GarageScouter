@@ -15,7 +15,7 @@ Map<String, dynamic> convertListToDefaultMap(Iterable<String>? list,
 /// each non string element. So for types we expect, we've implemented
 /// a basic 'reset' function to clear the form state.
 Map<String, dynamic> createEmptyFormState(Map<String, dynamic> form) {
-  Map<Type, dynamic> defaultValues = {int: 0, bool: false, String: null};
+  Map<Type, dynamic> defaultValues = {bool: false, String: null};
 
   Map<String, dynamic> defaultForm = {};
 

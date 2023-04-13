@@ -26,6 +26,12 @@ fastlane_testflight:
 fastlane_firebase_android:
 	cd android && fastlane android_firebase
 
+# Assuming you've previously setup Firebase with App Distribution, you can add 
+# Web Apps with Firebase hosting. You will need to init the Firebase SPA tools.
+web_firebase_deploy:
+	flutter build web
+	firebase deploy
+
 # Test builds before we move forward with anything
 test_builds: ios_build android_build
 
