@@ -18,6 +18,14 @@ ios_runner:
 ios_distribute:
 	open build/ios/archive/Runner.xcarchive
 
+# Shorthand for building Web version.
+web_build:
+	flutter build web
+
+# Deploys Flutter Web application to Firebase hosting.
+web_deploy:
+	firebase deploy
+
 # CD's to iOS project folder and uses Fastlane to deploy to TestFlight
 fastlane_testflight:
 	cd ios/ && fastlane test_flight
@@ -26,11 +34,15 @@ fastlane_testflight:
 fastlane_firebase_android:
 	cd android && fastlane android_firebase
 
+# Assuming you've previously setup Firebase with App Distribution, you can add 
+# Web Apps with Firebase hosting. You will need to init the Firebase SPA tools.
+web_firebase_deploy: web_build web_deploy
+
 # Test builds before we move forward with anything
-test_builds: ios_build android_build
+test_builds: ios_build android_build web_build
 
 # Deploy to Dev environments (TestFlight for iOS, Firebase App Distribution for Android)
-deploy_dev: test_builds fastlane_firebase_android fastlane_testflight
+deploy_dev: test_builds fastlane_firebase_android fastlane_testflight web_deploy
 
 create_app_icon:
 	flutter pub run flutter_launcher_icons

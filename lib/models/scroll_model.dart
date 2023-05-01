@@ -1,14 +1,15 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
 
-const String scrollSettingsFileName = "scroll.settings.json";
+const String kIsDisabledSwiping = "isDisabledSwiping";
 
+/// Handles Scroll Configurations on Forms
 class ScrollModel extends ChangeNotifier {
+  final SharedPreferences prefs;
+
   bool _disableSwiping = false;
+
+  bool get disableSwiping => _disableSwiping;
 
   void setDisableSwiping(bool value) {
     _disableSwiping = value;
@@ -16,43 +17,15 @@ class ScrollModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  ScrollModel({bool? disableSwiping})
-      : _disableSwiping = disableSwiping ?? false;
-
-  factory ScrollModel.fromJson(Map<String, dynamic> json) {
-    bool assumedSwiping = json['disableSwiping'];
-    return ScrollModel(disableSwiping: assumedSwiping);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'disableSwiping': _disableSwiping};
-  }
+  ScrollModel(this.prefs);
 
   bool canSwipe() => _disableSwiping;
 
-  Future<void> _writeData() async {
-    final String path = (await getApplicationSupportDirectory()).path;
-    final String jsonPath = p.join(path, scrollSettingsFileName);
-    final File jsonFile = File(jsonPath);
-
-    jsonFile.writeAsStringSync(jsonEncode(toJson()));
-  }
-}
-
-Future<ScrollModel> getInitialScrollModel() async {
-  final String settingsDirectory =
-      (await getApplicationSupportDirectory()).path;
-  final String jsonPath = p.join(settingsDirectory, scrollSettingsFileName);
-  final File jsonFile = File(jsonPath);
-
-  if (!jsonFile.existsSync()) {
-    final ScrollModel model = ScrollModel();
-    await model._writeData();
-    return model;
+  void _writeData() {
+    prefs.setBool(kIsDisabledSwiping, _disableSwiping);
   }
 
-  final String jsonString = jsonFile.readAsStringSync();
-  final dynamic decodedJson = jsonDecode(jsonString);
-
-  return ScrollModel.fromJson(decodedJson);
+  void initialize() {
+    _disableSwiping = prefs.getBool(kIsDisabledSwiping) ?? false;
+  }
 }

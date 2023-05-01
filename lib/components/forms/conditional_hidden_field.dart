@@ -52,8 +52,8 @@ class _ConditionalHiddenTextFieldState
         child: FormBuilderTextField(
           name: widget.name,
           initialValue: widget.initialValue,
-          decoration: const InputDecoration(
-              labelText:
+          decoration: InputDecoration(
+              labelText: widget.label ??
                   "Describe the Drive Train to the best of your ability"),
           maxLength: widget.maxLength,
           maxLines: widget.maxLines,

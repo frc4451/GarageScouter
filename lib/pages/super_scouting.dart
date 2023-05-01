@@ -4,13 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/page_widgets/super_scouting/super_initial.dart';
 import 'package:robotz_garage_scouting/page_widgets/super_scouting/super_text_page.dart';
+import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/validators/custom_integer_validators.dart';
-import 'package:robotz_garage_scouting/utils/dataframe_helpers.dart';
 import 'package:robotz_garage_scouting/utils/enums.dart';
 import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
 import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
@@ -98,13 +97,14 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     _formKey.currentState?.patchValue(trimmedInputs);
     _formKey.currentState?.save();
 
-    DataFrame df = convertFormStateToDataFrame(_formKey.currentState!);
+    Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
 
     String timestamp = DateTime.now().toString();
-    df = df.addSeries(Series("timestamp", [timestamp]));
+    state['timestamp'] = timestamp;
 
-    final String matchNumber = df["match_number"].data.first.toString();
-    final String teamNumber = df["team_number"].data.first.toString();
+    final String teamNumber = state["team_number"].toString();
+    final String matchNumber = state["match_number"].toString();
+
     final String filePath = await generateUniqueFilePath(
         extension: "csv",
         prefix: "super_scouting_${matchNumber}_$teamNumber",
@@ -113,7 +113,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     final File file = File(filePath);
 
     try {
-      File finalFile = await file.writeAsString(convertDataFrameToString(df));
+      File finalFile = await file.writeAsString(convertMapStateToString(state));
 
       saveFileToDevice(finalFile)
           .then(_kSuccessMessage)
@@ -381,7 +381,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                         ]),
                       ),
                       ElevatedButton(
-                          onPressed: _submitForm, child: const Text("Submit"))
+                          onPressed: _submitForm, child: const Text("Submit")),
                     ],
                   ),
                 )

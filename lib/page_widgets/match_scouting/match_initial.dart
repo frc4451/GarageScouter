@@ -27,12 +27,12 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
 
     return Scaffold(
         body: Column(children: [
-      const Text("INITIAL"),
       FormBuilderTextField(
           name: "team_number",
           decoration: const InputDecoration(
               labelText: "Team Number", prefixIcon: Icon(Icons.numbers)),
           textInputAction: TextInputAction.next,
+          keyboardType: TextInputType.number,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(),
             FormBuilderValidators.integer(),
@@ -46,6 +46,7 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
           decoration: const InputDecoration(
               labelText: "Match Number", prefixIcon: Icon(Icons.numbers)),
           textInputAction: TextInputAction.next,
+          keyboardType: TextInputType.number,
           validator: FormBuilderValidators.compose([
             FormBuilderValidators.required(),
             FormBuilderValidators.integer(),
@@ -75,6 +76,17 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
             .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
             .toList(),
         initialValue: widget._matchData["team_position"],
+      ),
+      FormBuilderDropdown(
+        name: "field_position",
+        decoration: const InputDecoration(
+            labelText: "Field Position", prefixIcon: Icon(Icons.map)),
+        validator: FormBuilderValidators.required(),
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        items: ["Bump", "Center", "Lane"]
+            .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
+            .toList(),
+        initialValue: widget._matchData["field_position"],
       )
     ]));
   }

@@ -13,6 +13,12 @@ class RadioButtonInputs extends StatelessWidget {
   final String? Function(dynamic)? validators;
   final AutovalidateMode? autovalidateMode;
 
+  final void Function(String?)? onChanged;
+
+  final IconData? icon;
+
+  final void Function(String?)? onSaved;
+
   const RadioButtonInputs(
       {super.key,
       required this.name,
@@ -20,19 +26,25 @@ class RadioButtonInputs extends StatelessWidget {
       required this.label,
       this.initialValue,
       this.validators,
-      this.autovalidateMode});
+      this.autovalidateMode,
+      this.onChanged,
+      this.icon,
+      this.onSaved});
 
   @override
   Widget build(BuildContext context) {
     return FormBuilderRadioGroup(
       name: name,
-      decoration: InputDecoration(label: Text(label)),
+      decoration: InputDecoration(
+          label: Text(label), icon: icon != null ? Icon(icon) : null),
       options: options
           .map((e) => FormBuilderFieldOption(value: e, child: Text(e)))
           .toList(growable: false),
       validator: validators,
       initialValue: initialValue,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      onChanged: onChanged,
+      onSaved: onSaved,
     );
   }
 }
@@ -44,6 +56,9 @@ class YesOrNoAnswers extends StatelessWidget {
   final String? initialValue;
   final String? Function(dynamic)? validators;
   final AutovalidateMode? autovalidateMode;
+  final void Function(String?)? onChanged;
+  final IconData? icon;
+  final void Function(String?)? onSaved;
 
   const YesOrNoAnswers(
       {super.key,
@@ -51,18 +66,23 @@ class YesOrNoAnswers extends StatelessWidget {
       required this.label,
       this.initialValue,
       this.validators,
-      this.autovalidateMode});
+      this.autovalidateMode,
+      this.onChanged,
+      this.icon,
+      this.onSaved});
 
   @override
   Widget build(BuildContext context) {
     return RadioButtonInputs(
-      name: name,
-      options: const ["yes", "no"],
-      label: label,
-      initialValue: initialValue,
-      autovalidateMode: autovalidateMode,
-      validators: validators,
-    );
+        name: name,
+        options: const ["yes", "no"],
+        label: label,
+        initialValue: initialValue,
+        autovalidateMode: autovalidateMode,
+        validators: validators,
+        onChanged: onChanged,
+        icon: icon,
+        onSaved: onSaved);
   }
 }
 

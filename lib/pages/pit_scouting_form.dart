@@ -1,17 +1,16 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/components/forms/conditional_hidden_input.dart';
 import 'package:robotz_garage_scouting/components/forms/radio_helpers.dart';
 import 'package:robotz_garage_scouting/components/forms/conditional_hidden_field.dart';
-import 'package:robotz_garage_scouting/pages/home_page.dart';
-import 'package:robotz_garage_scouting/utils/dataframe_helpers.dart';
 import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:ml_dataframe/ml_dataframe.dart';
-import 'package:path/path.dart' as p;
 import 'package:robotz_garage_scouting/validators/custom_integer_validators.dart';
 
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
@@ -26,22 +25,24 @@ class FormsTest extends StatefulWidget {
 }
 
 class _FormsTestState extends State<FormsTest> {
-  void _navigateToSecondPage() {
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => const MyHomePage(
-              title: 'Home page',
-            )));
-  }
-
   final _formKey = GlobalKey<FormBuilderState>();
 
   final double questionFontSize = 10;
 
-  void _kSuccessMessage(File value) {
+  void _kSuccessfulFileMessage(File value) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.green,
         content: Text(
           "Successfully wrote file ${value.path}",
+          textAlign: TextAlign.center,
+        )));
+  }
+
+  void _kSuccessMessage(String value) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: Colors.green,
+        content: Text(
+          value,
           textAlign: TextAlign.center,
         )));
   }
@@ -73,24 +74,35 @@ class _FormsTestState extends State<FormsTest> {
       _formKey.currentState?.save();
     }
 
-    // Help clean up the input by removing spaces on both ends of the string
-    Map<String, dynamic> trimmedInputs =
-        _formKey.currentState!.value.map((key, value) {
-      return (value is String)
-          ? MapEntry(key, value.trim())
-          : MapEntry(key, value);
-    });
+    // We can't rely on FlutterFormBuilder to assign a true default value to
+    // their fields, so we go back and verify that the ones we know cause
+    // issues are forced to be reset to a default value before we try to
+    // write the data to CSV.
+    _formKey.currentState?.fields.forEach((key, value) {
+      if (value.widget is FormBuilderRadioGroup && value.value == null) {
+        _formKey.currentState?.patchValue({key: "no"});
+      }
 
-    _formKey.currentState?.patchValue(trimmedInputs);
+      if (value.widget is FormBuilderTextField && value.value == null) {
+        _formKey.currentState?.patchValue({key: ""});
+      }
+
+      if (value.widget is FormBuilderCheckboxGroup) {
+        if (value.value == null) {
+          _formKey.currentState?.patchValue({key: <String>[]});
+        }
+        _formKey.currentState
+            ?.patchValue({key: (value.value as List<String>).sorted()});
+      }
+    });
     _formKey.currentState?.save();
 
-    DataFrame df = convertFormStateToDataFrame(_formKey.currentState!);
+    Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
 
-    // adds timestamp
-    df = df.addSeries(Series("timestamp", [DateTime.now().toString()]));
+    String timestamp = DateTime.now().toString();
+    state['timestamp'] = timestamp;
 
-    final String teamNumber =
-        _formKey.currentState!.value["team_number"] ?? "no_team_number";
+    final String teamNumber = state["team_number"].toString();
 
     final String filePath = await generateUniqueFilePath(
         extension: "csv", prefix: "${teamNumber}_pit_scouting");
@@ -98,12 +110,22 @@ class _FormsTestState extends State<FormsTest> {
     final File file = File(filePath);
 
     try {
-      File finalFile = await file.writeAsString(convertDataFrameToString(df));
+      if (kIsWeb) {
+        saveFileFromWeb(
+                filePath: filePath, contents: convertMapStateToString(state))
+            .then((value) {
+          _clearForm();
+          _kSuccessMessage("Successfully saved file to Downloads folder");
+        }).catchError(_kFailureMessage);
+
+        return;
+      }
+
+      File finalFile = await file.writeAsString(convertMapStateToString(state));
 
       saveFileToDevice(finalFile).then((File file) {
-        context.read<RetainInfoModel>().resetPitScouting();
-        _formKey.currentState?.reset();
-        _kSuccessMessage(file);
+        _clearForm();
+        _kSuccessfulFileMessage(file);
       }).catchError(_kFailureMessage);
     } on Exception catch (_, exception) {
       if (mounted) {
@@ -126,9 +148,8 @@ class _FormsTestState extends State<FormsTest> {
   /// 1. The user selected "Other" for "drive_train"
   /// 2. It is the first render and the user had selected
   ///    "Other" previously for "drive_train"
-  bool _canShowOtherDriveTrain(pitData) {
-    const String key = "drive_train";
-    const String match = "Other";
+  bool _canShowFieldFromMatch(pitData,
+      {String key = "drive_train", String match = "Other"}) {
     final String current = _formKey.currentState?.value[key] ?? "";
 
     // On the first load, the currentState will be empty, so we need
@@ -145,14 +166,16 @@ class _FormsTestState extends State<FormsTest> {
   /// This is a fairly hacky workaround to work around form fields that aren't
   /// immediately shown on the screen. For Pit Scouting, the "Other Drive Train"
   /// field. We wait for the file system to complete and then reset/save the form.
-  Future<void> _clearForm(RetainInfoModel retain) async {
+  Future<void> _clearForm() async {
     _formKey.currentState?.save();
-    final Map<String, dynamic> blanks =
-        convertListToDefaultMap(_formKey.currentState?.value.keys);
-    await retain.setPitScouting(blanks);
+
     setState(() {
-      _formKey.currentState?.patchValue(blanks);
+      _formKey.currentState!.fields.forEach((key, field) {
+        field.didChange(null);
+      });
       _formKey.currentState?.save();
+
+      context.read<RetainInfoModel>().resetPitScouting();
     });
   }
 
@@ -173,154 +196,370 @@ class _FormsTestState extends State<FormsTest> {
   Widget build(BuildContext context) {
     return Consumer<RetainInfoModel>(builder: (context, retain, _) {
       return Scaffold(
-          appBar: AppBar(
-            title: const Text(
-              "Pit Scouting Form",
-              textAlign: TextAlign.center,
-            ),
-            actions: retain.doesRetainInfo()
-                ? [
-                    IconButton(
-                      onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                    title:
-                                        const Text("Clear Pit Scouting Data"),
-                                    content: const Text(
-                                        "Are you sure you want to clear Pit Scouting Data?\n\n"
-                                        "Your temporary data will also be cleared."),
-                                    actionsAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    actions: [
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Text("Cancel"),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          await _clearForm(retain);
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text("Confirm"),
-                                      )
-                                    ]));
-                      },
-                      icon: const Icon(Icons.clear),
-                      tooltip: "Clear Pit Scouting Form",
-                    )
-                  ]
-                : [],
+        appBar: AppBar(
+          title: const Text(
+            "Pit Scouting Form",
+            textAlign: TextAlign.center,
           ),
-          body: CustomScrollView(slivers: <Widget>[
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  FormBuilder(
-                      key: _formKey,
-                      child: Consumer<RetainInfoModel>(
-                        builder: (context, model, _) {
-                          final Map<String, dynamic> pitData =
-                              model.pitScouting();
-                          return Column(
-                            children: <Widget>[
-                              FormBuilderTextField(
-                                name: "team_name",
-                                initialValue: pitData['team_name'],
+          actions: retain.doesRetainInfo()
+              ? [
+                  IconButton(
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                                  title: const Text("Clear Pit Scouting Data"),
+                                  content: const Text(
+                                      "Are you sure you want to clear Pit Scouting Data?\n\n"
+                                      "Your temporary data will also be cleared."),
+                                  actionsAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  actions: [
+                                    OutlinedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text("Cancel"),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        await _clearForm();
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("Confirm"),
+                                    )
+                                  ]));
+                    },
+                    icon: const Icon(Icons.clear),
+                    tooltip: "Clear Pit Scouting Form",
+                  )
+                ]
+              : [],
+        ),
+        body: CustomScrollView(slivers: <Widget>[
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                FormBuilder(
+                    key: _formKey,
+                    child: Consumer<RetainInfoModel>(
+                      builder: (context, model, _) {
+                        final Map<String, dynamic> pitData =
+                            model.pitScouting();
+                        return Column(
+                          children: <Widget>[
+                            const Divider(),
+                            const Text("General Questions"),
+                            const Divider(),
+                            FormBuilderTextField(
+                              name: "team_name",
+                              initialValue: pitData['team_name'] ?? "",
+                              decoration: const InputDecoration(
+                                  labelText: "What is the Team Name?",
+                                  prefixIcon: Icon(Icons.abc)),
+                              textInputAction: TextInputAction.next,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: FormBuilderValidators.compose([
+                                FormBuilderValidators.required(),
+                                CustomTextValidators.doesNotHaveCommas(),
+                              ]),
+                            ),
+                            FormBuilderTextField(
+                              name: "team_number",
+                              initialValue: pitData['team_number'] ?? "",
+                              decoration: const InputDecoration(
+                                  labelText: "What is the Team Number?",
+                                  prefixIcon: Icon(Icons.numbers)),
+                              textInputAction: TextInputAction.next,
+                              keyboardType: TextInputType.number,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: FormBuilderValidators.compose([
+                                FormBuilderValidators.required(),
+                                FormBuilderValidators.integer(),
+                                CustomTextValidators.doesNotHaveCommas(),
+                                CustomIntegerValidators.notNegative()
+                              ]),
+                            ),
+                            FormBuilderChoiceChip(
+                                name: "drive_train",
+                                initialValue: pitData['drive_train'],
                                 decoration: const InputDecoration(
-                                    labelText: "What is the Team Name?",
-                                    prefixIcon: Icon(Icons.abc)),
-                                textInputAction: TextInputAction.next,
+                                    labelText:
+                                        "What kind of Drive Train do they have?",
+                                    prefixIcon: Icon(Icons.drive_eta)),
+                                onChanged: _saveFormState,
+                                validator: FormBuilderValidators.required(),
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
-                                validator: FormBuilderValidators.compose([
-                                  FormBuilderValidators.required(),
-                                  CustomTextValidators.doesNotHaveCommas(),
-                                ]),
-                              ),
-                              FormBuilderTextField(
-                                name: "team_number",
-                                initialValue: pitData['team_number'],
-                                decoration: const InputDecoration(
-                                    labelText: "What is the Team Number?",
-                                    prefixIcon: Icon(Icons.numbers)),
-                                textInputAction: TextInputAction.next,
-                                autovalidateMode:
-                                    AutovalidateMode.onUserInteraction,
-                                validator: FormBuilderValidators.compose([
-                                  FormBuilderValidators.required(),
-                                  FormBuilderValidators.integer(),
-                                  CustomTextValidators.doesNotHaveCommas(),
-                                  CustomIntegerValidators.notNegative()
-                                ]),
-                              ),
-                              FormBuilderChoiceChip(
-                                  name: "drive_train",
-                                  initialValue: pitData['drive_train'],
+                                options: [
+                                  "Tank Drive",
+                                  "West Coast",
+                                  "Mecanum",
+                                  "Swerve Drive",
+                                  "Other"
+                                ]
+                                    .map((option) => FormBuilderChipOption(
+                                        value: option,
+                                        child: Text(
+                                          option,
+                                          style: const TextStyle(fontSize: 14),
+                                        )))
+                                    .toList(growable: false)),
+                            ConditionalHiddenTextField(
+                              name: "other_drive_train",
+                              initialValue: pitData["other_drive_train"],
+                              showWhen: _canShowFieldFromMatch(pitData),
+                            ),
+                            YesOrNoAnswers(
+                              name: "has_arm",
+                              label: "Do they have an arm?",
+                              initialValue: pitData['has_arm'],
+                              validators: FormBuilderValidators.required(),
+                              onChanged: _saveFormState,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                            ),
+                            YesOrNoAnswers(
+                              name: "has_intake",
+                              label: "Do they have an intake system?",
+                              initialValue: pitData['has_intake'],
+                              validators: FormBuilderValidators.required(),
+                              onChanged: _saveFormState,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                            ),
+                            ConditionalHiddenField(
+                                showWhen: _canShowFieldFromMatch(pitData,
+                                    key: 'has_intake', match: "yes"),
+                                child: FormBuilderCheckboxGroup(
+                                  name: "pickup_from_intake",
+                                  initialValue: pitData['pickup_from_intake'],
                                   decoration: const InputDecoration(
                                       labelText:
-                                          "What kind of Drive Train do they have?",
-                                      prefixIcon: Icon(Icons.drive_eta)),
-                                  onChanged: _saveFormState,
-                                  validator: FormBuilderValidators.required(),
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
-                                  options: [
-                                    "Tank Drive",
-                                    "West Coast",
-                                    "Swerve Drive",
-                                    "Other"
-                                  ]
-                                      .map((option) => FormBuilderChipOption(
-                                          value: option,
-                                          child: Text(
-                                            option,
-                                            style:
-                                                const TextStyle(fontSize: 14),
-                                          )))
-                                      .toList(growable: false)),
-                              ConditionalHiddenTextField(
-                                name: "other_drive_train",
-                                initialValue: pitData["other_drive_train"],
-                                showWhen: _canShowOtherDriveTrain(pitData),
-                              ),
-                              YesOrNoAnswers(
-                                name: "has_arm",
-                                label: "Do they have an arm?",
-                                initialValue: pitData['has_arm'],
-                                validators: FormBuilderValidators.required(),
+                                          "Where does the robot intake from?"),
+                                  options: ["Floor", "Substation", "Chute"]
+                                      .map((e) => FormBuilderFieldOption(
+                                          value: e.toString()))
+                                      .toList(),
+                                )),
+                            FormBuilderCheckboxGroup(
+                              name: "scorable_pieces",
+                              initialValue: pitData['scorable_pieces'],
+                              decoration: const InputDecoration(
+                                  labelText:
+                                      "What game pieces can the robot score?"),
+                              options: ["Cones", "Cubes"]
+                                  .map((e) => FormBuilderFieldOption(
+                                      value: e.toString()))
+                                  .toList(),
+                            ),
+                            const Divider(),
+                            const Text("Autonomous Questions"),
+                            const Divider(),
+                            YesOrNoAnswers(
+                              name: "has_autonomous",
+                              label: "Do they have autonomous?",
+                              initialValue: pitData['has_autonomous'],
+                              validators: FormBuilderValidators.required(),
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              onChanged: _saveFormState,
+                            ),
+                            ConditionalHiddenField(
+                              showWhen: _canShowFieldFromMatch(pitData,
+                                  key: "has_autonomous", match: "yes"),
+                              child: YesOrNoAnswers(
+                                name: "can_score_autonomous",
+                                label: "Are they able to score in autonomous?",
+                                initialValue:
+                                    pitData['can_score_autonomous'] ?? "no",
+                                onChanged: _saveFormState,
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
                               ),
-                              YesOrNoAnswers(
-                                name: "has_intake",
-                                label: "Do they have an intake system?",
-                                initialValue: pitData['has_intake'],
-                                validators: FormBuilderValidators.required(),
-                                autovalidateMode:
-                                    AutovalidateMode.onUserInteraction,
+                            ),
+                            ConditionalHiddenField(
+                              showWhen: _canShowFieldFromMatch(pitData,
+                                  key: "can_score_autonomous", match: "yes"),
+                              child: FormBuilderCheckboxGroup(
+                                name: "auto_score_cones",
+                                initialValue: pitData['auto_score_cones'],
+                                decoration: const InputDecoration(
+                                    icon: Icon(Icons.score),
+                                    labelText:
+                                        "What Cones can they score in Autonomous?"),
+                                options: ["Low", "Mid", "High"]
+                                    .map((e) => FormBuilderFieldOption(
+                                        value: e.toString()))
+                                    .toList(),
                               ),
-                              YesOrNoAnswers(
+                            ),
+                            ConditionalHiddenField(
+                              showWhen: _canShowFieldFromMatch(pitData,
+                                  key: "can_score_autonomous", match: "yes"),
+                              child: FormBuilderCheckboxGroup(
+                                name: "auto_score_cubes",
+                                initialValue: pitData['auto_score_cubes'],
+                                decoration: const InputDecoration(
+                                    icon: Icon(Icons.score),
+                                    labelText:
+                                        "What Cubes can they score in Autonomous?"),
+                                options: ["Low", "Mid", "High"]
+                                    .map((e) => FormBuilderFieldOption(
+                                        value: e.toString()))
+                                    .toList(),
+                              ),
+                            ),
+                            ConditionalHiddenField(
+                              showWhen: _canShowFieldFromMatch(pitData,
+                                  key: "has_autonomous", match: "yes"),
+                              child: YesOrNoAnswers(
                                 name: "can_charge_autonomous",
                                 label:
                                     "Are they able to use the charge station in autonomous?",
-                                initialValue: pitData['can_charge_autonomous'],
-                                validators: FormBuilderValidators.required(),
+                                initialValue:
+                                    pitData['can_charge_autonomous'] ?? "no",
                                 autovalidateMode:
                                     AutovalidateMode.onUserInteraction,
                               ),
-                            ],
-                          );
-                        },
-                      )),
-                  ElevatedButton(
-                      onPressed: submitForm, child: const Text("Submit"))
-                ],
-              ),
-            )
-          ]));
+                            ),
+                            ConditionalHiddenField(
+                                showWhen: _canShowFieldFromMatch(pitData,
+                                    key: "has_autonomous", match: "yes"),
+                                child: FormBuilderCheckboxGroup(
+                                  name: "auto_starting_positions",
+                                  initialValue:
+                                      pitData['auto_starting_positions'],
+                                  decoration: const InputDecoration(
+                                      labelText:
+                                          "Where can they start in Autonomous?"),
+                                  options: ["Center", "Bump", "Lane"]
+                                      .map((e) => FormBuilderFieldOption(
+                                          value: e.toString()))
+                                      .toList(),
+                                )),
+                            ConditionalHiddenField(
+                              showWhen: _canShowFieldFromMatch(pitData,
+                                  key: "has_autonomous", match: "yes"),
+                              child: FormBuilderTextField(
+                                name: "auto_notes",
+                                initialValue: pitData['auto_notes'] ?? "",
+                                decoration: const InputDecoration(
+                                    labelText: "Autonmous Notes (if needed)?",
+                                    prefixIcon: Icon(Icons.note)),
+                                textInputAction: TextInputAction.next,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                validator: FormBuilderValidators.compose([
+                                  CustomTextValidators.doesNotHaveCommas(),
+                                ]),
+                              ),
+                            ),
+                            const Divider(),
+                            const Text("Teleop Questions"),
+                            const Divider(),
+                            FormBuilderCheckboxGroup(
+                              name: "teleop_score_cones",
+                              initialValue: pitData['teleop_score_cones'],
+                              decoration: const InputDecoration(
+                                  icon: Icon(Icons.score),
+                                  labelText: "Can they score Cones in Teleop?"),
+                              options: ["Low", "Mid", "High"]
+                                  .map((e) => FormBuilderFieldOption(
+                                      value: e.toString()))
+                                  .toList(),
+                            ),
+                            FormBuilderCheckboxGroup(
+                              name: "teleop_score_cubes",
+                              initialValue: pitData['teleop_score_cubes'],
+                              decoration: const InputDecoration(
+                                  icon: Icon(Icons.score),
+                                  labelText: "Can they score Cubes in Teleop?"),
+                              options: ["Low", "Mid", "High"]
+                                  .map((e) => FormBuilderFieldOption(
+                                      value: e.toString()))
+                                  .toList(),
+                            ),
+                            YesOrNoAnswers(
+                              name: "can_defend",
+                              label: "Can the robot defend?",
+                              initialValue: pitData['can_defend'],
+                              validators: FormBuilderValidators.required(),
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                            ),
+                            YesOrNoAnswers(
+                              name: "can_shuttle",
+                              label:
+                                  "Can their robot shuttle pieces for other robots?",
+                              initialValue: pitData['can_shuttle'],
+                              validators: FormBuilderValidators.required(),
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                            ),
+                            FormBuilderTextField(
+                              name: "teleop_notes",
+                              initialValue: pitData['teleop_notes'] ?? "",
+                              decoration: const InputDecoration(
+                                  labelText: "Teleop Notes (if needed)?",
+                                  prefixIcon: Icon(Icons.note)),
+                              textInputAction: TextInputAction.next,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: FormBuilderValidators.compose([
+                                CustomTextValidators.doesNotHaveCommas(),
+                              ]),
+                            ),
+                            const Divider(),
+                            const Text("Endgame Questions"),
+                            const Divider(),
+                            YesOrNoAnswers(
+                              icon: Icons.balance,
+                              name: "endgame_balance",
+                              label:
+                                  "Can they balance on the charging station in end game?",
+                              initialValue: pitData['endgame_balance'],
+                              validators: FormBuilderValidators.required(),
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                            ),
+                            const Divider(),
+                            const Text("Other Questions"),
+                            const Divider(),
+                            FormBuilderTextField(
+                              name: "final_notes",
+                              initialValue: pitData['final_notes'] ?? "",
+                              decoration: const InputDecoration(
+                                  labelText: "Any other Notes (if needed)?",
+                                  prefixIcon: Icon(Icons.note)),
+                              textInputAction: TextInputAction.next,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: FormBuilderValidators.compose([
+                                CustomTextValidators.doesNotHaveCommas(),
+                              ]),
+                            ),
+                          ],
+                        );
+                      },
+                    )),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ElevatedButton(
+                          onPressed: submitForm, child: const Text("Submit"))
+                    ],
+                  ),
+                )
+              ],
+            ),
+          )
+        ]),
+      );
     });
   }
 }

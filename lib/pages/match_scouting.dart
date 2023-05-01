@@ -1,12 +1,14 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/models/input_helper_model.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/models/scroll_model.dart';
+import 'package:robotz_garage_scouting/models/theme_model.dart';
 import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_auto.dart';
 import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_endgame.dart';
 import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_initial.dart';
@@ -14,7 +16,6 @@ import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_summary
 import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_teleop.dart';
 import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
 
-import 'package:robotz_garage_scouting/utils/dataframe_helpers.dart';
 import 'package:robotz_garage_scouting/utils/enums.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 
@@ -25,7 +26,8 @@ class MatchScoutingPage extends StatefulWidget {
   State<MatchScoutingPage> createState() => _MatchScoutingPageState();
 }
 
-class _MatchScoutingPageState extends State<MatchScoutingPage> {
+class _MatchScoutingPageState extends State<MatchScoutingPage>
+    with SingleTickerProviderStateMixin {
   final String title = "Match Scouting Form";
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   final PageController _controller =
@@ -36,17 +38,29 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
   // Widgets we plan to show during the match. Swipe or click nav buttons as needed.
   final List<Widget> pages = [];
 
+  late TabController _tabController;
+
   // We can't rely on _controller.page because the page is not fully updated
   // until _after_ the page has transitioned. Because of that, we need an
   // internally managed "page state" to know when we need to submit the form.
   int _currentPage = 0;
 
-  void _kSuccessMessage(File value) {
+  void _kSuccessFullySaveMessage(File value) {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.green,
         content: Text(
-          "Successfully wrote file ${value.path}",
+          "Successfully wrote file to ${value.path}",
+          textAlign: TextAlign.center,
+        )));
+  }
+
+  void _kSuccessMessage(String text) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: Colors.green,
+        content: Text(
+          text,
           textAlign: TextAlign.center,
         )));
   }
@@ -63,7 +77,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
 
   /// Handles form submission
   Future<void> _submitForm() async {
-    bool isValid = _formKey.currentState!.saveAndValidate();
+    final bool isValid = _formKey.currentState?.saveAndValidate() ?? false;
 
     if (!isValid) {
       _kFailureMessage(
@@ -72,39 +86,38 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
       return;
     }
 
-    // Help clean up the input by removing spaces on both ends of the string
-    Map<String, dynamic> trimmedInputs =
-        _formKey.currentState!.value.map((key, value) {
-      return (value is String)
-          ? MapEntry(key, value.trim().replaceAll(",", ""))
-          : MapEntry(key, value);
-    });
-
-    _formKey.currentState?.patchValue(trimmedInputs);
-    _formKey.currentState?.save();
-
-    DataFrame df = convertFormStateToDataFrame(_formKey.currentState!);
+    Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
 
     String timestamp = DateTime.now().toString();
-    df = df.addSeries(Series("timestamp", [timestamp]));
+    state['timestamp'] = timestamp;
 
-    final String matchNumber = df["match_number"].data.first.toString();
-    final String teamNumber = df["team_number"].data.first.toString();
-    final String alliance = df["team_alliance"].data.first.toString();
+    final String matchNumber = state["match_number"].toString();
+    final String teamNumber = state["team_number"].toString();
+    final String alliance = state["team_alliance"].toString();
 
     final String filePath = await generateUniqueFilePath(
         extension: "csv",
         prefix: "match_${matchNumber}_${alliance}_$teamNumber",
         timestamp: timestamp);
 
-    final File file = File(filePath);
-
     try {
-      File finalFile = await file.writeAsString(convertDataFrameToString(df));
+      if (kIsWeb) {
+        saveFileFromWeb(
+                filePath: filePath, contents: convertMapStateToString(state))
+            .then((File value) {
+          _clearForm(isSubmission: true);
+          _kSuccessFullySaveMessage(value);
+        }).catchError(_kFailureMessage);
+
+        return;
+      }
+      final File file = File(filePath);
+      final File finalFile =
+          await file.writeAsString(convertMapStateToString(state));
 
       saveFileToDevice(finalFile).then((File file) {
-        _clearForm();
-        _kSuccessMessage(file);
+        _clearForm(isSubmission: true);
+        _kSuccessFullySaveMessage(file);
       }).catchError(_kFailureMessage);
     } on Exception catch (_, exception) {
       if (mounted) {
@@ -117,20 +130,19 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
 
   /// Handles Previous Page functionality for desktop/accessibility
   void _prevPage() {
-    _onPageChanged(_controller.page!.toInt(), direction: PageDirection.left);
+    _onPageChanged(_tabController.index, direction: PageDirection.left);
   }
 
   /// Handles Next Page functionality for desktop/accessibility
   void _nextPage() {
-    _onPageChanged(_controller.page!.toInt(), direction: PageDirection.right);
+    _onPageChanged(_tabController.index, direction: PageDirection.right);
   }
 
+  /// Handles page resets
   void _resetPage() {
     setState(() {
-      _currentPage = _controller.initialPage;
-      _controller.animateToPage(_currentPage,
-          duration: Duration(milliseconds: durationMilliseconds),
-          curve: Curves.ease);
+      _currentPage = 0;
+      _tabController.animateTo(_currentPage);
     });
   }
 
@@ -150,25 +162,45 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
       if (direction != PageDirection.none &&
           (pageNumber + direction.value) >= 0) {
         _currentPage = pageNumber + direction.value;
-        _controller.animateToPage(_currentPage,
-            duration: Duration(milliseconds: durationMilliseconds),
-            curve: Curves.ease);
+        _tabController.animateTo(_currentPage);
       }
     });
   }
 
-  /// This is a fairly hacky workaround to work around form fields that aren't
-  /// immediately shown on the screen. For Match Scouting, the fields on pages
-  /// that aren't active. We save, then reset using the based form management,
-  /// but we also patch all values with null values to forcibly reset the form state.
-  Future<void> _clearForm() async {
+  /// When we clear the form, we need to check to see if the form
+  /// is a submission, and if `iterative match input` was enabled
+  /// in the settings. If iterative match input is enabled we need
+  /// to make sure that the page increments the match number as well
+  /// as retains team alliance and position for the scouter. If the
+  /// form was _not_ a submission and instead a form clear, then we
+  /// just retain the previous match number
+  Future<void> _clearForm({isSubmission = false}) async {
     _formKey.currentState?.save();
-    Map<String, dynamic> blanks =
-        convertListToDefaultMap(_formKey.currentState?.value.keys);
-    await context.read<RetainInfoModel>().setMatchScouting(blanks);
+
+    Map<String, dynamic> patchedValues = {};
+
+    if (context.read<InputHelperModel>().isIterativeMatchInput()) {
+      patchedValues['team_alliance'] =
+          _formKey.currentState?.value['team_alliance'];
+
+      patchedValues['team_position'] =
+          _formKey.currentState?.value['team_position'];
+
+      patchedValues['match_number'] =
+          (int.parse(_formKey.currentState?.value['match_number'] ?? "0") +
+                  (isSubmission ? 1 : 0))
+              .toString();
+    }
+
     setState(() {
+      _formKey.currentState!.fields.forEach((key, field) {
+        field.didChange(null);
+      });
+      _formKey.currentState?.save();
       _formKey.currentState?.reset();
-      _formKey.currentState?.patchValue(blanks);
+
+      context.read<RetainInfoModel>().resetMatchScouting();
+      _formKey.currentState?.patchValue(patchedValues);
       _formKey.currentState?.save();
       _resetPage();
     });
@@ -190,6 +222,14 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
       MatchEndgameScreen(matchData: matchData),
       MatchSummaryScreen(matchData: matchData)
     ]);
+
+    _tabController = TabController(length: pages.length, vsync: this);
+
+    _tabController.addListener(() {
+      setState(() {
+        _currentPage = _tabController.index;
+      });
+    });
   }
 
   /// We use the deactivate life-cycle hook since State is available and we can
@@ -209,6 +249,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
   @override
   void dispose() {
     _controller.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -237,7 +278,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
                                     actionsAlignment:
                                         MainAxisAlignment.spaceEvenly,
                                     actions: [
-                                      ElevatedButton(
+                                      OutlinedButton(
                                         onPressed: () {
                                           Navigator.of(context).pop();
                                         },
@@ -260,16 +301,34 @@ class _MatchScoutingPageState extends State<MatchScoutingPage> {
           ),
           body: FormBuilder(
               key: _formKey,
-              // NOTE: You must implement AutomaticKeepAliveClientMixin in every
-              // page component you plan to show in the PageView, or else you
-              // will lose your FormValidation support
-              child: PageView(
-                physics: scroll.canSwipe()
-                    ? const NeverScrollableScrollPhysics()
-                    : null,
-                controller: _controller,
-                onPageChanged: _onPageChanged,
-                children: pages,
+              child: Column(
+                children: [
+                  Consumer<ThemeModel>(
+                    builder: (context, model, _) => IgnorePointer(
+                        ignoring: true,
+                        child: TabBar(
+                          controller: _tabController,
+                          labelColor: model.getLabelColor(),
+                          indicatorColor: model.getLabelColor(),
+                          isScrollable: true,
+                          labelPadding: const EdgeInsets.symmetric(
+                              vertical: 12.0, horizontal: 24.0),
+                          tabs: const [
+                            Text('Initial'),
+                            Text('Auto'),
+                            Text('Teleop'),
+                            Text('End'),
+                            Text('Summary')
+                          ],
+                        )),
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: pages,
+                    ),
+                  )
+                ],
               )),
           persistentFooterButtons: <Widget>[
             Row(

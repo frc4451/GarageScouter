@@ -1,13 +1,18 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:robotz_garage_scouting/constants/platform_check.dart';
-import 'package:robotz_garage_scouting/utils/dataframe_helpers.dart';
-import 'package:flutter_file_dialog/flutter_file_dialog.dart';
+import 'package:file_saver/file_saver.dart';
+import 'package:flutter/foundation.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
+import 'package:robotz_garage_scouting/constants/platform_check.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
+// ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:robotz_garage_scouting/utils/dataframe_helpers.dart';
+import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:sanitize_filename/sanitize_filename.dart';
 
 /// Helper method to get the extension of a file
@@ -31,7 +36,10 @@ String getBaseName(File file) => p.basename(file.path);
 ///
 /// @param prefix - Optional string prefix we want to have on the filename
 Future<String> generateUniqueFilePath(
-    {required String extension, String? prefix = "", String? timestamp}) async {
+    {required String extension,
+    String? prefix = "",
+    String? timestamp,
+    bool? prefixIsFileName = false}) async {
   // Extensions need to start with "." to be recognized correctly. We want to
   // accept both "csv" and ".csv" and not blame the developer.
   if (!extension.startsWith(".")) {
@@ -40,16 +48,21 @@ Future<String> generateUniqueFilePath(
 
   final String currentTime = timestamp ?? DateTime.now().toString();
   final String filePrefix = prefix!.isNotEmpty ? "${prefix}_" : "";
-  final String directory = (await getApplicationSupportDirectory()).path;
+
+  final String directory =
+      kIsWeb ? "" : (await getApplicationSupportDirectory()).path;
+
+  // We check if the file prefix is the name of the file. This is a workaround
+  // for how we handle file saving on the import manager.
+  final String filename = prefixIsFileName != null && prefixIsFileName
+      ? prefix
+      : "$filePrefix$currentTime$extension";
 
   // We use sanitizeFilename because specific OS's have specific characters
   // that they don't like. This just helps us avoid edge cases. And then use
   // the setExtension to force the extension to apply
   return p.setExtension(
-      p.join(
-          directory,
-          sanitizeFilename("$filePrefix$currentTime$extension",
-              replacement: "_")),
+      p.join(directory, sanitizeFilename(filename, replacement: "_")),
       extension);
 }
 
@@ -106,15 +119,12 @@ Future<File> saveFilesForDesktopApplication(File file) async {
 ///
 /// @returns resulting File from final file path
 Future<File> saveFilesForMobileApplication(File finalFile) async {
-  PermissionStatus status = await Permission.storage.status;
-
   final DirectoryLocation? pickedDirectory =
       await FlutterFileDialog.pickDirectory();
 
   if (pickedDirectory == null) {
     throw Exception("User cancelled operation");
   }
-
   final String? newFilePath = await FlutterFileDialog.saveFileToDirectory(
       directory: pickedDirectory,
       data: finalFile.readAsBytesSync(),
@@ -129,8 +139,7 @@ Future<File> saveFilesForMobileApplication(File finalFile) async {
 }
 
 /// "Agnostic" way of saving files to the device without looking for which
-/// platform we're using to begin with. This could probably be made more
-/// straight forward in the future
+/// platform we're using to begin with. This does not support Web.
 Future<File> saveFileToDevice(File file) async {
   if (isDesktopPlatform()) {
     return saveFilesForDesktopApplication(file);
@@ -147,9 +156,22 @@ Future<File> saveFileToDevice(File file) async {
 ///
 /// @returns File object refernce for where the file ultimately was written
 Future<File> createCSVFromDataFrame(DataFrame df,
-    {String? prefix = "default"}) async {
-  return File((await generateUniqueFilePath(extension: ".csv", prefix: prefix)))
+    {String? prefix = "default", bool? prefixIsFileName}) async {
+  return File((await generateUniqueFilePath(
+          extension: ".csv",
+          prefix: prefix,
+          prefixIsFileName: prefixIsFileName)))
       .writeAsString(convertDataFrameToString(df));
+}
+
+/// Converts a Map State to a CSV so we can write to a File
+Future<File> createCSVFromMapState(Map<String, dynamic> state,
+    {String? prefix = "default", bool? prefixIsFileName}) async {
+  return File((await generateUniqueFilePath(
+          extension: ".csv",
+          prefix: prefix,
+          prefixIsFileName: prefixIsFileName)))
+      .writeAsString(convertMapStateToString(state));
 }
 
 Future<FilePickerResult?> selectCSVFiles(
@@ -158,6 +180,27 @@ Future<FilePickerResult?> selectCSVFiles(
   return FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowMultiple: allowMultiple,
-      onFileLoading: (FilePickerStatus status) => print(status),
       allowedExtensions: allowedExtensions);
+}
+
+/// Web has special edge cases that are needed to handle file saving.
+/// There's the possibility we can integrate this within
+/// `saveFileToDevice` since we can read a Uint8List from File.readAsBytes,
+/// but that can be done later. We don't want to break something we know works.
+Future<File> saveFileFromWeb(
+    {required String contents, required String filePath}) async {
+  final Uint8List uint8list = Uint8List.fromList(utf8.encode(contents));
+
+  final String name = p.basename(filePath);
+  final String ext = p.extension(name);
+  final Map<String, MimeType> knownMimeTypes = {
+    'csv': MimeType.csv,
+  };
+
+  final MimeType mimeType = knownMimeTypes[ext] ?? MimeType.other;
+
+  final String newFilePath = await FileSaver.instance
+      .saveFile(name: name, ext: ext, mimeType: mimeType, bytes: uint8list);
+
+  return File(newFilePath);
 }

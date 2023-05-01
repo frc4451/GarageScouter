@@ -26,7 +26,6 @@ class _MatchSummaryScreenState extends State<MatchSummaryScreen>
     return Scaffold(
         body: Center(
       child: Column(children: [
-        const Text("SUMMARY"),
         FormBuilderCheckbox(
             name: "no_show",
             title: const Text("Did this robot skip the match (no-show)?"),

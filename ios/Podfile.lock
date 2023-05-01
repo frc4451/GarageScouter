@@ -33,6 +33,8 @@ PODS:
   - file_picker (0.0.1):
     - DKImagePickerController/PhotoGallery
     - Flutter
+  - file_saver (0.0.1):
+    - Flutter
   - Firebase/CoreOnly (10.3.0):
     - FirebaseCore (= 10.3.0)
   - firebase_core (2.7.0):
@@ -121,11 +123,15 @@ PODS:
   - SDWebImage (5.15.1):
     - SDWebImage/Core (= 5.15.1)
   - SDWebImage/Core (5.15.1)
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - SwiftyGif (5.4.4)
   - ZIPFoundation (0.9.13)
 
 DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
+  - file_saver (from `.symlinks/plugins/file_saver/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - Flutter (from `Flutter`)
   - flutter_archive (from `.symlinks/plugins/flutter_archive/ios`)
@@ -134,6 +140,7 @@ DEPENDENCIES:
   - mobile_scanner (from `.symlinks/plugins/mobile_scanner/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/ios`)
 
 SPEC REPOS:
   trunk:
@@ -162,6 +169,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   file_picker:
     :path: ".symlinks/plugins/file_picker/ios"
+  file_saver:
+    :path: ".symlinks/plugins/file_saver/ios"
   firebase_core:
     :path: ".symlinks/plugins/firebase_core/ios"
   Flutter:
@@ -178,11 +187,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/ios"
 
 SPEC CHECKSUMS:
   DKImagePickerController: b512c28220a2b8ac7419f21c491fc8534b7601ac
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
-  file_picker: 817ab1d8cd2da9d2da412a417162deee3500fc95
+  file_picker: ce3938a0df3cc1ef404671531facef740d03f920
+  file_saver: 503e386464dbe118f630e17b4c2e1190fa0cf808
   Firebase: f92fc551ead69c94168d36c2b26188263860acd9
   firebase_core: 128d8c43c3a453a4a67463314fc3761bedff860b
   FirebaseCore: 988754646ab3bd4bdcb740f1bfe26b9f6c0d5f2a
@@ -208,6 +220,7 @@ SPEC CHECKSUMS:
   PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
   Protobuf: d7f7c8329edf5eb8af65547a8ba3e9c1cee927d5
   SDWebImage: a254f2c53b46e3fba7946b1f8b8b3eaf00413b92
+  shared_preferences_foundation: 986fc17f3d3251412d18b0265f9c64113a8c2472
   SwiftyGif: 93a1cc87bf3a51916001cf8f3d63835fb64c819f
   ZIPFoundation: ae5b4b813d216d3bf0a148773267fff14bd51d37
 

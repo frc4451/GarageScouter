@@ -1,31 +1,29 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-const String themeSettingsFileName = "theme.settings.json";
+const String kThemeKey = 'theme';
+const String kHighContrastKey = 'isHighContrast';
 
 /// Provider model used to help read and manage Themes for the application
 class ThemeModel extends ChangeNotifier {
-  ThemeMode theme;
+  final SharedPreferences prefs;
 
-  bool highContrast;
+  ThemeMode _theme = ThemeMode.light;
+  bool _highContrast = false;
 
-  ThemeModel({this.theme = ThemeMode.light, this.highContrast = false});
+  ThemeMode get theme => _theme;
+  bool get highContrast => _highContrast;
 
-  factory ThemeModel.fromJson(Map<String, dynamic> json) {
-    ThemeMode assumedTheme = json['theme'] == 'ThemeMode.light'
+  ThemeModel(this.prefs);
+
+  void initialize() {
+    _theme = prefs.getString(kThemeKey) == 'ThemeMode.light'
         ? ThemeMode.light
-        : json['theme'] == 'ThemeMode.dark'
+        : prefs.getString(kThemeKey) == 'ThemeMode.dark'
             ? ThemeMode.dark
-            : ThemeMode.system;
-    return ThemeModel(theme: assumedTheme, highContrast: json['highContrast']);
-  }
+            : ThemeMode.light;
 
-  Map<String, dynamic> toJson() {
-    return {'theme': theme.toString(), 'highContrast': highContrast};
+    _highContrast = prefs.getBool(kHighContrastKey) ?? false;
   }
 
   // Sanity checkers for cleaner comparisons
@@ -34,23 +32,26 @@ class ThemeModel extends ChangeNotifier {
   bool isHighContrast() => highContrast;
 
   void setHighContrast(bool value) {
-    highContrast = value;
+    _highContrast = value;
     _writeData();
     notifyListeners();
   }
 
   // setters
   void setLightMode() {
-    theme = ThemeMode.light;
+    _theme = ThemeMode.light;
     _writeData();
     notifyListeners();
   }
 
   void setDarkMode() {
-    theme = ThemeMode.dark;
+    _theme = ThemeMode.dark;
     _writeData();
     notifyListeners();
   }
+
+  ThemeData getCurrentTheme() =>
+      isDarkMode() ? getDarkTheme() : getLightTheme();
 
   ThemeData getLightTheme() => ThemeData.from(
       colorScheme: highContrast
@@ -65,28 +66,12 @@ class ThemeModel extends ChangeNotifier {
               onPrimary: Colors.white,
             ));
 
-  Future<void> _writeData() async {
-    final String path = (await getApplicationSupportDirectory()).path;
-    final String jsonPath = p.join(path, themeSettingsFileName);
-    final File jsonFile = File(jsonPath);
-
-    jsonFile.writeAsStringSync(jsonEncode(toJson()));
-  }
-}
-
-Future<ThemeModel> getInitialTheme() async {
-  final String settingsDirectory =
-      (await getApplicationSupportDirectory()).path;
-  final String jsonPath = p.join(settingsDirectory, themeSettingsFileName);
-  final File jsonFile = File(jsonPath);
-
-  if (!jsonFile.existsSync()) {
-    final ThemeModel model = ThemeModel();
-    await model._writeData();
-    return model;
+  /// Writes data to Shared Preferences to make life easy.
+  void _writeData() {
+    prefs.setString(kThemeKey, _theme.toString());
+    prefs.setBool(kHighContrastKey, _highContrast);
   }
 
-  final String jsonString = jsonFile.readAsStringSync();
-  final dynamic decodedJson = jsonDecode(jsonString);
-  return ThemeModel.fromJson(decodedJson);
+  /// Handles Light/Dark Theme Colors for things like TabViews.
+  Color getLabelColor() => isDarkMode() ? Colors.white : Colors.black;
 }

@@ -7,7 +7,6 @@ import 'package:robotz_garage_scouting/pages/photo_collecting.dart';
 import 'package:robotz_garage_scouting/pages/settings.dart';
 import 'package:robotz_garage_scouting/pages/super_scouting.dart';
 
-import 'csv_manager.dart';
 import 'import_manager.dart';
 import 'pit_scouting_form.dart';
 
@@ -59,12 +58,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void showSnackbar() {
     const SnackBar(content: Text("Some Popup"));
-  }
-
-  void _goToCSVManager() {
-    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => const CsvManagerPage()));
   }
 
   void _gotToPhotoCollection() {

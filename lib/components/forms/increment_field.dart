@@ -26,25 +26,32 @@ class IncrementFormBuilderField extends FormBuilderField<int> {
   /// Maximum value allowed. Default is 9.
   final int max;
 
+  /// defalt color allowed. default is amber.
+  final MaterialColor? color;
+
   @override
   final int initialValue;
 
   /// internal state counter to keep track of number of +1's
   int _counter = 0;
 
-  IncrementFormBuilderField({
-    super.key,
-    required this.name,
-    this.label,
-    this.spaceBetween = 20,
-    this.spaceOutside = 10,
-    this.min = 0,
-    this.max = 9,
-    this.initialValue = 0,
-  }) : super(
+  IncrementFormBuilderField(
+      {super.key,
+      required this.name,
+      this.label,
+      this.spaceBetween = 20,
+      this.spaceOutside = 10,
+      this.min = 0,
+      this.max = 9,
+      this.initialValue = 0,
+      this.color})
+      : super(
             name: name,
             initialValue: initialValue,
             builder: (FormFieldState<int> field) {
+              final Color background =
+                  color ?? Theme.of(field.context).colorScheme.primary;
+
               return Padding(
                   padding:
                       EdgeInsets.fromLTRB(spaceOutside, 0, spaceOutside, 0),
@@ -53,6 +60,9 @@ class IncrementFormBuilderField extends FormBuilderField<int> {
                       Text(label ?? name),
                       const Spacer(),
                       ElevatedButton(
+                          style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all<Color>(background)),
                           onPressed: () {
                             field.didChange(PageDirection.left.value);
                           },
@@ -63,6 +73,10 @@ class IncrementFormBuilderField extends FormBuilderField<int> {
                         child: Text(field.value.toString()),
                       ),
                       ElevatedButton(
+                          style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all<Color>(background)),
+                          // ElevatedButton.styleFrom(primary: Colors.amber),
                           onPressed: () {
                             field.didChange(PageDirection.right.value);
                           },
@@ -88,12 +102,26 @@ class _IncrementFormBuilderFieldState
         widget._counter += PageDirection.right.value;
       } else if (change == PageDirection.left.value &&
           widget._counter > widget.min) {
-        widget._counter -= PageDirection.left.value;
+        widget._counter += PageDirection.left.value;
       } else if (change == PageDirection.none.value) {
         widget._counter = PageDirection.none.value;
       }
+      super.didChange(widget._counter);
     });
-    super.didChange(widget._counter);
+  }
+
+  /// There is an edge case where we don't actually reset the value of the
+  /// counter to zero when we clear the form. Since we know the configuration
+  /// of the widget will change by calling `patchValues`, we can force the value
+  /// of the widget to go to zero when the initialValue changes.
+  @override
+  void didUpdateWidget(covariant FormBuilderField<int> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialValue != oldWidget.initialValue) {
+      setState(() {
+        widget._counter = 0;
+      });
+    }
   }
 
   /// Overrides the counter to reset to zero, regardless of what the temp
