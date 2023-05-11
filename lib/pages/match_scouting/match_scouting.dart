@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -9,15 +8,16 @@ import 'package:robotz_garage_scouting/models/input_helper_model.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/models/scroll_model.dart';
 import 'package:robotz_garage_scouting/models/theme_model.dart';
-import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_auto.dart';
-import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_endgame.dart';
-import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_initial.dart';
-import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_summary.dart';
-import 'package:robotz_garage_scouting/page_widgets/match_scouting/match_teleop.dart';
+import 'package:robotz_garage_scouting/pages/match_scouting/match_auto.dart';
+import 'package:robotz_garage_scouting/pages/match_scouting/match_initial.dart';
+import 'package:robotz_garage_scouting/pages/match_scouting/match_summary.dart';
+import 'package:robotz_garage_scouting/pages/match_scouting/match_endgame.dart';
+import 'package:robotz_garage_scouting/pages/match_scouting/match_teleop.dart';
 import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
 
 import 'package:robotz_garage_scouting/utils/enums.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
+import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 
 class MatchScoutingPage extends StatefulWidget {
   const MatchScoutingPage({super.key});
@@ -45,42 +45,12 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   // internally managed "page state" to know when we need to submit the form.
   int _currentPage = 0;
 
-  void _kSuccessFullySaveMessage(File value) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.green,
-        content: Text(
-          "Successfully wrote file to ${value.path}",
-          textAlign: TextAlign.center,
-        )));
-  }
-
-  void _kSuccessMessage(String text) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.green,
-        content: Text(
-          text,
-          textAlign: TextAlign.center,
-        )));
-  }
-
-  void _kFailureMessage(error) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.red,
-        content: Text(
-          error.toString(),
-          textAlign: TextAlign.center,
-        )));
-  }
-
   /// Handles form submission
   Future<void> _submitForm() async {
     final bool isValid = _formKey.currentState?.saveAndValidate() ?? false;
 
     if (!isValid) {
-      _kFailureMessage(
+      errorMessageSnackbar(context,
           "Form has bad inputs. Start with the Initial page and verify inputs.");
       _resetPage();
       return;
@@ -106,8 +76,10 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
                 filePath: filePath, contents: convertMapStateToString(state))
             .then((File value) {
           _clearForm(isSubmission: true);
-          _kSuccessFullySaveMessage(value);
-        }).catchError(_kFailureMessage);
+          saveFileSnackbar(context, value);
+        }).catchError((exception) {
+          errorMessageSnackbar(context, exception);
+        });
 
         return;
       }
@@ -117,13 +89,13 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
 
       saveFileToDevice(finalFile).then((File file) {
         _clearForm(isSubmission: true);
-        _kSuccessFullySaveMessage(file);
-      }).catchError(_kFailureMessage);
+        saveFileSnackbar(context, file);
+      }).catchError((error) {
+        errorMessageSnackbar(context, error);
+      });
     } on Exception catch (_, exception) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(exception.toString())));
-        log(exception.toString(), name: "ERROR");
+        errorMessageSnackbar(context, exception);
       }
     }
   }
@@ -232,17 +204,17 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     });
   }
 
-  /// We use the deactivate life-cycle hook since State is available and we can
-  /// read it to optionally save to the "RetainInfoModel" object if the user has
-  /// specified they want to retain info in the form when they back out.
-  @override
-  void deactivate() {
-    RetainInfoModel model = context.watch<RetainInfoModel>();
+  /// We safely save the state of the form when the user pops the Widget from
+  /// the Widget Tree. We don't check for form validation in this step so we
+  /// always return `true` to always allow the user to pop.
+  Future<bool> _onWillPop() async {
+    RetainInfoModel model =
+        Provider.of<RetainInfoModel>(context, listen: false);
     if (model.doesRetainInfo()) {
       _formKey.currentState?.save();
       model.setMatchScouting(_formKey.currentState!.value);
     }
-    super.deactivate();
+    return true;
   }
 
   /// Clean up the component, but also the FormBuilderController
@@ -299,37 +271,39 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
                   ]
                 : [],
           ),
-          body: FormBuilder(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Consumer<ThemeModel>(
-                    builder: (context, model, _) => IgnorePointer(
-                        ignoring: true,
-                        child: TabBar(
+          body: WillPopScope(
+              onWillPop: _onWillPop,
+              child: FormBuilder(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      Consumer<ThemeModel>(
+                        builder: (context, model, _) => IgnorePointer(
+                            ignoring: true,
+                            child: TabBar(
+                              controller: _tabController,
+                              labelColor: model.getLabelColor(),
+                              indicatorColor: model.getLabelColor(),
+                              isScrollable: true,
+                              labelPadding: const EdgeInsets.symmetric(
+                                  vertical: 12.0, horizontal: 24.0),
+                              tabs: const [
+                                Text('Initial'),
+                                Text('Auto'),
+                                Text('Teleop'),
+                                Text('End'),
+                                Text('Summary')
+                              ],
+                            )),
+                      ),
+                      Expanded(
+                        child: TabBarView(
                           controller: _tabController,
-                          labelColor: model.getLabelColor(),
-                          indicatorColor: model.getLabelColor(),
-                          isScrollable: true,
-                          labelPadding: const EdgeInsets.symmetric(
-                              vertical: 12.0, horizontal: 24.0),
-                          tabs: const [
-                            Text('Initial'),
-                            Text('Auto'),
-                            Text('Teleop'),
-                            Text('End'),
-                            Text('Summary')
-                          ],
-                        )),
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: pages,
-                    ),
-                  )
-                ],
-              )),
+                          children: pages,
+                        ),
+                      )
+                    ],
+                  ))),
           persistentFooterButtons: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,

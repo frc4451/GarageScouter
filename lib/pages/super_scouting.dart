@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,9 +5,8 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
-import 'package:robotz_garage_scouting/page_widgets/super_scouting/super_initial.dart';
-import 'package:robotz_garage_scouting/page_widgets/super_scouting/super_text_page.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
+import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 import 'package:robotz_garage_scouting/validators/custom_integer_validators.dart';
 import 'package:robotz_garage_scouting/utils/enums.dart';
 import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
@@ -32,62 +30,24 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   final int _maxLines = 5;
   final int _maxLength = 1024;
 
-  // Widgets we plan to show during the match. Swipe or click nav buttons as needed.
-  final List<Widget> pages = const [
-    SuperScoutingInitialScreen(),
-    SuperScoutingTextInputPage(
-        label: "Effective Offense", name: "effective_offense"),
-    SuperScoutingTextInputPage(
-        label: "Effective Defense", name: "effective_defense"),
-    SuperScoutingTextInputPage(
-        label: "Ineffective Offense", name: "ineffective_offense"),
-    SuperScoutingTextInputPage(
-        label: "Ineffective Defense", name: "ineffective_defense"),
-    SuperScoutingTextInputPage(
-        label: "Counter Strategy Offense", name: "counter_strategy_offense"),
-    SuperScoutingTextInputPage(
-        label: "Counter Strategy Defense", name: "counter_strategy_defense"),
-    SuperScoutingTextInputPage(label: "Final Notes", name: "final_notes"),
-  ];
-
   // We can't rely on _controller.page because the page is not fully updated
   // until _after_ the page has transitioned. Because of that, we need an
   // internally managed "page state" to know when we need to submit the form.
   int _currentPage = 0;
-
-  void _kSuccessMessage(File value) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.green,
-        content: Text(
-          "Successfully wrote file ${value.path}",
-          textAlign: TextAlign.center,
-        )));
-  }
-
-  void _kFailureMessage(error) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.red,
-        content: Text(
-          error.toString(),
-          textAlign: TextAlign.center,
-        )));
-  }
 
   /// Handles form submission
   Future<void> _submitForm() async {
     bool isValid = _formKey.currentState!.saveAndValidate();
 
     if (!isValid) {
-      _kFailureMessage(
+      errorMessageSnackbar(context,
           "Form is missing inputs. Check Initial page and verify inputs.");
       _resetPage();
       return;
     }
 
     // Help clean up the input by removing spaces on both ends of the string
-    Map<String, dynamic> trimmedInputs =
+    final Map<String, dynamic> trimmedInputs =
         _formKey.currentState!.value.map((key, value) {
       return (value is String)
           ? MapEntry(key, value.trim())
@@ -97,9 +57,9 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     _formKey.currentState?.patchValue(trimmedInputs);
     _formKey.currentState?.save();
 
-    Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
+    final Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
 
-    String timestamp = DateTime.now().toString();
+    final String timestamp = DateTime.now().toString();
     state['timestamp'] = timestamp;
 
     final String teamNumber = state["team_number"].toString();
@@ -115,26 +75,16 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     try {
       File finalFile = await file.writeAsString(convertMapStateToString(state));
 
-      saveFileToDevice(finalFile)
-          .then(_kSuccessMessage)
-          .catchError(_kFailureMessage);
+      saveFileToDevice(finalFile).then((file) {
+        saveFileSnackbar(context, file);
+      }).catchError((error) {
+        errorMessageSnackbar(context, error);
+      });
     } on Exception catch (_, exception) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(exception.toString())));
-        log(exception.toString(), name: "ERROR");
+        errorMessageSnackbar(context, exception);
       }
     }
-  }
-
-  /// Handles Previous Page functionality for desktop/accessibility
-  void _prevPage() {
-    _onPageChanged(_controller.page!.toInt(), direction: PageDirection.left);
-  }
-
-  /// Handles Next Page functionality for desktop/accessibility
-  void _nextPage() {
-    _onPageChanged(_controller.page!.toInt(), direction: PageDirection.right);
   }
 
   void _resetPage() {
@@ -169,17 +119,17 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     });
   }
 
-  /// We use the deactivate life-cycle hook since State is available and we can
-  /// read it to optionally save to the "RetainInfoModel" object if the user has
-  /// specified they want to retain info in the form when they back out.
-  @override
-  void deactivate() {
-    RetainInfoModel model = context.watch<RetainInfoModel>();
+  /// We safely save the state of the form when the user pops the Widget from
+  /// the Widget Tree. We don't check for form validation in this step so we
+  /// always return `true` to always allow the user to pop.
+  Future<bool> _onWillPop() async {
+    RetainInfoModel model =
+        Provider.of<RetainInfoModel>(context, listen: false);
     if (model.doesRetainInfo()) {
       _formKey.currentState?.save();
       model.setSuperScouting(_formKey.currentState!.value);
     }
-    super.deactivate();
+    return true;
   }
 
   /// Clean up the component, but also the FormBuilderController
@@ -237,156 +187,162 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                 ]
               : [],
         ),
-        body: FormBuilder(
-            key: _formKey,
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      FormBuilderTextField(
-                        name: "team_number",
-                        initialValue: superScouting["team_number"],
-                        decoration: const InputDecoration(
-                            labelText: "Team Number",
-                            prefixIcon: Icon(Icons.numbers)),
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          FormBuilderValidators.integer(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                          CustomIntegerValidators.notNegative()
-                        ]),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                      ),
-                      FormBuilderTextField(
-                        name: "match_number",
-                        initialValue: superScouting["match_number"],
-                        decoration: const InputDecoration(
-                            labelText: "Match Number",
-                            prefixIcon: Icon(Icons.numbers)),
-                        textInputAction: TextInputAction.done,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          FormBuilderValidators.integer(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                          CustomIntegerValidators.notNegative()
-                        ]),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                      ),
-                      // Text(),
-                      FormBuilderTextField(
-                        name: "effective_offense",
-                        initialValue: superScouting["effective_offense"],
-                        decoration: const InputDecoration(
-                          labelText: "Effective Offensive Strategies",
+        body: WillPopScope(
+          onWillPop: _onWillPop,
+          child: FormBuilder(
+              key: _formKey,
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      children: [
+                        FormBuilderTextField(
+                          name: "team_number",
+                          initialValue: superScouting["team_number"],
+                          decoration: const InputDecoration(
+                              labelText: "Team Number",
+                              prefixIcon: Icon(Icons.numbers)),
+                          textInputAction: TextInputAction.next,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                            FormBuilderValidators.integer(),
+                            CustomTextValidators.doesNotHaveCommas(),
+                            CustomIntegerValidators.notNegative()
+                          ]),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                         ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "effective_defense",
-                        initialValue: superScouting["effective_defense"],
-                        decoration: const InputDecoration(
-                          labelText: "Effective Defensive Strategies",
+                        FormBuilderTextField(
+                          name: "match_number",
+                          initialValue: superScouting["match_number"],
+                          decoration: const InputDecoration(
+                              labelText: "Match Number",
+                              prefixIcon: Icon(Icons.numbers)),
+                          textInputAction: TextInputAction.done,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                            FormBuilderValidators.integer(),
+                            CustomTextValidators.doesNotHaveCommas(),
+                            CustomIntegerValidators.notNegative()
+                          ]),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                         ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "ineffective_offense",
-                        initialValue: superScouting["ineffective_offense"],
-                        decoration: const InputDecoration(
-                          labelText: "Ineffective Offensive Strategies",
+                        // Text(),
+                        FormBuilderTextField(
+                          name: "effective_offense",
+                          initialValue: superScouting["effective_offense"],
+                          decoration: const InputDecoration(
+                            labelText: "Effective Offensive Strategies",
+                          ),
+                          maxLength: _maxLength,
+                          maxLines: _maxLines,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          textInputAction: TextInputAction.next,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                            CustomTextValidators.doesNotHaveCommas(),
+                          ]),
                         ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "ineffective_defense",
-                        initialValue: superScouting["ineffective_defense"],
-                        decoration: const InputDecoration(
-                          labelText: "Ineffective Defensive Strategies",
+                        FormBuilderTextField(
+                          name: "effective_defense",
+                          initialValue: superScouting["effective_defense"],
+                          decoration: const InputDecoration(
+                            labelText: "Effective Defensive Strategies",
+                          ),
+                          maxLength: _maxLength,
+                          maxLines: _maxLines,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          textInputAction: TextInputAction.next,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                            CustomTextValidators.doesNotHaveCommas(),
+                          ]),
                         ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "counter_strategy_offense",
-                        initialValue: superScouting["counter_strategy_offense"],
-                        decoration: const InputDecoration(
-                          labelText: "Offensive Counterstrategies",
+                        FormBuilderTextField(
+                          name: "ineffective_offense",
+                          initialValue: superScouting["ineffective_offense"],
+                          decoration: const InputDecoration(
+                            labelText: "Ineffective Offensive Strategies",
+                          ),
+                          maxLength: _maxLength,
+                          maxLines: _maxLines,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          textInputAction: TextInputAction.next,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                            CustomTextValidators.doesNotHaveCommas(),
+                          ]),
                         ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "counter_strategy_defense",
-                        initialValue: superScouting["counter_strategy_defense"],
-                        decoration: const InputDecoration(
-                          labelText: "Defensive Counterstrategies",
+                        FormBuilderTextField(
+                          name: "ineffective_defense",
+                          initialValue: superScouting["ineffective_defense"],
+                          decoration: const InputDecoration(
+                            labelText: "Ineffective Defensive Strategies",
+                          ),
+                          maxLength: _maxLength,
+                          maxLines: _maxLines,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          textInputAction: TextInputAction.next,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                            CustomTextValidators.doesNotHaveCommas(),
+                          ]),
                         ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "final_notes",
-                        initialValue: superScouting["final_notes"],
-                        decoration: const InputDecoration(
-                          labelText: "Final Notes",
+                        FormBuilderTextField(
+                          name: "counter_strategy_offense",
+                          initialValue:
+                              superScouting["counter_strategy_offense"],
+                          decoration: const InputDecoration(
+                            labelText: "Offensive Counterstrategies",
+                          ),
+                          maxLength: _maxLength,
+                          maxLines: _maxLines,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          textInputAction: TextInputAction.next,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                            CustomTextValidators.doesNotHaveCommas(),
+                          ]),
                         ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      ElevatedButton(
-                          onPressed: _submitForm, child: const Text("Submit")),
-                    ],
-                  ),
-                )
-              ],
-            )),
+                        FormBuilderTextField(
+                          name: "counter_strategy_defense",
+                          initialValue:
+                              superScouting["counter_strategy_defense"],
+                          decoration: const InputDecoration(
+                            labelText: "Defensive Counterstrategies",
+                          ),
+                          maxLength: _maxLength,
+                          maxLines: _maxLines,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          textInputAction: TextInputAction.next,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                            CustomTextValidators.doesNotHaveCommas(),
+                          ]),
+                        ),
+                        FormBuilderTextField(
+                          name: "final_notes",
+                          initialValue: superScouting["final_notes"],
+                          decoration: const InputDecoration(
+                            labelText: "Final Notes",
+                          ),
+                          maxLength: _maxLength,
+                          maxLines: _maxLines,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          textInputAction: TextInputAction.next,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                            CustomTextValidators.doesNotHaveCommas(),
+                          ]),
+                        ),
+                        ElevatedButton(
+                            onPressed: _submitForm,
+                            child: const Text("Submit")),
+                      ],
+                    ),
+                  )
+                ],
+              )),
+        ),
         // @deprecated, but kept here for future refactoring.
         // We may eventually go back to scrolling. or re-introduce it as an option.
         // NOTE: You must implement AutomaticKeepAliveClientMixin in every

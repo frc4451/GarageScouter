@@ -7,6 +7,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
+import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 
 class ImportManagerPage extends StatefulWidget {
   const ImportManagerPage({super.key});
@@ -17,26 +18,6 @@ class ImportManagerPage extends StatefulWidget {
 
 class _ImportManagerPageState extends State<ImportManagerPage> {
   Map<String, dynamic>? input;
-
-  void _kSuccessMessage(String value) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.green,
-        content: Text(
-          "Successfully wrote file $value",
-          textAlign: TextAlign.center,
-        )));
-  }
-
-  void _kFailureMessage(error) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.red,
-        content: Text(
-          error.toString(),
-          textAlign: TextAlign.center,
-        )));
-  }
 
   /// Handles what happens when the QR Scanner reads a QR Code
   void _detectInput(capture) {
@@ -63,7 +44,7 @@ class _ImportManagerPageState extends State<ImportManagerPage> {
   /// 6. Clean up metadata
   void _saveFilesFromQRCode() async {
     if (input == null) {
-      _kFailureMessage("input cannot be null");
+      errorMessageSnackbar(context, "Input cannot be empty.");
       return;
     }
 
@@ -101,9 +82,13 @@ class _ImportManagerPageState extends State<ImportManagerPage> {
       saveFileToDevice(zipFile).then((File file) {
         zipFile.deleteSync();
         _clearInput();
-        _kSuccessMessage(file.path);
-      }).catchError(_kFailureMessage);
-    }).catchError(_kFailureMessage);
+        saveFileSnackbar(context, file);
+      }).catchError((error) {
+        errorMessageSnackbar(context, error);
+      });
+    }).catchError((error) {
+      errorMessageSnackbar(context, error);
+    });
   }
 
   @override

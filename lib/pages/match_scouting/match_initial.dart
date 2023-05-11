@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/validators/custom_integer_validators.dart';
 import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
-
-import '../../validators/custom_integer_validators.dart';
 
 /// Initial Input for Match Scouting
 class MatchInitialScreen extends StatefulWidget {

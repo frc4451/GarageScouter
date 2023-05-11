@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
+import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 
 /// Export Management Page for Mobile Devices that may not have wireless
 /// communications (IE Fire Tablets) and solely provides a QR Code to make
@@ -21,26 +22,6 @@ class ExportManagerPage extends StatefulWidget {
 class _ExportManagerPageState extends State<ExportManagerPage> {
   QrImage? image;
 
-  void _kSuccessMessage(String value) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.green,
-        content: Text(
-          "Successfully wrote file $value",
-          textAlign: TextAlign.center,
-        )));
-  }
-
-  void _kFailureMessage(error) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.red,
-        content: Text(
-          error.toString(),
-          textAlign: TextAlign.center,
-        )));
-  }
-
   /// Opens the user prompt to
   Future<void> _generateQRCodeFromCSV() async {
     Map<String, dynamic> fileData = {};
@@ -53,7 +34,7 @@ class _ExportManagerPageState extends State<ExportManagerPage> {
 
     // The rest of the function requires that selected files are not null.
     if (selectedFiles == null) {
-      _kFailureMessage("No files selected. User aborted action.");
+      errorMessageSnackbar(context, "No files selected. User aborted action.");
       return;
     }
 
