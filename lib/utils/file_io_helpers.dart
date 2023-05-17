@@ -76,7 +76,7 @@ Future<String?> getNewFilePath(File file) async {
   return FilePicker.platform.saveFile(
       dialogTitle: "Select where you want to save the file",
       fileName: p.basename(file.path),
-      initialDirectory: (await getDownloadsDirectory())!.path,
+      initialDirectory: (await getDownloadsDirectory())?.path,
       type: FileType.custom,
       allowedExtensions: ["csv"]);
 }
