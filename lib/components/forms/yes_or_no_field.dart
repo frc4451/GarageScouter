@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 enum YesOrNoEnumType {
-  yes,
-  no,
-  empty;
+  yes("Yes"),
+  no("No"),
+  empty("");
+
+  final String label;
+
+  const YesOrNoEnumType(this.label);
 
   @override
   String toString() => name;
@@ -18,18 +22,6 @@ enum YesOrNoEnumType {
       YesOrNoEnumType.values
           .firstWhereOrNull((element) => value == element.toString()) ??
       YesOrNoEnumType.empty;
-
-  String get label {
-    switch (this) {
-      case YesOrNoEnumType.yes:
-        return "Yes";
-      case YesOrNoEnumType.no:
-        return "No";
-      case YesOrNoEnumType.empty:
-      default:
-        return "";
-    }
-  }
 }
 
 /// YesOrNoFieldType is a type definition so that we can easily
