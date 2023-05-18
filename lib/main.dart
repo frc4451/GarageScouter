@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/constants/platform_check.dart';
+import 'package:robotz_garage_scouting/database/test.database.dart';
+import 'package:robotz_garage_scouting/models/database_controller_model.dart';
 import 'package:robotz_garage_scouting/models/input_helper_model.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
+import 'package:robotz_garage_scouting/pages/database_tester.dart';
 import 'package:robotz_garage_scouting/pages/export_manager.dart';
 import 'package:robotz_garage_scouting/pages/home_page.dart';
 import 'package:robotz_garage_scouting/models/theme_model.dart';
@@ -35,12 +40,20 @@ Future<void> main() async {
   final RetainInfoModel retainInfoModel = RetainInfoModel(prefs);
   retainInfoModel.initialize();
 
+  final isar = await Isar.open(
+    [TestDatabaseEntrySchema],
+    directory: (await getApplicationDocumentsDirectory()).path,
+  );
+
+  final IsarModel isarModel = IsarModel(isar);
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider<ThemeModel>(create: (_) => themeModel),
       ChangeNotifierProvider<ScrollModel>(create: (_) => scrollModel),
       ChangeNotifierProvider<RetainInfoModel>(create: (_) => retainInfoModel),
       ChangeNotifierProvider<InputHelperModel>(create: (_) => inputHelperModel),
+      ChangeNotifierProvider<IsarModel>(create: (_) => isarModel)
     ],
     child: const RobotzGarageScoutingApp(),
   ));
@@ -78,6 +91,10 @@ final GoRouter _router = GoRouter(routes: <RouteBase>[
             builder: (context, state) => const ExportManagerPage(),
           ),
         ],
+        GoRoute(
+          path: 'database_tester',
+          builder: (context, state) => const DatabaseTestingPage(),
+        ),
         GoRoute(
           path: 'settings',
           builder: (context, state) => const SettingsPage(),

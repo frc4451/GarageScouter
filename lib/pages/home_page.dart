@@ -11,9 +11,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  /**
-   * Goes to a given GoRouter path after closing the Drawer.
-   */
+  /// Goes to a given GoRouter path after closing the Drawer.
   void _route(String path) {
     if (Navigator.canPop(context)) {
       Navigator.of(context).pop();
@@ -69,6 +67,10 @@ class _HomePageState extends State<HomePage> {
                 title: const Text("Data Management"),
                 initiallyExpanded: true,
                 children: [
+                  DrawerTile(
+                    tileText: "Database Tester",
+                    onTap: () => _route("/database_tester"),
+                  ),
                   if (!isWebPlatform()) ...[
                     DrawerTile(
                         tileText: "Export Manager",
@@ -87,10 +89,10 @@ class _HomePageState extends State<HomePage> {
           ))
         ]),
       ),
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Padding(
               padding: EdgeInsets.all(25),
               child: Text("Welcome to the Robotz Garage Scouting App!"),

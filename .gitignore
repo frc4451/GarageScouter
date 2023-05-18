@@ -188,3 +188,8 @@ coverage/
 .ionide
 ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
+
+
+# Flutter Database stuff
+*.isar*
+*.g.dart

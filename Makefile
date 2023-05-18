@@ -46,3 +46,6 @@ deploy_dev: test_builds fastlane_firebase_android fastlane_testflight web_deploy
 
 create_app_icon:
 	flutter pub run flutter_launcher_icons
+
+isar_generate_model:
+	dart run build_runner build
