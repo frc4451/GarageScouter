@@ -137,10 +137,6 @@ class _DatabaseTestingPageState extends State<DatabaseTestingPage> {
                     ])
                 ]),
               )),
-            // for (final entry in _entries)
-            //   Column(
-            //     children: [Text(entry.title ?? ""), Text(entry.text ?? "")],
-            //   )
           ])),
         ));
   }
