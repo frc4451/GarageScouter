@@ -1,0 +1,25 @@
+# https://numtide.github.io/devshell
+
+# Packages can be found on: https://search.nixos.org/packages?channel=unstable
+
+# These aren't added to the menu
+[devshell]
+packages = [
+  "gnome.zenity" # File Picking on Linux
+]
+
+# These are added to the menu
+[[commands]]
+package = "flutter"
+name = "flutter"
+
+[[commands]]
+package = "gnumake"
+name = "make"
+
+[[commands]]
+package = "fastlane"
+
+[[commands]]
+package = "nodePackages_latest.firebase-tools"
+name = "firebase"
