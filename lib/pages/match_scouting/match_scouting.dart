@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/database/scouting.database.dart';
+import 'package:robotz_garage_scouting/models/database_controller_model.dart';
 import 'package:robotz_garage_scouting/models/input_helper_model.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/models/scroll_model.dart';
@@ -39,6 +42,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   final List<Widget> pages = [];
 
   late TabController _tabController;
+  late Isar _isar;
 
   // We can't rely on _controller.page because the page is not fully updated
   // until _after_ the page has transitioned. Because of that, we need an
@@ -83,13 +87,26 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
 
         return;
       }
-      final File file = File(filePath);
-      final File finalFile =
-          await file.writeAsString(convertMapStateToString(state));
+      // final File file = File(filePath);
+      // final File finalFile =
+      //     await file.writeAsString(convertMapStateToString(state));
 
-      saveFileToDevice(finalFile).then((File file) {
+      // saveFileToDevice(finalFile).then((File file) {
+      //   _clearForm(isSubmission: true);
+      //   saveFileSnackbar(context, file);
+      // }).catchError((error) {
+      //   errorMessageSnackbar(context, error);
+      // });
+
+      MatchScoutingEntry entry = MatchScoutingEntry()
+        ..teamNumber = int.tryParse(teamNumber)
+        ..matchNumber = int.tryParse(matchNumber)
+        ..alliance = alliance.toLowerCase() == "red"
+            ? TeamAlliance.red
+            : TeamAlliance.blue;
+      _isar.writeTxn(() => _isar.matchScoutingEntrys.put(entry)).then((value) {
         _clearForm(isSubmission: true);
-        saveFileSnackbar(context, file);
+        successMessageSnackbar(context, "Saved data to Isar, Index $value");
       }).catchError((error) {
         errorMessageSnackbar(context, error);
       });
@@ -202,6 +219,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
         _currentPage = _tabController.index;
       });
     });
+
+    _isar = context.read<IsarModel>().isar;
   }
 
   /// We safely save the state of the form when the user pops the Widget from

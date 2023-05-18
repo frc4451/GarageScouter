@@ -71,6 +71,10 @@ class _HomePageState extends State<HomePage> {
                     tileText: "Database Tester",
                     onTap: () => _route("/database_tester"),
                   ),
+                  DrawerTile(
+                    tileText: "Data Explorer",
+                    onTap: () => _route("/data"),
+                  ),
                   if (!isWebPlatform()) ...[
                     DrawerTile(
                         tileText: "Export Manager",

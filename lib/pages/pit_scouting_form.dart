@@ -4,10 +4,13 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/components/forms/conditional_hidden_input.dart';
 import 'package:robotz_garage_scouting/components/forms/conditional_hidden_field.dart';
 import 'package:robotz_garage_scouting/components/forms/yes_or_no_field.dart';
+import 'package:robotz_garage_scouting/database/scouting.database.dart';
+import 'package:robotz_garage_scouting/models/database_controller_model.dart';
 import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
@@ -25,6 +28,8 @@ class PitScoutingPage extends StatefulWidget {
 
 class _PitScoutingPageState extends State<PitScoutingPage> {
   final _formKey = GlobalKey<FormBuilderState>();
+
+  late Isar _isar;
 
   /// Handles form submission
   Future<void> _submitForm() async {
@@ -96,11 +101,20 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
         return;
       }
 
-      File finalFile = await file.writeAsString(convertMapStateToString(state));
+      // File finalFile = await file.writeAsString(convertMapStateToString(state));
 
-      saveFileToDevice(finalFile).then((File file) {
+      // saveFileToDevice(finalFile).then((File file) {
+      //   _clearForm();
+      //   saveFileSnackbar(context, file);
+      // }).catchError((error) {
+      //   errorMessageSnackbar(context, error);
+      // });
+
+      PitScoutingEntry entry = PitScoutingEntry()
+        ..teamNumber = int.tryParse(teamNumber);
+      _isar.writeTxn(() => _isar.pitScoutingEntrys.put(entry)).then((value) {
         _clearForm();
-        saveFileSnackbar(context, file);
+        successMessageSnackbar(context, "Saved data to Isar, Index $value");
       }).catchError((error) {
         errorMessageSnackbar(context, error);
       });
@@ -165,6 +179,12 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
       model.setPitScouting(_formKey.currentState!.value);
     }
     return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _isar = context.read<IsarModel>().isar;
   }
 
   @override
