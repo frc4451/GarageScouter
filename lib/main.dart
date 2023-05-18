@@ -50,7 +50,7 @@ Future<void> main() async {
       MatchScoutingEntrySchema,
       SuperScoutingEntrySchema
     ],
-    directory: (await getApplicationDocumentsDirectory()).path,
+    directory: (await getApplicationSupportDirectory()).path,
   );
 
   final IsarModel isarModel = IsarModel(isar);

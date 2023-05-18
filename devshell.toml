@@ -5,7 +5,8 @@
 # These aren't added to the menu
 [devshell]
 packages = [
-  "gnome.zenity" # File Picking on Linux
+  "gnome.zenity", # File Picking on Linux
+  "xdg-user-dirs", # Finding Certain Directories
 ]
 
 # These are added to the menu
