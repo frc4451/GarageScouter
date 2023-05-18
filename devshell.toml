@@ -24,3 +24,8 @@ package = "fastlane"
 [[commands]]
 package = "nodePackages_latest.firebase-tools"
 name = "firebase"
+
+[[commands]]
+name = "link-isar-linux"
+help = "Links built libisar.so to the project root to workaround a bug (requires direnv)"
+command = 'ln -srf "$PRJ_ROOT"/build/linux/x64/debug/bundle/lib/libisar.so "$PRJ_ROOT"/libisar.so'

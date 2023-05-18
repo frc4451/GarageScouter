@@ -196,3 +196,6 @@ macos/Runner/GoogleService-Info.plist
 
 # https://github.com/direnv/direnv
 /.direnv/
+
+# See devshell.toml's `link-isar-linux`
+/libisar.so
