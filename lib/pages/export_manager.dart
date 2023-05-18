@@ -20,7 +20,7 @@ class ExportManagerPage extends StatefulWidget {
 }
 
 class _ExportManagerPageState extends State<ExportManagerPage> {
-  QrImage? image;
+  QrImageView? image;
 
   /// Opens the user prompt to
   Future<void> _generateQRCodeFromCSV() async {
@@ -53,7 +53,7 @@ class _ExportManagerPageState extends State<ExportManagerPage> {
     });
 
     setState(() {
-      image = QrImage(
+      image = QrImageView(
         data: encodeJsonToB64(fileData),
         version: QrVersions.auto,
         backgroundColor: Colors.white,
