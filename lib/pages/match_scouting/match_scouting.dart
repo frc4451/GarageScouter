@@ -103,7 +103,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
         ..matchNumber = int.tryParse(matchNumber)
         ..alliance = alliance.toLowerCase() == "red"
             ? TeamAlliance.red
-            : TeamAlliance.blue;
+            : TeamAlliance.blue
+        ..b64String = encodeJsonToB64(state, urlSafe: true);
       _isar.writeTxn(() => _isar.matchScoutingEntrys.put(entry)).then((value) {
         _clearForm(isSubmission: true);
         successMessageSnackbar(context, "Saved data to Isar, Index $value");

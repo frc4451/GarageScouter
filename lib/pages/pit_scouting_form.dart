@@ -84,7 +84,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
     final String filePath = await generateUniqueFilePath(
         extension: "csv", prefix: "${teamNumber}_pit_scouting");
 
-    final File file = File(filePath);
+    // final File file = File(filePath);
 
     try {
       if (kIsWeb) {
@@ -111,7 +111,8 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
       // });
 
       PitScoutingEntry entry = PitScoutingEntry()
-        ..teamNumber = int.tryParse(teamNumber);
+        ..teamNumber = int.tryParse(teamNumber)
+        ..b64String = encodeJsonToB64(state, urlSafe: true);
       _isar.writeTxn(() => _isar.pitScoutingEntrys.put(entry)).then((value) {
         _clearForm();
         successMessageSnackbar(context, "Saved data to Isar, Index $value");

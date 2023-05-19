@@ -12,6 +12,7 @@ import 'package:robotz_garage_scouting/models/input_helper_model.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/data_explorer.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_list.dart';
+import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_details.dart';
 import 'package:robotz_garage_scouting/pages/database_tester.dart';
 import 'package:robotz_garage_scouting/pages/export_manager.dart';
 import 'package:robotz_garage_scouting/pages/home_page.dart';
@@ -104,27 +105,46 @@ final GoRouter _router = GoRouter(routes: <RouteBase>[
           builder: (context, state) => const DatabaseTestingPage(),
         ),
         GoRoute(
-          path: 'data',
-          builder: (context, state) => const DataExplorerPage(),
-        ),
-        GoRoute(
-          path: 'data/pit-scouting',
-          builder: (context, state) => const ScoutingDataListPage(
-            scoutingType: ScoutingType.pitScouting,
-          ),
-        ),
-        GoRoute(
-          path: 'data/match-scouting',
-          builder: (context, state) => const ScoutingDataListPage(
-            scoutingType: ScoutingType.matchScouting,
-          ),
-        ),
-        GoRoute(
-          path: 'data/super-scouting',
-          builder: (context, state) => const ScoutingDataListPage(
-            scoutingType: ScoutingType.superScouting,
-          ),
-        ),
+            path: 'data',
+            builder: (context, state) => const DataExplorerPage(),
+            routes: [
+              GoRoute(
+                  path: 'pit-scouting',
+                  builder: (context, state) => const ScoutingDataListPage(
+                        scoutingType: ScoutingType.pitScouting,
+                      ),
+                  routes: [
+                    GoRoute(
+                      path: ':hash',
+                      builder: (context, state) =>
+                          ScoutingDataDetailsPage(hash: state.params['hash']),
+                    ),
+                  ]),
+              GoRoute(
+                  path: 'match-scouting',
+                  builder: (context, state) => const ScoutingDataListPage(
+                        scoutingType: ScoutingType.matchScouting,
+                      ),
+                  routes: [
+                    GoRoute(
+                      path: ':hash',
+                      builder: (context, state) =>
+                          ScoutingDataDetailsPage(hash: state.params['hash']),
+                    ),
+                  ]),
+              GoRoute(
+                  path: 'super-scouting',
+                  builder: (context, state) => const ScoutingDataListPage(
+                        scoutingType: ScoutingType.superScouting,
+                      ),
+                  routes: [
+                    GoRoute(
+                      path: ':hash',
+                      builder: (context, state) =>
+                          ScoutingDataDetailsPage(hash: state.params['hash']),
+                    ),
+                  ]),
+            ]),
         GoRoute(
           path: 'settings',
           builder: (context, state) => const SettingsPage(),
