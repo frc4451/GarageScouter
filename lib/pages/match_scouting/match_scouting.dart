@@ -104,7 +104,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
         ..alliance = alliance.toLowerCase() == "red"
             ? TeamAlliance.red
             : TeamAlliance.blue
-        ..b64String = encodeJsonToB64(state, urlSafe: true);
+        ..b64String = encodeJsonToB64(state, urlSafe: true)
+        ..isDraft = false;
       _isar.writeTxn(() => _isar.matchScoutingEntrys.put(entry)).then((value) {
         _clearForm(isSubmission: true);
         successMessageSnackbar(context, "Saved data to Isar, Index $value");
@@ -234,6 +235,28 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       _formKey.currentState?.save();
       model.setMatchScouting(_formKey.currentState!.value);
     }
+
+    Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
+
+    MatchScoutingEntry entry = MatchScoutingEntry()
+      ..teamNumber = int.tryParse(state['team_number'])
+      ..matchNumber = int.tryParse(state['match_number'])
+      ..alliance = state['team_alliance'].toLowerCase() == "red"
+          ? TeamAlliance.red
+          : state['team_alliance'].toLowerCase() == "blue"
+              ? TeamAlliance.blue
+              : TeamAlliance.unassigned
+      ..b64String = encodeJsonToB64(state, urlSafe: true)
+      ..isDraft = true;
+
+    await _isar
+        .writeTxn(() => _isar.matchScoutingEntrys.put(entry))
+        .then((value) {
+      successMessageSnackbar(context, "Successfully saved Draft to Isar.");
+    }).catchError((error) {
+      errorMessageSnackbar(context, error);
+    });
+
     return true;
   }
 

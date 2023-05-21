@@ -6,15 +6,17 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/models/database_controller_model.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
+import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 
 enum ScoutingType {
-  pitScouting(value: "Pit Scouting"),
-  matchScouting(value: "Match Scouting"),
-  superScouting(value: "Super Scouting");
+  pitScouting(displayName: "Pit Scouting", urlPath: "pit-scouting"),
+  matchScouting(displayName: "Match Scouting", urlPath: "match-scouting"),
+  superScouting(displayName: "Super Scouting", urlPath: "super-scouting");
 
-  final String value;
+  final String displayName;
+  final String urlPath;
 
-  const ScoutingType({required this.value});
+  const ScoutingType({required this.displayName, required this.urlPath});
 }
 
 class ScoutingDataListPage extends StatefulWidget {
@@ -32,35 +34,58 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   bool _loading = true;
 
   List<ScoutingDataEntry> _entries = [];
+  List<ScoutingDataEntry> _drafts = [];
 
   bool _canExport = false;
   final List<int> _selectedIndices = [];
 
   Future<void> _listEntries() async {
-    List<ScoutingDataEntry> queriedData = [];
+    List<ScoutingDataEntry> queriedDrafts = [];
+    List<ScoutingDataEntry> queriedEntries = [];
     if (widget.scoutingType == ScoutingType.pitScouting) {
-      queriedData = await _isar.pitScoutingEntrys
+      queriedDrafts = await _isar.pitScoutingEntrys
           .filter()
           .b64StringIsNotNull()
+          .isDraftEqualTo(true)
+          .sortByTeamNumber()
+          .findAll();
+      queriedEntries = await _isar.pitScoutingEntrys
+          .filter()
+          .b64StringIsNotNull()
+          .isDraftEqualTo(false)
           .sortByTeamNumber()
           .findAll();
     }
     if (widget.scoutingType == ScoutingType.matchScouting) {
-      queriedData = await _isar.matchScoutingEntrys
+      queriedDrafts = await _isar.matchScoutingEntrys
           .filter()
           .b64StringIsNotNull()
+          .isDraftEqualTo(true)
+          .sortByMatchNumber()
+          .findAll();
+      queriedEntries = await _isar.matchScoutingEntrys
+          .filter()
+          .b64StringIsNotNull()
+          .isDraftEqualTo(false)
           .sortByMatchNumber()
           .findAll();
     }
     if (widget.scoutingType == ScoutingType.superScouting) {
-      queriedData = await _isar.superScoutingEntrys
+      queriedDrafts = await _isar.superScoutingEntrys
           .filter()
           .b64StringIsNotNull()
+          .isDraftEqualTo(true)
+          .findAll();
+      queriedEntries = await _isar.superScoutingEntrys
+          .filter()
+          .b64StringIsNotNull()
+          .isDraftEqualTo(false)
           .findAll();
     }
 
     setState(() {
-      _entries = queriedData;
+      _entries = queriedEntries;
+      _drafts = queriedDrafts;
       _loading = false;
     });
   }
@@ -87,7 +112,98 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
       _canExport && _selectedIndices.contains(index)
           ? _selectedIndices.remove(index)
           : _selectedIndices.add(index);
+
+      if (_selectedIndices.isEmpty) {
+        _canExport = false;
+      }
     });
+  }
+
+  void _enableExport() {
+    setState(() {
+      _selectedIndices.clear();
+      _canExport = true;
+    });
+  }
+
+  void _disableExport() {
+    setState(() {
+      _selectedIndices.clear();
+      _canExport = false;
+    });
+  }
+
+  void _enableImport() {
+    informationSnackbar(context, "Will be implemented eventually.");
+  }
+
+  void _disableImport() {
+    informationSnackbar(context, "Will be implemented eventually.");
+  }
+
+  void _exportScoutingData() {
+    List<Map<String, dynamic>> jsons = [];
+    for (final entry in _entries) {
+      jsons.add(decodeJsonFromB64(entry.b64String ?? "{}"));
+    }
+
+    showDialog(
+        context: context,
+        builder: (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            elevation: 16.0,
+            insetPadding: const EdgeInsets.all(0.0),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const double spaceBetween = 18.0;
+
+                final double maxQRCodeSize =
+                    constraints.maxWidth > constraints.maxHeight
+                        ? constraints.maxHeight * 0.75
+                        : constraints.maxWidth * 0.9;
+
+                const double padY = 16;
+                const double padX = padY / 2;
+
+                return Padding(
+                    padding: const EdgeInsets.fromLTRB(padX, padY, padX, padY),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "Scan this data with Import Manager",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18.0,
+                          ),
+                        ),
+                        const SizedBox(height: spaceBetween),
+                        QrImageView(
+                          version: QrVersions.auto,
+                          backgroundColor: Colors.white,
+                          size: maxQRCodeSize,
+                          data: encodeMultipleJsonToB64(jsons),
+                          errorStateBuilder: (context, error) => Column(
+                            children: [
+                              const Text(
+                                  "QR Code Failed to load because of the following"),
+                              Text(error.toString())
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: spaceBetween),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text("OK"),
+                        ),
+                      ],
+                    ));
+              },
+            )));
   }
 
   @override
@@ -102,136 +218,137 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _canExport
-              ? "Select what data you want to export"
-              : "List of ${widget.scoutingType.value} Data",
+          _canExport ? "Select Data" : widget.scoutingType.displayName,
           textAlign: TextAlign.center,
         ),
-        actions: [
-          PopupMenuButton(
-              onSelected: (value) {
-                if (value == "export") {
-                  setState(() {
-                    _canExport = true;
-                  });
-                } else if (value == "cancel") {
-                  setState(() {
-                    _selectedIndices.clear();
-                    _canExport = false;
-                  });
-                } else if (value == "confirm") {
-                  List<Map<String, dynamic>> jsons = [];
-                  for (final entry in _entries) {
-                    jsons.add(decodeJsonFromB64(entry.b64String ?? "{}"));
-                  }
-
-                  showDialog(
-                      context: context,
-                      builder: (context) => Dialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          elevation: 16.0,
-                          insetPadding: const EdgeInsets.all(0.0),
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              const double spaceBetween = 18.0;
-
-                              final double maxQRCodeSize =
-                                  constraints.maxWidth > constraints.maxHeight
-                                      ? constraints.maxHeight * 0.75
-                                      : constraints.maxWidth * 0.9;
-
-                              const double padY = 16;
-                              const double padX = padY / 2;
-
-                              return Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      padX, padY, padX, padY),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Text(
-                                        "Scan Data with Import Manager",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18.0,
-                                        ),
-                                      ),
-                                      const SizedBox(height: spaceBetween),
-                                      QrImageView(
-                                        version: QrVersions.auto,
-                                        backgroundColor: Colors.white,
-                                        size: maxQRCodeSize,
-                                        data: encodeMultipleJsonToB64(jsons),
-                                        errorStateBuilder: (context, error) =>
-                                            Column(
-                                          children: [
-                                            const Text(
-                                                "QR Code Failed to load because of the following"),
-                                            Text(error.toString())
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: spaceBetween),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text("OK"),
-                                      ),
-                                    ],
-                                  ));
-                            },
-                          )));
-                }
-              },
-              itemBuilder: (context) => _canExport
-                  ? [
-                      const PopupMenuItem(
-                          value: "cancel", child: Text("Cancel Export")),
-                      const PopupMenuItem(
-                          value: "confirm", child: Text("Confirm Export"))
-                    ]
-                  : [
-                      const PopupMenuItem(
-                          value: "export", child: Text("Export"))
-                    ])
-        ],
+        // actions: [
+        //   PopupMenuButton(
+        //       onSelected: (value) {
+        //         if (value == "export") {
+        //           setState(() {
+        //             _canExport = true;
+        //           });
+        //         } else if (value == "cancel") {
+        //           setState(() {
+        //             _selectedIndices.clear();
+        //             _canExport = false;
+        //           });
+        //         } else if (value == "confirm") {}
+        //       },
+        //       itemBuilder: (context) => _canExport
+        //           ? [
+        //               const PopupMenuItem(
+        //                   value: "cancel", child: Text("Cancel Export")),
+        //               const PopupMenuItem(
+        //                   value: "confirm", child: Text("Confirm Export"))
+        //             ]
+        //           : [
+        //               const PopupMenuItem(
+        //                   value: "export", child: Text("Export"))
+        //             ])
+        // ],
       ),
+      bottomNavigationBar: Visibility(
+          visible: _canExport,
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border(
+                    top: BorderSide(color: Theme.of(context).dividerColor))),
+            padding: const EdgeInsets.all(16),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  OutlinedButton(
+                      onPressed: _disableExport, child: const Text("Cancel")),
+                  ElevatedButton(
+                    onPressed: _exportScoutingData,
+                    child: const Text("Export"),
+                  ),
+                ]),
+          )),
       body: Builder(
         builder: (context) {
+          Color iconColor = Theme.of(context).colorScheme.primary;
+
           if (_loading) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
-          if (_entries.isEmpty && !_loading) {
+          if (_drafts.isEmpty && _entries.isEmpty && !_loading) {
             return ListTile(
               title: Text(
-                "No items are in the database for ${widget.scoutingType.value}.",
+                "No items are in the database for ${widget.scoutingType.displayName}.",
                 textAlign: TextAlign.center,
               ),
             );
           }
 
-          return ListView.builder(
-              itemCount: _entries.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_getListTileTitle(_entries[index])),
-                  subtitle: Text(_getListTileSubtitle(_entries[index])),
+          return ListView(
+            children: [
+              if (!_canExport) ...[
+                ListTile(
+                  leading: const Icon(Icons.my_library_add_sharp),
+                  iconColor: iconColor,
+                  title:
+                      Text("Collect ${widget.scoutingType.displayName} Data"),
                   onTap: () {
-                    if (_canExport) {
-                      _selectIndex(index);
-                    } else {
-                      context.go(
-                          "/data/match-scouting/${_entries[index].b64String}");
-                    }
+                    context.go("/match_scouting");
                   },
-                  selected: _canExport && _selectedIndices.contains(index),
-                );
-              });
+                ),
+                ListTile(
+                    leading: const Icon(Icons.import_export),
+                    iconColor: iconColor,
+                    title:
+                        Text("Import ${widget.scoutingType.displayName} Data"),
+                    onTap: () => _enableImport()),
+                ListTile(
+                    leading: const Icon(Icons.import_export),
+                    iconColor: iconColor,
+                    title:
+                        Text("Export ${widget.scoutingType.displayName} Data"),
+                    onTap: () => _enableExport()),
+                ExpansionTile(
+                  leading: const Icon(Icons.drafts),
+                  title: const Text("Drafts"),
+                  initiallyExpanded: _drafts.isNotEmpty,
+                  children: [
+                    for (final draft in _drafts)
+                      ListTile(
+                        title: Text(_getListTileTitle(draft)),
+                        subtitle: Text(_getListTileSubtitle(draft)),
+                        onTap: () {
+                          context.go(
+                              "/data/${widget.scoutingType.urlPath}/${draft.b64String}");
+                        },
+                      )
+                  ],
+                )
+              ],
+              ExpansionTile(
+                leading: const Icon(Icons.done),
+                title: const Text("Completed"),
+                initiallyExpanded: _entries.isNotEmpty,
+                children: [
+                  for (int i = 0; i < _entries.length; ++i)
+                    ListTile(
+                      title: Text(_getListTileTitle(_entries[i])),
+                      subtitle: Text(_getListTileSubtitle(_entries[i])),
+                      selected: _canExport && _selectedIndices.contains(i),
+                      onTap: () {
+                        if (_canExport) {
+                          _selectIndex(i);
+                          return;
+                        }
+                        context.go(
+                            "/data/${widget.scoutingType.urlPath}/${_entries[i].b64String}");
+                      },
+                      // onLongPress: () => _toggleSelectState(i),
+                    )
+                ],
+              ),
+            ],
+          );
         },
       ),
     );

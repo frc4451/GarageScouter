@@ -38,3 +38,15 @@ void errorMessageSnackbar(BuildContext context, dynamic error) {
         textAlign: TextAlign.center,
       )));
 }
+
+/// Sends a basic snackbar with the ColorScheme's primary color with whatever
+/// message was provided.
+void informationSnackbar(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).clearSnackBars();
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      content: Text(
+        message,
+        textAlign: TextAlign.center,
+      )));
+}

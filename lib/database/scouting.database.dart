@@ -21,6 +21,8 @@ class ScoutingDataEntry {
   String? datahash;
   String? schemaHash;
   String? b64String;
+
+  bool? isDraft;
 }
 
 @collection
