@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robotz_garage_scouting/constants/platform_check.dart';
 import 'package:robotz_garage_scouting/components/drawer/drawer_tile.dart';
+import 'package:robotz_garage_scouting/router.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,7 +17,8 @@ class _HomePageState extends State<HomePage> {
     if (Navigator.canPop(context)) {
       Navigator.of(context).pop();
     }
-    context.go(path);
+    // context.go(path);
+    context.goNamed(path);
   }
 
   @override
@@ -50,17 +52,17 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   DrawerTile(
                       tileText: "Pit Scouting Form",
-                      onTap: () => _route('/pit_scouting')),
+                      onTap: () => _route('pit-scouting')),
                   DrawerTile(
                       tileText: "Match Scouting Form",
-                      onTap: () => _route('/match_scouting')),
+                      onTap: () => _route('match-scouting')),
                   DrawerTile(
                       tileText: "Super Scouting Form",
-                      onTap: () => _route('/super_scouting')),
+                      onTap: () => _route('super-scouting')),
                   if (!isWebPlatform())
                     DrawerTile(
                         tileText: "Photo Collection",
-                        onTap: () => _route('/photo_collection')),
+                        onTap: () => _route('photo_collection')),
                 ],
               ),
               ExpansionTile(
@@ -69,26 +71,25 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   DrawerTile(
                     tileText: "Database Tester",
-                    onTap: () => _route("/database_tester"),
+                    onTap: () => _route("database_tester"),
                   ),
                   DrawerTile(
                     tileText: "Data Explorer",
-                    onTap: () => _route("/data"),
+                    onTap: () => _route("data"),
                   ),
                   if (!isWebPlatform()) ...[
                     DrawerTile(
                         tileText: "Export Manager",
-                        onTap: () => _route('/export_manager')),
+                        onTap: () => _route('export_manager')),
                     DrawerTile(
                         tileText: "Import Manager",
-                        onTap: () => _route('/import_manager')),
+                        onTap: () => _route('import_manager')),
                   ] else
                     const DrawerTile(
                         tileText: "Not available on Web at this time.")
                 ],
               ),
-              DrawerTile(
-                  tileText: "Settings", onTap: () => _route('/settings')),
+              DrawerTile(tileText: "Settings", onTap: () => _route('settings')),
             ],
           ))
         ]),

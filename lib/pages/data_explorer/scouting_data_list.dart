@@ -5,24 +5,14 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/models/database_controller_model.dart';
+import 'package:robotz_garage_scouting/router.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 
-enum ScoutingType {
-  pitScouting(displayName: "Pit Scouting", urlPath: "pit-scouting"),
-  matchScouting(displayName: "Match Scouting", urlPath: "match-scouting"),
-  superScouting(displayName: "Super Scouting", urlPath: "super-scouting");
-
-  final String displayName;
-  final String urlPath;
-
-  const ScoutingType({required this.displayName, required this.urlPath});
-}
-
 class ScoutingDataListPage extends StatefulWidget {
-  final ScoutingType scoutingType;
+  final ScoutingRouter scoutingRouter;
 
-  const ScoutingDataListPage({super.key, required this.scoutingType});
+  const ScoutingDataListPage({super.key, required this.scoutingRouter});
 
   @override
   State<ScoutingDataListPage> createState() => _ScoutingDataListPageState();
@@ -42,7 +32,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   Future<void> _listEntries() async {
     List<ScoutingDataEntry> queriedDrafts = [];
     List<ScoutingDataEntry> queriedEntries = [];
-    if (widget.scoutingType == ScoutingType.pitScouting) {
+    if (widget.scoutingRouter == ScoutingRouter.pitScouting) {
       queriedDrafts = await _isar.pitScoutingEntrys
           .filter()
           .b64StringIsNotNull()
@@ -56,7 +46,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
           .sortByTeamNumber()
           .findAll();
     }
-    if (widget.scoutingType == ScoutingType.matchScouting) {
+    if (widget.scoutingRouter == ScoutingRouter.matchScouting) {
       queriedDrafts = await _isar.matchScoutingEntrys
           .filter()
           .b64StringIsNotNull()
@@ -70,7 +60,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
           .sortByMatchNumber()
           .findAll();
     }
-    if (widget.scoutingType == ScoutingType.superScouting) {
+    if (widget.scoutingRouter == ScoutingRouter.superScouting) {
       queriedDrafts = await _isar.superScoutingEntrys
           .filter()
           .b64StringIsNotNull()
@@ -120,6 +110,12 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   }
 
   void _enableExport() {
+    if (_entries.isEmpty) {
+      errorMessageSnackbar(context,
+          "You don't have completed ${widget.scoutingRouter.displayName} data.");
+      return;
+    }
+
     setState(() {
       _selectedIndices.clear();
       _canExport = true;
@@ -218,7 +214,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _canExport ? "Select Data" : widget.scoutingType.displayName,
+          _canExport ? "Select Data" : widget.scoutingRouter.displayName,
           textAlign: TextAlign.center,
         ),
         // actions: [
@@ -269,20 +265,21 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
       body: Builder(
         builder: (context) {
           Color iconColor = Theme.of(context).colorScheme.primary;
+          bool databaseNotEmpty = _drafts.isNotEmpty || _entries.isNotEmpty;
 
-          if (_loading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          if (_drafts.isEmpty && _entries.isEmpty && !_loading) {
-            return ListTile(
-              title: Text(
-                "No items are in the database for ${widget.scoutingType.displayName}.",
-                textAlign: TextAlign.center,
-              ),
-            );
-          }
+          // if (_loading) {
+          //   return const Center(
+          //     child: CircularProgressIndicator(),
+          //   );
+          // }
+          // if (_drafts.isEmpty && _entries.isEmpty && !_loading) {
+          //   return ListTile(
+          //     title: Text(
+          //       "No items are in the database for ${widget.scoutingRouter.displayName}.",
+          //       textAlign: TextAlign.center,
+          //     ),
+          //   );
+          // }
 
           return ListView(
             children: [
@@ -291,23 +288,37 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                   leading: const Icon(Icons.my_library_add_sharp),
                   iconColor: iconColor,
                   title:
-                      Text("Collect ${widget.scoutingType.displayName} Data"),
+                      Text("Collect ${widget.scoutingRouter.displayName} Data"),
                   onTap: () {
-                    context.go("/match_scouting");
+                    context
+                        .goNamed('${widget.scoutingRouter.urlPath}-collection');
                   },
                 ),
                 ListTile(
                     leading: const Icon(Icons.import_export),
                     iconColor: iconColor,
-                    title:
-                        Text("Import ${widget.scoutingType.displayName} Data"),
+                    title: Text(
+                        "Import ${widget.scoutingRouter.displayName} Data"),
                     onTap: () => _enableImport()),
                 ListTile(
                     leading: const Icon(Icons.import_export),
                     iconColor: iconColor,
-                    title:
-                        Text("Export ${widget.scoutingType.displayName} Data"),
+                    title: Text(
+                        "Export ${widget.scoutingRouter.displayName} Data"),
                     onTap: () => _enableExport()),
+              ],
+              if (_loading)
+                const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              if (!databaseNotEmpty && !_loading)
+                ListTile(
+                  title: Text(
+                    "No items are in the database for ${widget.scoutingRouter.displayName}.",
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              if (!_canExport && databaseNotEmpty)
                 ExpansionTile(
                   leading: const Icon(Icons.drafts),
                   title: const Text("Drafts"),
@@ -318,35 +329,37 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                         title: Text(_getListTileTitle(draft)),
                         subtitle: Text(_getListTileSubtitle(draft)),
                         onTap: () {
-                          context.go(
-                              "/data/${widget.scoutingType.urlPath}/${draft.b64String}");
+                          context.goNamed(
+                              '${widget.scoutingRouter.urlPath}-display',
+                              params: {'hash': draft.b64String ?? ""});
+                          // context.go(
+                          //     "/data/${widget.scoutingRouter.urlPath}/${draft.b64String}");
                         },
                       )
                   ],
-                )
-              ],
-              ExpansionTile(
-                leading: const Icon(Icons.done),
-                title: const Text("Completed"),
-                initiallyExpanded: _entries.isNotEmpty,
-                children: [
-                  for (int i = 0; i < _entries.length; ++i)
-                    ListTile(
-                      title: Text(_getListTileTitle(_entries[i])),
-                      subtitle: Text(_getListTileSubtitle(_entries[i])),
-                      selected: _canExport && _selectedIndices.contains(i),
-                      onTap: () {
-                        if (_canExport) {
-                          _selectIndex(i);
-                          return;
-                        }
-                        context.go(
-                            "/data/${widget.scoutingType.urlPath}/${_entries[i].b64String}");
-                      },
-                      // onLongPress: () => _toggleSelectState(i),
-                    )
-                ],
-              ),
+                ),
+              if (databaseNotEmpty)
+                ExpansionTile(
+                  leading: const Icon(Icons.done),
+                  title: const Text("Completed"),
+                  initiallyExpanded: _entries.isNotEmpty,
+                  children: [
+                    for (int i = 0; i < _entries.length; ++i)
+                      ListTile(
+                        title: Text(_getListTileTitle(_entries[i])),
+                        subtitle: Text(_getListTileSubtitle(_entries[i])),
+                        selected: _canExport && _selectedIndices.contains(i),
+                        onTap: () {
+                          if (_canExport) {
+                            _selectIndex(i);
+                            return;
+                          }
+                          context.go(
+                              "/data/${widget.scoutingRouter.urlPath}/${_entries[i].b64String}");
+                        },
+                      )
+                  ],
+                ),
             ],
           );
         },

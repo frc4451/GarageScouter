@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
+import 'package:robotz_garage_scouting/database/scouting.database.dart';
+import 'package:robotz_garage_scouting/models/database_controller_model.dart';
 import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
@@ -20,10 +23,11 @@ class SuperScoutingPage extends StatefulWidget {
 }
 
 class _SuperScoutingPageState extends State<SuperScoutingPage> {
-  final String title = "Match Scouting Form";
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   final PageController _controller =
       PageController(initialPage: 0, keepPage: true);
+
+  late Isar _isar;
 
   final int durationMilliseconds = 300;
 
@@ -70,21 +74,34 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
         prefix: "super_scouting_${matchNumber}_$teamNumber",
         timestamp: timestamp);
 
-    final File file = File(filePath);
+    // final File file = File(filePath);
 
-    try {
-      File finalFile = await file.writeAsString(convertMapStateToString(state));
+    final SuperScoutingEntry entry = SuperScoutingEntry()
+      ..isDraft = false
+      ..teamNumber = int.tryParse(teamNumber)
+      ..b64String = encodeJsonToB64(state, urlSafe: true);
 
-      saveFileToDevice(finalFile).then((file) {
-        saveFileSnackbar(context, file);
-      }).catchError((error) {
-        errorMessageSnackbar(context, error);
-      });
-    } on Exception catch (_, exception) {
-      if (mounted) {
-        errorMessageSnackbar(context, exception);
-      }
-    }
+    await _isar
+        .writeTxn(() => _isar.superScoutingEntrys.put(entry))
+        .then((value) {
+      successMessageSnackbar(context, "Saved Super Scouting Data");
+    }).catchError((error) {
+      errorMessageSnackbar(context, error);
+    });
+
+    // try {
+    //   File finalFile = await file.writeAsString(convertMapStateToString(state));
+
+    //   saveFileToDevice(finalFile).then((file) {
+    //     saveFileSnackbar(context, file);
+    //   }).catchError((error) {
+    //     errorMessageSnackbar(context, error);
+    //   });
+    // } on Exception catch (_, exception) {
+    //   if (mounted) {
+    //     errorMessageSnackbar(context, exception);
+    //   }
+    // }
   }
 
   void _resetPage() {
@@ -130,6 +147,12 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
       model.setSuperScouting(_formKey.currentState!.value);
     }
     return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _isar = context.read<IsarModel>().isar;
   }
 
   /// Clean up the component, but also the FormBuilderController
