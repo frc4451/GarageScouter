@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/models/database_controller_model.dart';
+import 'package:robotz_garage_scouting/pages/match_scouting/match_scouting.dart';
+import 'package:robotz_garage_scouting/pages/pit_scouting_form.dart';
+import 'package:robotz_garage_scouting/pages/super_scouting.dart';
 import 'package:robotz_garage_scouting/router.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
@@ -290,8 +293,26 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                   title:
                       Text("Collect ${widget.scoutingRouter.displayName} Data"),
                   onTap: () {
-                    context
-                        .goNamed('${widget.scoutingRouter.urlPath}-collection');
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      // clean this up with better imperative routing later
+                      if (widget.scoutingRouter == ScoutingRouter.pitScouting) {
+                        return const PitScoutingPage();
+                      } else if (widget.scoutingRouter ==
+                          ScoutingRouter.matchScouting) {
+                        return const MatchScoutingPage();
+                      } else if (widget.scoutingRouter ==
+                          ScoutingRouter.superScouting) {
+                        return const SuperScoutingPage();
+                      }
+
+                      return const Placeholder();
+                    }));
+                    // Navigator.of(context).pushNamed(
+                    //     '${widget.scoutingRouter.urlPath}-collection');
+
+                    // context
+                    //     .goNamed('${widget.scoutingRouter.urlPath}-collection');
                   },
                 ),
                 ListTile(

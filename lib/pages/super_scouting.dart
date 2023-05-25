@@ -137,8 +137,11 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   }
 
   /// We safely save the state of the form when the user pops the Widget from
-  /// the Widget Tree. We don't check for form validation in this step so we
-  /// always return `true` to always allow the user to pop.
+  /// the Widget Tree. Assuming that we're using imperative routing, this should
+  /// pop from the widget tree.
+  ///
+  /// The only form validation we do is check if the `team_number` form field
+  /// is not null, and if it is not null, save the entry as a draft.
   Future<bool> _onWillPop() async {
     RetainInfoModel model =
         Provider.of<RetainInfoModel>(context, listen: false);
@@ -146,6 +149,26 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
       _formKey.currentState?.save();
       model.setSuperScouting(_formKey.currentState!.value);
     }
+
+    Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
+
+    final SuperScoutingEntry entry = SuperScoutingEntry()
+      ..isDraft = false
+      ..teamNumber = int.tryParse(state['team_number'])
+      ..b64String = encodeJsonToB64(state, urlSafe: true);
+
+    if (entry.teamNumber == null) {
+      return true;
+    }
+
+    await _isar
+        .writeTxn(() => _isar.superScoutingEntrys.put(entry))
+        .then((value) {
+      successMessageSnackbar(context, "Saved Super Scouting Data");
+    }).catchError((error) {
+      errorMessageSnackbar(context, error);
+    });
+
     return true;
   }
 
@@ -165,7 +188,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   @override
   Widget build(BuildContext context) {
     return Consumer<RetainInfoModel>(builder: (context, retain, _) {
-      final Map<String, dynamic> superScouting = retain.superScouting();
+      final Map<String, dynamic> superScouting = {};
       return Scaffold(
         appBar: AppBar(
           title: const Text(

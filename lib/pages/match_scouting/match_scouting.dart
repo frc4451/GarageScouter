@@ -31,7 +31,6 @@ class MatchScoutingPage extends StatefulWidget {
 
 class _MatchScoutingPageState extends State<MatchScoutingPage>
     with SingleTickerProviderStateMixin {
-  final String title = "Match Scouting Form";
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   final PageController _controller =
       PageController(initialPage: 0, keepPage: true);
@@ -69,54 +68,55 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     final String teamNumber = state["team_number"].toString();
     final String alliance = state["team_alliance"].toString();
 
-    final String filePath = await generateUniqueFilePath(
-        extension: "csv",
-        prefix: "match_${matchNumber}_${alliance}_$teamNumber",
-        timestamp: timestamp);
+    // final String filePath = await generateUniqueFilePath(
+    //     extension: "csv",
+    //     prefix: "match_${matchNumber}_${alliance}_$teamNumber",
+    //     timestamp: timestamp);
 
-    try {
-      if (kIsWeb) {
-        saveFileFromWeb(
-                filePath: filePath, contents: convertMapStateToString(state))
-            .then((File value) {
-          _clearForm(isSubmission: true);
-          saveFileSnackbar(context, value);
-        }).catchError((exception) {
-          errorMessageSnackbar(context, exception);
-        });
+    // try {
+    //   if (kIsWeb) {
+    //     saveFileFromWeb(
+    //             filePath: filePath, contents: convertMapStateToString(state))
+    //         .then((File value) {
+    //       _clearForm(isSubmission: true);
+    //       saveFileSnackbar(context, value);
+    //     }).catchError((exception) {
+    //       errorMessageSnackbar(context, exception);
+    //     });
 
-        return;
-      }
-      // final File file = File(filePath);
-      // final File finalFile =
-      //     await file.writeAsString(convertMapStateToString(state));
+    //     return;
+    //   }
+    // final File file = File(filePath);
+    // final File finalFile =
+    //     await file.writeAsString(convertMapStateToString(state));
 
-      // saveFileToDevice(finalFile).then((File file) {
-      //   _clearForm(isSubmission: true);
-      //   saveFileSnackbar(context, file);
-      // }).catchError((error) {
-      //   errorMessageSnackbar(context, error);
-      // });
+    // saveFileToDevice(finalFile).then((File file) {
+    //   _clearForm(isSubmission: true);
+    //   saveFileSnackbar(context, file);
+    // }).catchError((error) {
+    //   errorMessageSnackbar(context, error);
+    // });
 
-      MatchScoutingEntry entry = MatchScoutingEntry()
-        ..teamNumber = int.tryParse(teamNumber)
-        ..matchNumber = int.tryParse(matchNumber)
-        ..alliance = alliance.toLowerCase() == "red"
-            ? TeamAlliance.red
-            : TeamAlliance.blue
-        ..b64String = encodeJsonToB64(state, urlSafe: true)
-        ..isDraft = false;
-      _isar.writeTxn(() => _isar.matchScoutingEntrys.put(entry)).then((value) {
-        _clearForm(isSubmission: true);
-        successMessageSnackbar(context, "Saved data to Isar, Index $value");
-      }).catchError((error) {
-        errorMessageSnackbar(context, error);
-      });
-    } on Exception catch (_, exception) {
-      if (mounted) {
-        errorMessageSnackbar(context, exception);
-      }
-    }
+    MatchScoutingEntry entry = MatchScoutingEntry()
+      ..teamNumber = int.tryParse(teamNumber)
+      ..matchNumber = int.tryParse(matchNumber)
+      ..alliance =
+          alliance.toLowerCase() == "red" ? TeamAlliance.red : TeamAlliance.blue
+      ..b64String = encodeJsonToB64(state, urlSafe: true)
+      ..isDraft = false;
+
+    _isar.writeTxn(() => _isar.matchScoutingEntrys.put(entry)).then((value) {
+      _clearForm(isSubmission: true);
+      successMessageSnackbar(context, "Saved data to Isar, Index $value");
+    }).catchError((error) {
+      errorMessageSnackbar(context, error);
+    });
+    // }
+    // on Exception catch (_, exception) {
+    //   if (mounted) {
+    //     errorMessageSnackbar(context, exception);
+    //   }
+    // }
   }
 
   /// Handles Previous Page functionality for desktop/accessibility
@@ -226,16 +226,13 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   }
 
   /// We safely save the state of the form when the user pops the Widget from
-  /// the Widget Tree. We don't check for form validation in this step so we
-  /// always return `true` to always allow the user to pop.
+  /// the Widget Tree. Assuming that we're using imperative routing, this should
+  /// pop from the widget tree.
+  ///
+  /// The only form validation we do is check if the `team_number` and
+  /// `match_number` form field are not null, and if it is not null, save
+  /// the entry as a draft.
   Future<bool> _onWillPop() async {
-    RetainInfoModel model =
-        Provider.of<RetainInfoModel>(context, listen: false);
-    if (model.doesRetainInfo()) {
-      _formKey.currentState?.save();
-      model.setMatchScouting(_formKey.currentState!.value);
-    }
-
     Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
 
     MatchScoutingEntry entry = MatchScoutingEntry()
@@ -248,6 +245,10 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
               : TeamAlliance.unassigned
       ..b64String = encodeJsonToB64(state, urlSafe: true)
       ..isDraft = true;
+
+    if (entry.teamNumber == null || entry.matchNumber == null) {
+      return true;
+    }
 
     await _isar
         .writeTxn(() => _isar.matchScoutingEntrys.put(entry))
