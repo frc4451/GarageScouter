@@ -229,9 +229,14 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   /// `match_number` form field are not null, and if it is not null, save
   /// the entry as a draft.
   Future<bool> _onWillPop() async {
+    _formKey.currentState?.save();
+
     Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
 
-    if (state.isEmpty) {
+    if (state.isEmpty ||
+        state['team_number'] == null ||
+        state['match_number'] == null ||
+        state['team_alliance'] == null) {
       return true;
     }
 

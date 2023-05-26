@@ -65,14 +65,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     state['timestamp'] = timestamp;
 
     final String teamNumber = state["team_number"].toString();
-    final String matchNumber = state["match_number"].toString();
-
-    final String filePath = await generateUniqueFilePath(
-        extension: "csv",
-        prefix: "super_scouting_${matchNumber}_$teamNumber",
-        timestamp: timestamp);
-
-    // final File file = File(filePath);
 
     final SuperScoutingEntry entry = SuperScoutingEntry()
       ..isDraft = false
@@ -120,19 +112,19 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   /// We also check for when a user hits "previous" and prevent them from overflowing
   /// the scroll and hiding the form. We don't check for the last page because it changes
   /// to "Submit".
-  void _onPageChanged(int pageNumber,
-      {PageDirection direction = PageDirection.none}) {
-    setState(() {
-      _currentPage = pageNumber;
-      if (direction != PageDirection.none &&
-          (pageNumber + direction.value) >= 0) {
-        _currentPage = pageNumber + direction.value;
-        _controller.animateToPage(_currentPage,
-            duration: Duration(milliseconds: durationMilliseconds),
-            curve: Curves.ease);
-      }
-    });
-  }
+  // void _onPageChanged(int pageNumber,
+  //     {PageDirection direction = PageDirection.none}) {
+  //   setState(() {
+  //     _currentPage = pageNumber;
+  //     if (direction != PageDirection.none &&
+  //         (pageNumber + direction.value) >= 0) {
+  //       _currentPage = pageNumber + direction.value;
+  //       _controller.animateToPage(_currentPage,
+  //           duration: Duration(milliseconds: durationMilliseconds),
+  //           curve: Curves.ease);
+  //     }
+  //   });
+  // }
 
   /// We safely save the state of the form when the user pops the Widget from
   /// the Widget Tree. Assuming that we're using imperative routing, this should
@@ -141,12 +133,13 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   /// The only form validation we do is check if the `team_number` form field
   /// is not null, and if it is not null, save the entry as a draft.
   Future<bool> _onWillPop() async {
-    RetainInfoModel model =
-        Provider.of<RetainInfoModel>(context, listen: false);
-    if (model.doesRetainInfo()) {
-      _formKey.currentState?.save();
-      model.setSuperScouting(_formKey.currentState!.value);
-    }
+    // RetainInfoModel model =
+    //     Provider.of<RetainInfoModel>(context, listen: false);
+    // if (model.doesRetainInfo()) {
+    //   _formKey.currentState?.save();
+    //   model.setSuperScouting(_formKey.currentState!.value);
+    // }
+    _formKey.currentState?.save();
 
     Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
 

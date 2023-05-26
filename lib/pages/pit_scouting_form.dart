@@ -220,11 +220,9 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                   children: [
                     FormBuilder(
                         key: _formKey,
-                        // onWillPop: _onWillPop,
                         child: Consumer<RetainInfoModel>(
                           builder: (context, model, _) {
                             final Map<String, dynamic> pitData = {};
-                            // model.pitScouting();
 
                             return Column(
                               children: <Widget>[
