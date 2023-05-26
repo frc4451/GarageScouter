@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -223,7 +222,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                                             <String, dynamic>{});
                                         Navigator.pop(context);
                                       },
-                                      child: Text("Confirm"),
+                                      child: const Text("Confirm"),
                                     )
                                   ]));
                     },

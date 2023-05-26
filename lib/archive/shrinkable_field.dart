@@ -7,6 +7,7 @@ import '../validators/custom_text_validators.dart';
 class OptionalShrinkableField extends FormBuilderField<String> {
 // class OptionalShrinkableField extends StatefulWidget {
   /// Name of the field when pulling it from currentState
+  @override
   final String name;
 
   /// Display name for the counter. This is optional so we can default to `name`

@@ -213,9 +213,9 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
   /// Includes deleting photos not needed.
   void _resetForm() {
     _formKey.currentState?.reset();
-    _photos.values.forEach((file) {
+    for (final file in _photos.values) {
       file.deleteSync();
-    });
+    }
     _photos.clear();
   }
 

@@ -1,6 +1,4 @@
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:isar/isar.dart';
@@ -16,7 +14,6 @@ import 'package:robotz_garage_scouting/pages/match_scouting/match_initial.dart';
 import 'package:robotz_garage_scouting/pages/match_scouting/match_summary.dart';
 import 'package:robotz_garage_scouting/pages/match_scouting/match_endgame.dart';
 import 'package:robotz_garage_scouting/pages/match_scouting/match_teleop.dart';
-import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
 
 import 'package:robotz_garage_scouting/utils/enums.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';

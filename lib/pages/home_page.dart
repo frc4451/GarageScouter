@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robotz_garage_scouting/constants/platform_check.dart';
 import 'package:robotz_garage_scouting/components/drawer/drawer_tile.dart';
-import 'package:robotz_garage_scouting/router.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

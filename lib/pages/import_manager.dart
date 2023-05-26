@@ -74,9 +74,9 @@ class _ImportManagerPageState extends State<ImportManagerPage> {
           zipFile: zipFile);
 
       // Clean up now unneeded files
-      files.forEach((File file) {
+      for (final file in files) {
         file.deleteSync();
-      });
+      }
 
       // Save to device and cleanup
       saveFileToDevice(zipFile).then((File file) {

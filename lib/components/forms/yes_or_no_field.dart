@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:dartz/dartz.dart' as dartz;
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
