@@ -9,6 +9,21 @@ import 'package:robotz_garage_scouting/router.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 
+enum ScoutingDataActionState {
+  initial,
+  import,
+  export,
+  archive,
+  delete;
+
+  bool isInitial() => this == ScoutingDataActionState.initial;
+  bool isNotInitial() => this != ScoutingDataActionState.initial;
+  bool isImport() => this == ScoutingDataActionState.import;
+  bool isExport() => this == ScoutingDataActionState.export;
+  bool isArchive() => this == ScoutingDataActionState.archive;
+  bool isDelete() => this == ScoutingDataActionState.delete;
+}
+
 class ScoutingDataListPage extends StatefulWidget {
   final ScoutingRouter scoutingRouter;
 
@@ -26,13 +41,18 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   List<ScoutingDataEntry> _entries = [];
   List<ScoutingDataEntry> _drafts = [];
 
-  bool _canExport = false;
   final List<int> _selectedIndices = [];
 
+  ScoutingDataActionState _actionState = ScoutingDataActionState.initial;
+
   Future<void> _listEntries() async {
+    setState(() {
+      _loading = true;
+    });
+
     List<ScoutingDataEntry> queriedDrafts = [];
     List<ScoutingDataEntry> queriedEntries = [];
-    if (widget.scoutingRouter == ScoutingRouter.pitScouting) {
+    if (widget.scoutingRouter.isPitScouting()) {
       queriedDrafts = await _isar.pitScoutingEntrys
           .filter()
           .b64StringIsNotNull()
@@ -46,7 +66,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
           .sortByTeamNumber()
           .findAll();
     }
-    if (widget.scoutingRouter == ScoutingRouter.matchScouting) {
+    if (widget.scoutingRouter.isMatchScouting()) {
       queriedDrafts = await _isar.matchScoutingEntrys
           .filter()
           .b64StringIsNotNull()
@@ -60,7 +80,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
           .sortByMatchNumber()
           .findAll();
     }
-    if (widget.scoutingRouter == ScoutingRouter.superScouting) {
+    if (widget.scoutingRouter.isSuperScouting()) {
       queriedDrafts = await _isar.superScoutingEntrys
           .filter()
           .b64StringIsNotNull()
@@ -99,14 +119,36 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
 
   void _selectIndex(int index) {
     setState(() {
-      _canExport && _selectedIndices.contains(index)
+      _actionState.isExport() && _selectedIndices.contains(index)
           ? _selectedIndices.remove(index)
           : _selectedIndices.add(index);
 
       if (_selectedIndices.isEmpty) {
-        _canExport = false;
+        // _canExport = false;
+        _actionState = ScoutingDataActionState.initial;
       }
     });
+  }
+
+  void _enableDelete() {
+    if (_entries.isEmpty && _drafts.isEmpty) {
+      errorMessageSnackbar(
+          context, "You don't have ${widget.scoutingRouter.displayName} data.");
+      return;
+    }
+
+    setState(() {
+      _selectedIndices.clear();
+      _actionState = ScoutingDataActionState.delete;
+    });
+  }
+
+  void _enableImport() {
+    informationSnackbar(context, "Will be implemented eventually.");
+  }
+
+  void _enableArchive() {
+    informationSnackbar(context, "Will be implemented eventually.");
   }
 
   void _enableExport() {
@@ -118,23 +160,81 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
 
     setState(() {
       _selectedIndices.clear();
-      _canExport = true;
+      _actionState = ScoutingDataActionState.export;
     });
   }
 
-  void _disableExport() {
+  void _resetState() {
     setState(() {
       _selectedIndices.clear();
-      _canExport = false;
+      _actionState = ScoutingDataActionState.initial;
     });
   }
 
-  void _enableImport() {
-    informationSnackbar(context, "Will be implemented eventually.");
+  String _getSubmitText() {
+    return _actionState.isExport()
+        ? "Export"
+        : _actionState.isDelete()
+            ? "Delete"
+            : "Submit";
   }
 
-  void _disableImport() {
-    informationSnackbar(context, "Will be implemented eventually.");
+  void _handleSubmit() {
+    switch (_actionState) {
+      case ScoutingDataActionState.import:
+        return;
+      case ScoutingDataActionState.export:
+        _exportScoutingData();
+        break;
+      case ScoutingDataActionState.delete:
+        _deleteDrafts();
+        break;
+      default:
+        break;
+    }
+  }
+
+  void _deleteDrafts() async {
+    List<int> ids = _selectedIndices
+        .map((index) => _drafts[index])
+        .map((draft) => draft.id)
+        .toList();
+
+    // There may be a generic way to do this using Isar, but I haven't found it.
+    if (widget.scoutingRouter.isPitScouting()) {
+      _isar.writeTxn(() => _isar.pitScoutingEntrys.deleteAll(ids)).then(
+        (_) {
+          successMessageSnackbar(context, "Successfully deleted draft(s)");
+        },
+      ).catchError((error) {
+        errorMessageSnackbar(context, error);
+      });
+    }
+    if (widget.scoutingRouter.isMatchScouting()) {
+      _isar.writeTxn(() => _isar.matchScoutingEntrys.deleteAll(ids)).then(
+        (_) {
+          successMessageSnackbar(context, "Successfully deleted draft(s)");
+        },
+      ).catchError((error) {
+        errorMessageSnackbar(context, error);
+      });
+    }
+    if (widget.scoutingRouter.isSuperScouting()) {
+      _isar.writeTxn(() => _isar.superScoutingEntrys.deleteAll(ids)).then(
+        (_) {
+          successMessageSnackbar(context, "Successfully deleted draft(s)");
+        },
+      ).catchError((error) {
+        errorMessageSnackbar(context, error);
+      });
+    }
+
+    _listEntries().then((_) {
+      setState(() {
+        _actionState = ScoutingDataActionState.initial;
+        _listEntries();
+      });
+    });
   }
 
   void _exportScoutingData() {
@@ -214,7 +314,11 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _canExport ? "Select Data" : widget.scoutingRouter.displayName,
+          _actionState.isExport()
+              ? "Export Data"
+              : _actionState.isDelete()
+                  ? "Delete Drafts"
+                  : widget.scoutingRouter.displayName,
           textAlign: TextAlign.center,
         ),
         // actions: [
@@ -245,7 +349,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
         // ],
       ),
       bottomNavigationBar: Visibility(
-          visible: _canExport,
+          visible: _actionState.isNotInitial(),
           child: Container(
             decoration: BoxDecoration(
                 border: Border(
@@ -255,10 +359,10 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   OutlinedButton(
-                      onPressed: _disableExport, child: const Text("Cancel")),
+                      onPressed: _resetState, child: const Text("Cancel")),
                   ElevatedButton(
-                    onPressed: _exportScoutingData,
-                    child: const Text("Export"),
+                    onPressed: _handleSubmit,
+                    child: Text(_getSubmitText()),
                   ),
                 ]),
           )),
@@ -283,7 +387,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
 
           return ListView(
             children: [
-              if (!_canExport) ...[
+              if (_actionState.isInitial()) ...[
                 ListTile(
                   leading: const Icon(Icons.my_library_add_sharp),
                   iconColor: iconColor,
@@ -291,7 +395,11 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                       Text("Collect ${widget.scoutingRouter.displayName} Data"),
                   onTap: () {
                     context
-                        .goNamed('${widget.scoutingRouter.urlPath}-collection');
+                        .pushNamed(
+                            '${widget.scoutingRouter.urlPath}-collection')
+                        .then((value) {
+                      _listEntries();
+                    });
                   },
                 ),
                 ListTile(
@@ -306,6 +414,18 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                     title: Text(
                         "Export ${widget.scoutingRouter.displayName} Data"),
                     onTap: () => _enableExport()),
+                // ListTile(
+                //     leading: const Icon(Icons.archive),
+                //     iconColor: iconColor,
+                //     title: Text(
+                //         "Archive ${widget.scoutingRouter.displayName} Data"),
+                //     onTap: () => _enableArchive()),
+                ListTile(
+                    leading: const Icon(Icons.delete),
+                    iconColor: iconColor,
+                    title: Text(
+                        "Delete ${widget.scoutingRouter.displayName} Drafts"),
+                    onTap: () => _enableDelete())
               ],
               if (_loading)
                 const Center(
@@ -318,27 +438,31 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-              if (!_canExport && databaseNotEmpty)
+              if (!_actionState.isExport() && databaseNotEmpty && !_loading)
                 ExpansionTile(
                   leading: const Icon(Icons.drafts),
                   title: const Text("Drafts"),
                   initiallyExpanded: _drafts.isNotEmpty,
                   children: [
-                    for (final draft in _drafts)
+                    for (int i = 0; i < _drafts.length; ++i)
                       ListTile(
-                        title: Text(_getListTileTitle(draft)),
-                        subtitle: Text(_getListTileSubtitle(draft)),
+                        title: Text(_getListTileTitle(_drafts[i])),
+                        subtitle: Text(_getListTileSubtitle(_drafts[i])),
+                        selected: _actionState.isDelete() &&
+                            _selectedIndices.contains(i),
                         onTap: () {
+                          if (_actionState.isDelete()) {
+                            _selectIndex(i);
+                            return;
+                          }
                           context.goNamed(
                               '${widget.scoutingRouter.urlPath}-display',
-                              params: {'hash': draft.b64String ?? ""});
-                          // context.go(
-                          //     "/data/${widget.scoutingRouter.urlPath}/${draft.b64String}");
+                              params: {'hash': _drafts[i].b64String ?? ""});
                         },
                       )
                   ],
                 ),
-              if (databaseNotEmpty)
+              if (!_actionState.isDelete() && databaseNotEmpty && !_loading)
                 ExpansionTile(
                   leading: const Icon(Icons.done),
                   title: const Text("Completed"),
@@ -348,14 +472,16 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                       ListTile(
                         title: Text(_getListTileTitle(_entries[i])),
                         subtitle: Text(_getListTileSubtitle(_entries[i])),
-                        selected: _canExport && _selectedIndices.contains(i),
+                        selected: _actionState.isExport() &&
+                            _selectedIndices.contains(i),
                         onTap: () {
-                          if (_canExport) {
+                          if (_actionState.isExport()) {
                             _selectIndex(i);
                             return;
                           }
-                          context.go(
-                              "/data/${widget.scoutingRouter.urlPath}/${_entries[i].b64String}");
+                          context.goNamed(
+                              '${widget.scoutingRouter.urlPath}-display',
+                              params: {'hash': _entries[i].b64String ?? ""});
                         },
                       )
                   ],

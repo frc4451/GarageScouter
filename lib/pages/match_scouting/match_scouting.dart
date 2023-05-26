@@ -200,8 +200,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   @override
   void initState() {
     super.initState();
-    Map<String, dynamic> matchData =
-        context.read<RetainInfoModel>().matchScouting();
+    Map<String, dynamic> matchData = {};
+    // context.read<RetainInfoModel>().matchScouting();
     pages.addAll([
       MatchInitialScreen(matchData: matchData),
       MatchAutonomousScreen(matchData: matchData),
@@ -231,21 +231,24 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   Future<bool> _onWillPop() async {
     _formKey.currentState?.save();
 
-    Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
+    final Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
+    final int? teamNumber = int.tryParse(state['team_number'] ?? "");
+    final int? matchNumber = int.tryParse(state['match_number'] ?? "");
+    final String? alliance = state['team_alliance'];
 
     if (state.isEmpty ||
-        state['team_number'] == null ||
-        state['match_number'] == null ||
-        state['team_alliance'] == null) {
+        teamNumber == null ||
+        matchNumber == null ||
+        alliance == null) {
       return true;
     }
 
     MatchScoutingEntry entry = MatchScoutingEntry()
-      ..teamNumber = int.tryParse(state['team_number'])
-      ..matchNumber = int.tryParse(state['match_number'])
-      ..alliance = state['team_alliance'].toLowerCase() == "red"
+      ..teamNumber = teamNumber
+      ..matchNumber = matchNumber
+      ..alliance = alliance.toLowerCase() == "red"
           ? TeamAlliance.red
-          : state['team_alliance'].toLowerCase() == "blue"
+          : alliance.toLowerCase() == "blue"
               ? TeamAlliance.blue
               : TeamAlliance.unassigned
       ..b64String = encodeJsonToB64(state, urlSafe: true)

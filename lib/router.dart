@@ -27,6 +27,10 @@ enum ScoutingRouter {
   final String urlPath;
 
   const ScoutingRouter({required this.displayName, required this.urlPath});
+
+  bool isPitScouting() => this == ScoutingRouter.pitScouting;
+  bool isMatchScouting() => this == ScoutingRouter.matchScouting;
+  bool isSuperScouting() => this == ScoutingRouter.superScouting;
 }
 
 final GoRouter router = GoRouter(routes: <RouteBase>[

@@ -72,8 +72,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
 
     Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
 
-    String timestamp = DateTime.now().toString();
-    state['timestamp'] = timestamp;
+    state['timestamp'] = DateTime.now().toString();
 
     final String teamNumber = state["team_number"].toString();
 
