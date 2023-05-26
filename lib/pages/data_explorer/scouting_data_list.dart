@@ -293,26 +293,8 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                   title:
                       Text("Collect ${widget.scoutingRouter.displayName} Data"),
                   onTap: () {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (context) {
-                      // clean this up with better imperative routing later
-                      if (widget.scoutingRouter == ScoutingRouter.pitScouting) {
-                        return const PitScoutingPage();
-                      } else if (widget.scoutingRouter ==
-                          ScoutingRouter.matchScouting) {
-                        return const MatchScoutingPage();
-                      } else if (widget.scoutingRouter ==
-                          ScoutingRouter.superScouting) {
-                        return const SuperScoutingPage();
-                      }
-
-                      return const Placeholder();
-                    }));
-                    // Navigator.of(context).pushNamed(
-                    //     '${widget.scoutingRouter.urlPath}-collection');
-
-                    // context
-                    //     .goNamed('${widget.scoutingRouter.urlPath}-collection');
+                    context
+                        .goNamed('${widget.scoutingRouter.urlPath}-collection');
                   },
                 ),
                 ListTile(

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -150,6 +149,10 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     }
 
     Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
+
+    if (state.isEmpty || state['team_number'] == null) {
+      return true;
+    }
 
     final SuperScoutingEntry entry = SuperScoutingEntry()
       ..isDraft = false

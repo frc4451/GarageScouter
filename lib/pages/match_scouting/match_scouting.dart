@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:isar/isar.dart';
@@ -231,6 +230,10 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   /// the entry as a draft.
   Future<bool> _onWillPop() async {
     Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
+
+    if (state.isEmpty) {
+      return true;
+    }
 
     MatchScoutingEntry entry = MatchScoutingEntry()
       ..teamNumber = int.tryParse(state['team_number'])
