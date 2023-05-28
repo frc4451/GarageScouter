@@ -147,7 +147,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     }
 
     final SuperScoutingEntry entry = SuperScoutingEntry()
-      ..isDraft = false
+      ..isDraft = true
       ..teamNumber = int.tryParse(state['team_number'])
       ..b64String = encodeJsonToB64(state, urlSafe: true);
 
