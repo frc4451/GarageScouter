@@ -64,9 +64,12 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 ),
             routes: [
               GoRoute(
-                  name: "${ScoutingRouter.matchScouting.urlPath}-collection",
-                  path: ScoutingRouter.collectionScreen.urlPath,
-                  builder: (context, state) => const MatchScoutingPage()),
+                name: "${ScoutingRouter.matchScouting.urlPath}-collection",
+                path: ScoutingRouter.collectionScreen.urlPath,
+                builder: (context, state) => MatchScoutingPage(
+                    initialData: state.queryParams["initialData"]
+                        as Map<String, dynamic>),
+              ),
               GoRoute(
                 name: "${ScoutingRouter.matchScouting.urlPath}-display",
                 path: ScoutingRouter.displayScreen.urlPath,

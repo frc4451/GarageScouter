@@ -9,12 +9,11 @@ import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 import 'package:robotz_garage_scouting/validators/custom_integer_validators.dart';
-import 'package:robotz_garage_scouting/utils/enums.dart';
-import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
 import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
 
 class SuperScoutingPage extends StatefulWidget {
-  const SuperScoutingPage({super.key});
+  const SuperScoutingPage({super.key, this.initialData = const {}});
+  final Map<String, dynamic> initialData;
 
   @override
   State<SuperScoutingPage> createState() => _SuperScoutingPageState();
@@ -231,6 +230,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
         body: WillPopScope(
           onWillPop: _onWillPop,
           child: FormBuilder(
+              initialValue: widget.initialData,
               key: _formKey,
               child: CustomScrollView(
                 slivers: [

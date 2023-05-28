@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:isar/isar.dart';
@@ -8,6 +9,7 @@ import 'package:robotz_garage_scouting/models/database_controller_model.dart';
 import 'package:robotz_garage_scouting/router.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
+import 'package:robotz_garage_scouting/utils/string_extensions.dart';
 
 enum ScoutingDataActionState {
   initial,
@@ -109,12 +111,14 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   }
 
   String _getListTileSubtitle(ScoutingDataEntry entry) {
+    List<String> rows = [];
+
     if (entry is MatchScoutingEntry) {
       MatchScoutingEntry matchEntry = entry;
-      return "Alliance: ${matchEntry.alliance.color}";
+      rows.add("Alliance: ${matchEntry.alliance.color.capitalizeFirst()}");
     }
 
-    return "Subtitle";
+    return rows.join("\n");
   }
 
   void _selectIndex(int index) {
@@ -238,10 +242,9 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   }
 
   void _exportScoutingData() {
-    List<Map<String, dynamic>> jsons = [];
-    for (final entry in _entries) {
-      jsons.add(decodeJsonFromB64(entry.b64String ?? "{}"));
-    }
+    List<Map<String, dynamic>> jsons = _entries
+        .map((entry) => decodeJsonFromB64(entry.b64String ?? "{}"))
+        .toList();
 
     showDialog(
         context: context,
@@ -444,22 +447,25 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                   title: const Text("Drafts"),
                   initiallyExpanded: _drafts.isNotEmpty,
                   children: [
-                    for (int i = 0; i < _drafts.length; ++i)
-                      ListTile(
-                        title: Text(_getListTileTitle(_drafts[i])),
-                        subtitle: Text(_getListTileSubtitle(_drafts[i])),
-                        selected: _actionState.isDelete() &&
-                            _selectedIndices.contains(i),
-                        onTap: () {
-                          if (_actionState.isDelete()) {
-                            _selectIndex(i);
-                            return;
-                          }
-                          context.goNamed(
-                              '${widget.scoutingRouter.urlPath}-display',
-                              params: {'hash': _drafts[i].b64String ?? ""});
-                        },
-                      )
+                    // `...` unpacks the Iterable
+                    ..._drafts.mapIndexed((index, draft) => ListTile(
+                          title: Text(_getListTileTitle(draft)),
+                          subtitle: Text(_getListTileSubtitle(draft)),
+                          selected: _actionState.isDelete() &&
+                              _selectedIndices.contains(index),
+                          onTap: () {
+                            if (_actionState.isDelete()) {
+                              _selectIndex(index);
+                              return;
+                            }
+                            context.pushNamed(
+                                "${widget.scoutingRouter.urlPath}-collection",
+                                queryParams: {
+                                  "initialData":
+                                      decodeJsonFromB64(draft.b64String ?? "")
+                                });
+                          },
+                        ))
                   ],
                 ),
               if (!_actionState.isDelete() && databaseNotEmpty && !_loading)
@@ -468,22 +474,21 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                   title: const Text("Completed"),
                   initiallyExpanded: _entries.isNotEmpty,
                   children: [
-                    for (int i = 0; i < _entries.length; ++i)
-                      ListTile(
-                        title: Text(_getListTileTitle(_entries[i])),
-                        subtitle: Text(_getListTileSubtitle(_entries[i])),
-                        selected: _actionState.isExport() &&
-                            _selectedIndices.contains(i),
-                        onTap: () {
-                          if (_actionState.isExport()) {
-                            _selectIndex(i);
-                            return;
-                          }
-                          context.goNamed(
-                              '${widget.scoutingRouter.urlPath}-display',
-                              params: {'hash': _entries[i].b64String ?? ""});
-                        },
-                      )
+                    ..._entries.mapIndexed((index, entry) => ListTile(
+                          title: Text(_getListTileTitle(entry)),
+                          subtitle: Text(_getListTileSubtitle(entry)),
+                          selected: _actionState.isExport() &&
+                              _selectedIndices.contains(index),
+                          onTap: () {
+                            if (_actionState.isExport()) {
+                              _selectIndex(index);
+                              return;
+                            }
+                            context.goNamed(
+                                '${widget.scoutingRouter.urlPath}-display',
+                                params: {'hash': entry.b64String ?? ""});
+                          },
+                        ))
                   ],
                 ),
             ],
