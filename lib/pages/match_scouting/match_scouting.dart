@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/models/database_controller_model.dart';
 import 'package:robotz_garage_scouting/models/input_helper_model.dart';
-import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/models/scroll_model.dart';
 import 'package:robotz_garage_scouting/models/theme_model.dart';
 import 'package:robotz_garage_scouting/pages/match_scouting/match_auto.dart';
@@ -187,7 +186,6 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       _formKey.currentState?.save();
       _formKey.currentState?.reset();
 
-      context.read<RetainInfoModel>().resetMatchScouting();
       _formKey.currentState?.patchValue(patchedValues);
       _formKey.currentState?.save();
       _resetPage();
@@ -280,49 +278,13 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<RetainInfoModel, ScrollModel>(
-        builder: (context, retain, scroll, _) {
+    return Consumer<ScrollModel>(builder: (context, scroll, _) {
       return Scaffold(
           appBar: AppBar(
             title: const Text(
               "Match Scouting",
               textAlign: TextAlign.center,
             ),
-            actions: retain.doesRetainInfo()
-                ? [
-                    IconButton(
-                      onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                    title:
-                                        const Text("Clear Match Scouting Data"),
-                                    content: const Text(
-                                        "Are you sure you want to clear Match Scouting Data?\n\n"
-                                        "Your temporary data will also be cleared."),
-                                    actionsAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    actions: [
-                                      OutlinedButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Text("Cancel"),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          _clearForm();
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text("Confirm"),
-                                      )
-                                    ]));
-                      },
-                      icon: const Icon(Icons.clear),
-                      tooltip: "Clear Match Scouting Form",
-                    )
-                  ]
-                : [],
           ),
           body: WillPopScope(
               onWillPop: _onWillPop,
