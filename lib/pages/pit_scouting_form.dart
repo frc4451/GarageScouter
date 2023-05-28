@@ -16,8 +16,8 @@ import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
 
 class PitScoutingPage extends StatefulWidget {
-  const PitScoutingPage({super.key, this.initialData = const {}});
-  final Map<String, dynamic> initialData;
+  const PitScoutingPage({super.key, this.initialData = ""});
+  final String initialData;
 
   @override
   State<PitScoutingPage> createState() => _PitScoutingPageState();
@@ -219,7 +219,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                 child: Column(
                   children: [
                     FormBuilder(
-                        initialValue: widget.initialData,
+                        initialValue: decodeJsonFromB64(widget.initialData),
                         key: _formKey,
                         child: Consumer<RetainInfoModel>(
                           builder: (context, model, _) {

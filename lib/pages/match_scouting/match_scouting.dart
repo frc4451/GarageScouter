@@ -19,8 +19,8 @@ import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 
 class MatchScoutingPage extends StatefulWidget {
-  const MatchScoutingPage({super.key, this.initialData = const {}});
-  final Map<String, dynamic> initialData;
+  const MatchScoutingPage({super.key, this.initialData = ""});
+  final String initialData;
 
   @override
   State<MatchScoutingPage> createState() => _MatchScoutingPageState();
@@ -327,7 +327,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
           body: WillPopScope(
               onWillPop: _onWillPop,
               child: FormBuilder(
-                  initialValue: widget.initialData,
+                  initialValue: decodeJsonFromB64(widget.initialData),
                   key: _formKey,
                   child: Column(
                     children: [

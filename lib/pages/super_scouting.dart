@@ -12,8 +12,8 @@ import 'package:robotz_garage_scouting/validators/custom_integer_validators.dart
 import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
 
 class SuperScoutingPage extends StatefulWidget {
-  const SuperScoutingPage({super.key, this.initialData = const {}});
-  final Map<String, dynamic> initialData;
+  const SuperScoutingPage({super.key, this.initialData = ""});
+  final String initialData;
 
   @override
   State<SuperScoutingPage> createState() => _SuperScoutingPageState();
@@ -230,7 +230,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
         body: WillPopScope(
           onWillPop: _onWillPop,
           child: FormBuilder(
-              initialValue: widget.initialData,
+              initialValue: decodeJsonFromB64(widget.initialData),
               key: _formKey,
               child: CustomScrollView(
                 slivers: [

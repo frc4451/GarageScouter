@@ -46,9 +46,11 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 ),
             routes: [
               GoRoute(
-                  name: "${ScoutingRouter.pitScouting.urlPath}-collection",
-                  path: ScoutingRouter.collectionScreen.urlPath,
-                  builder: (context, state) => const PitScoutingPage()),
+                name: "${ScoutingRouter.pitScouting.urlPath}-collection",
+                path: ScoutingRouter.collectionScreen.urlPath,
+                builder: (context, state) => PitScoutingPage(
+                    initialData: state.queryParams["initialData"] ?? ""),
+              ),
               GoRoute(
                 name: "${ScoutingRouter.pitScouting.urlPath}-display",
                 path: ScoutingRouter.displayScreen.urlPath,
@@ -67,8 +69,7 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 name: "${ScoutingRouter.matchScouting.urlPath}-collection",
                 path: ScoutingRouter.collectionScreen.urlPath,
                 builder: (context, state) => MatchScoutingPage(
-                    initialData: state.queryParams["initialData"]
-                        as Map<String, dynamic>),
+                    initialData: state.queryParams["initialData"] ?? ""),
               ),
               GoRoute(
                 name: "${ScoutingRouter.matchScouting.urlPath}-display",
@@ -85,9 +86,11 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 ),
             routes: [
               GoRoute(
-                  name: "${ScoutingRouter.superScouting.urlPath}-collection",
-                  path: ScoutingRouter.collectionScreen.urlPath,
-                  builder: (context, state) => const SuperScoutingPage()),
+                name: "${ScoutingRouter.superScouting.urlPath}-collection",
+                path: ScoutingRouter.collectionScreen.urlPath,
+                builder: (context, state) => SuperScoutingPage(
+                    initialData: state.queryParams["initialData"] ?? ""),
+              ),
               GoRoute(
                 name: "${ScoutingRouter.superScouting.urlPath}-display",
                 path: ScoutingRouter.displayScreen.urlPath,

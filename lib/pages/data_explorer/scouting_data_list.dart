@@ -461,8 +461,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                             context.pushNamed(
                                 "${widget.scoutingRouter.urlPath}-collection",
                                 queryParams: {
-                                  "initialData":
-                                      decodeJsonFromB64(draft.b64String ?? "")
+                                  "initialData": draft.b64String ?? ""
                                 });
                           },
                         ))
