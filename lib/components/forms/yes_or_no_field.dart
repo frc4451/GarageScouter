@@ -70,14 +70,14 @@ class _YesOrNoFieldWidgetState extends State<YesOrNoFieldWidget> {
   /// Strings in the data. But when we load the field, we need to know if the
   /// String passed from the JSON, or if a valid Enum was passed, both are
   /// acceptable input. Otherwise, assume that the field will be empty.
-  YesOrNoEnumType _handleInitialValue(dynamic initialValue) {
+  YesOrNoEnumType? _handleInitialValue(dynamic initialValue) {
     switch (initialValue.runtimeType) {
       case String:
         return YesOrNoEnumType.fromString(initialValue as String);
       case YesOrNoEnumType:
         return initialValue as YesOrNoEnumType;
       default:
-        return YesOrNoEnumType.empty;
+        return null;
     }
   }
 

@@ -31,6 +31,9 @@ enum ScoutingRouter {
   bool isPitScouting() => this == ScoutingRouter.pitScouting;
   bool isMatchScouting() => this == ScoutingRouter.matchScouting;
   bool isSuperScouting() => this == ScoutingRouter.superScouting;
+
+  String getCollectionRouteName() => "$urlPath-collection";
+  String getDisplayRouteName() => "$urlPath-display";
 }
 
 final GoRouter router = GoRouter(routes: <RouteBase>[
@@ -46,13 +49,13 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 ),
             routes: [
               GoRoute(
-                name: "${ScoutingRouter.pitScouting.urlPath}-collection",
+                name: ScoutingRouter.pitScouting.getCollectionRouteName(),
                 path: ScoutingRouter.collectionScreen.urlPath,
                 builder: (context, state) => PitScoutingPage(
                     initialData: state.queryParams["initialData"] ?? ""),
               ),
               GoRoute(
-                name: "${ScoutingRouter.pitScouting.urlPath}-display",
+                name: ScoutingRouter.pitScouting.getDisplayRouteName(),
                 path: ScoutingRouter.displayScreen.urlPath,
                 builder: (context, state) =>
                     ScoutingDataDetailsPage(hash: state.params['hash']),
@@ -66,13 +69,13 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 ),
             routes: [
               GoRoute(
-                name: "${ScoutingRouter.matchScouting.urlPath}-collection",
+                name: ScoutingRouter.matchScouting.getCollectionRouteName(),
                 path: ScoutingRouter.collectionScreen.urlPath,
                 builder: (context, state) => MatchScoutingPage(
                     initialData: state.queryParams["initialData"] ?? ""),
               ),
               GoRoute(
-                name: "${ScoutingRouter.matchScouting.urlPath}-display",
+                name: ScoutingRouter.matchScouting.getDisplayRouteName(),
                 path: ScoutingRouter.displayScreen.urlPath,
                 builder: (context, state) =>
                     ScoutingDataDetailsPage(hash: state.params['hash']),
@@ -86,13 +89,13 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 ),
             routes: [
               GoRoute(
-                name: "${ScoutingRouter.superScouting.urlPath}-collection",
+                name: ScoutingRouter.superScouting.getCollectionRouteName(),
                 path: ScoutingRouter.collectionScreen.urlPath,
                 builder: (context, state) => SuperScoutingPage(
                     initialData: state.queryParams["initialData"] ?? ""),
               ),
               GoRoute(
-                name: "${ScoutingRouter.superScouting.urlPath}-display",
+                name: ScoutingRouter.superScouting.getDisplayRouteName(),
                 path: ScoutingRouter.displayScreen.urlPath,
                 builder: (context, state) =>
                     ScoutingDataDetailsPage(hash: state.params['hash']),

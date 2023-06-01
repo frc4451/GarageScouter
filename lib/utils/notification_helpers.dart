@@ -50,3 +50,38 @@ void informationSnackbar(BuildContext context, String message) {
         textAlign: TextAlign.center,
       )));
 }
+
+/// Opens an AlertDialog message to return either a true or false value in order
+/// to determine if the user wants to save the current form data as a draft.
+Future<bool> canSaveDraft(BuildContext context) async {
+  bool? response = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text(
+        "Keep Draft?",
+        textAlign: TextAlign.center,
+      ),
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            OutlinedButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            ElevatedButton(
+              child: const Text('Confirm'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        )
+      ],
+    ),
+  );
+
+  return response ?? false;
+}

@@ -9,7 +9,7 @@ import 'package:robotz_garage_scouting/models/database_controller_model.dart';
 import 'package:robotz_garage_scouting/router.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
-import 'package:robotz_garage_scouting/utils/string_extensions.dart';
+import 'package:robotz_garage_scouting/utils/extensions/string_extensions.dart';
 
 enum ScoutingDataActionState {
   initial,
@@ -447,7 +447,6 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                   title: const Text("Drafts"),
                   initiallyExpanded: _drafts.isNotEmpty,
                   children: [
-                    // `...` unpacks the Iterable
                     ..._drafts.mapIndexed((index, draft) => ListTile(
                           title: Text(_getListTileTitle(draft)),
                           subtitle: Text(_getListTileSubtitle(draft)),

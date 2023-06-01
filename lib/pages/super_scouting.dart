@@ -23,9 +23,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   final PageController _controller =
       PageController(initialPage: 0, keepPage: true);
 
-  late Isar _isar;
-
-  final int durationMilliseconds = 300;
+  final int _durationMilliseconds = 300;
 
   final int _maxLines = 5;
   final int _maxLength = 1024;
@@ -34,6 +32,8 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   // until _after_ the page has transitioned. Because of that, we need an
   // internally managed "page state" to know when we need to submit the form.
   int _currentPage = 0;
+
+  late Isar _isar;
 
   /// Handles form submission
   Future<void> _submitForm() async {
@@ -96,7 +96,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     setState(() {
       _currentPage = _controller.initialPage;
       _controller.animateToPage(_currentPage,
-          duration: Duration(milliseconds: durationMilliseconds),
+          duration: Duration(milliseconds: _durationMilliseconds),
           curve: Curves.ease);
     });
   }
@@ -163,6 +163,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   void initState() {
     super.initState();
     _isar = context.read<IsarModel>().isar;
+    // _initialScoutingData = decodeJsonFromB64(widget.initialData);
   }
 
   /// Clean up the component, but also the FormBuilderController
@@ -174,7 +175,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> superScouting = {};
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -194,7 +194,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                     children: [
                       FormBuilderTextField(
                         name: "team_number",
-                        initialValue: superScouting["team_number"],
                         decoration: const InputDecoration(
                             labelText: "Team Number",
                             prefixIcon: Icon(Icons.numbers)),
@@ -209,7 +208,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                       ),
                       FormBuilderTextField(
                         name: "match_number",
-                        initialValue: superScouting["match_number"],
                         decoration: const InputDecoration(
                             labelText: "Match Number",
                             prefixIcon: Icon(Icons.numbers)),
@@ -225,7 +223,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                       // Text(),
                       FormBuilderTextField(
                         name: "effective_offense",
-                        initialValue: superScouting["effective_offense"],
                         decoration: const InputDecoration(
                           labelText: "Effective Offensive Strategies",
                         ),
@@ -240,7 +237,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                       ),
                       FormBuilderTextField(
                         name: "effective_defense",
-                        initialValue: superScouting["effective_defense"],
                         decoration: const InputDecoration(
                           labelText: "Effective Defensive Strategies",
                         ),
@@ -255,7 +251,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                       ),
                       FormBuilderTextField(
                         name: "ineffective_offense",
-                        initialValue: superScouting["ineffective_offense"],
                         decoration: const InputDecoration(
                           labelText: "Ineffective Offensive Strategies",
                         ),
@@ -270,7 +265,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                       ),
                       FormBuilderTextField(
                         name: "ineffective_defense",
-                        initialValue: superScouting["ineffective_defense"],
                         decoration: const InputDecoration(
                           labelText: "Ineffective Defensive Strategies",
                         ),
@@ -285,7 +279,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                       ),
                       FormBuilderTextField(
                         name: "counter_strategy_offense",
-                        initialValue: superScouting["counter_strategy_offense"],
                         decoration: const InputDecoration(
                           labelText: "Offensive Counterstrategies",
                         ),
@@ -300,7 +293,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                       ),
                       FormBuilderTextField(
                         name: "counter_strategy_defense",
-                        initialValue: superScouting["counter_strategy_defense"],
                         decoration: const InputDecoration(
                           labelText: "Defensive Counterstrategies",
                         ),
@@ -315,7 +307,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                       ),
                       FormBuilderTextField(
                         name: "final_notes",
-                        initialValue: superScouting["final_notes"],
                         decoration: const InputDecoration(
                           labelText: "Final Notes",
                         ),
