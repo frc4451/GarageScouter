@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -17,8 +19,8 @@ import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
 
 class PitScoutingPage extends StatefulWidget {
-  const PitScoutingPage({super.key, this.initialData = ""});
-  final String initialData;
+  const PitScoutingPage({super.key, this.uuid = ""});
+  final String uuid;
 
   @override
   State<PitScoutingPage> createState() => _PitScoutingPageState();
@@ -148,14 +150,18 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
       return true;
     }
 
+    PitScoutingEntry entry =
+        await _isar.pitScoutingEntrys.getByUuid(widget.uuid) ??
+            PitScoutingEntry();
+
+    entry
+      ..teamNumber = int.tryParse(state['team_number'])
+      ..b64String = encodeJsonToB64(state, urlSafe: true)
+      ..isDraft = true;
+
     bool keepDraft = await canSaveDraft(context);
 
     if (keepDraft) {
-      PitScoutingEntry entry = PitScoutingEntry()
-        ..teamNumber = int.tryParse(state['team_number'])
-        ..b64String = encodeJsonToB64(state, urlSafe: true)
-        ..isDraft = true;
-
       _isar.writeTxn(() => _isar.pitScoutingEntrys.put(entry)).then((value) {
         _clearForm();
         successMessageSnackbar(context, "Saved draft to Isar, Index $value");
@@ -171,7 +177,13 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
   void initState() {
     super.initState();
     _isar = context.read<IsarModel>().isar;
-    _initialValue = decodeJsonFromB64(widget.initialData);
+
+    PitScoutingEntry? entry =
+        _isar.pitScoutingEntrys.getByUuidSync(widget.uuid);
+
+    _initialValue = decodeJsonFromB64(entry?.b64String ?? "");
+
+    print("initial value :: $_initialValue");
   }
 
   @override

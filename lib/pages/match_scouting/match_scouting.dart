@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:go_router/go_router.dart';
 import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
@@ -18,8 +19,8 @@ import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 
 class MatchScoutingPage extends StatefulWidget {
-  const MatchScoutingPage({super.key, this.initialData = ""});
-  final String initialData;
+  const MatchScoutingPage({super.key, this.uuid = ""});
+  final String uuid;
 
   @override
   State<MatchScoutingPage> createState() => _MatchScoutingPageState();
@@ -38,6 +39,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
 
   late TabController _tabController;
   late Isar _isar;
+  late Map<String, dynamic> _initialValue;
 
   // We can't rely on _controller.page because the page is not fully updated
   // until _after_ the page has transitioned. Because of that, we need an
@@ -218,6 +220,16 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     });
 
     _isar = context.read<IsarModel>().isar;
+
+    MatchScoutingEntry? entry =
+        _isar.matchScoutingEntrys.getByUuidSync(widget.uuid);
+
+    if (entry == null) {
+      errorMessageSnackbar(context,
+          "UUID doesn't exist, make sure your UUID is valid and try again.");
+    }
+
+    _initialValue = decodeJsonFromB64(entry?.b64String ?? "");
   }
 
   /// We safely save the state of the form when the user pops the Widget from
@@ -289,7 +301,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
           body: WillPopScope(
               onWillPop: _onWillPop,
               child: FormBuilder(
-                  initialValue: decodeJsonFromB64(widget.initialData),
+                  initialValue: _initialValue,
                   key: _formKey,
                   child: Column(
                     children: [

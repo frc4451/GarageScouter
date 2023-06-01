@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:uuid/uuid.dart';
 
 part 'scouting.database.g.dart';
 
@@ -15,6 +16,9 @@ enum TeamAlliance {
 
 class ScoutingDataEntry {
   Id id = Isar.autoIncrement;
+
+  @Index(unique: true)
+  String uuid = const Uuid().v4();
 
   int? teamNumber;
 

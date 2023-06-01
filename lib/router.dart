@@ -51,8 +51,8 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
               GoRoute(
                 name: ScoutingRouter.pitScouting.getCollectionRouteName(),
                 path: ScoutingRouter.collectionScreen.urlPath,
-                builder: (context, state) => PitScoutingPage(
-                    initialData: state.queryParams["initialData"] ?? ""),
+                builder: (context, state) =>
+                    PitScoutingPage(uuid: state.queryParams["uuid"] ?? ""),
               ),
               GoRoute(
                 name: ScoutingRouter.pitScouting.getDisplayRouteName(),
@@ -71,8 +71,8 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
               GoRoute(
                 name: ScoutingRouter.matchScouting.getCollectionRouteName(),
                 path: ScoutingRouter.collectionScreen.urlPath,
-                builder: (context, state) => MatchScoutingPage(
-                    initialData: state.queryParams["initialData"] ?? ""),
+                builder: (context, state) =>
+                    MatchScoutingPage(uuid: state.queryParams["uuid"] ?? ""),
               ),
               GoRoute(
                 name: ScoutingRouter.matchScouting.getDisplayRouteName(),
@@ -91,8 +91,8 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
               GoRoute(
                 name: ScoutingRouter.superScouting.getCollectionRouteName(),
                 path: ScoutingRouter.collectionScreen.urlPath,
-                builder: (context, state) => SuperScoutingPage(
-                    initialData: state.queryParams["initialData"] ?? ""),
+                builder: (context, state) =>
+                    SuperScoutingPage(uuid: state.queryParams["uuid"] ?? ""),
               ),
               GoRoute(
                 name: ScoutingRouter.superScouting.getDisplayRouteName(),

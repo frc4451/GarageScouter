@@ -11,8 +11,8 @@ import 'package:robotz_garage_scouting/validators/custom_integer_validators.dart
 import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
 
 class SuperScoutingPage extends StatefulWidget {
-  const SuperScoutingPage({super.key, this.initialData = ""});
-  final String initialData;
+  const SuperScoutingPage({super.key, this.uuid = ""});
+  final String uuid;
 
   @override
   State<SuperScoutingPage> createState() => _SuperScoutingPageState();
@@ -34,6 +34,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   int _currentPage = 0;
 
   late Isar _isar;
+  late Map<String, dynamic> _initialValue;
 
   /// Handles form submission
   Future<void> _submitForm() async {
@@ -163,7 +164,15 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   void initState() {
     super.initState();
     _isar = context.read<IsarModel>().isar;
-    // _initialScoutingData = decodeJsonFromB64(widget.initialData);
+    SuperScoutingEntry? entry =
+        _isar.superScoutingEntrys.getByUuidSync(widget.uuid);
+
+    if (entry == null) {
+      errorMessageSnackbar(context,
+          "UUID doesn't exist, make sure your UUID is valid and try again.");
+    }
+
+    _initialValue = decodeJsonFromB64(entry?.b64String ?? "");
   }
 
   /// Clean up the component, but also the FormBuilderController
@@ -185,7 +194,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
       body: WillPopScope(
         onWillPop: _onWillPop,
         child: FormBuilder(
-            initialValue: decodeJsonFromB64(widget.initialData),
+            initialValue: _initialValue,
             key: _formKey,
             child: CustomScrollView(
               slivers: [

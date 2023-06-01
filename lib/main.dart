@@ -33,7 +33,6 @@ Future<void> main() async {
 
   final isar = await Isar.open(
     [
-      TestDatabaseEntrySchema,
       PitScoutingEntrySchema,
       MatchScoutingEntrySchema,
       SuperScoutingEntrySchema

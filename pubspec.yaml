@@ -64,6 +64,7 @@ dependencies:
   form_builder_file_picker: ^4.0.0
   form_builder_validators: ^9.0.0
   form_builder_image_picker: ^4.0.0
+  uuid: ^3.0.7
 
 
 dev_dependencies:
