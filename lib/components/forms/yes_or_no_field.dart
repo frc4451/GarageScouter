@@ -4,8 +4,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 enum YesOrNoEnumType {
   yes("Yes"),
-  no("No"),
-  empty("");
+  no("No");
 
   final String label;
 
@@ -17,15 +16,13 @@ enum YesOrNoEnumType {
   String toJson() => name;
 
   /// Converts a String value to the Enum representation, or returns empty.
-  static YesOrNoEnumType fromString(String value) =>
-      YesOrNoEnumType.values
-          .firstWhereOrNull((element) => value == element.toString()) ??
-      YesOrNoEnumType.empty;
+  static YesOrNoEnumType? fromString(String value) => YesOrNoEnumType.values
+      .firstWhereOrNull((element) => value == element.toString());
 }
 
 /// YesOrNoFieldType is a type definition so that we can easily
 /// check that `widget` is a `YesOrNoFieldWidget`
-typedef YesOrNoFieldType = FormBuilderRadioGroup<YesOrNoEnumType?>;
+typedef YesOrNoFieldType = FormBuilderRadioGroup<String?>;
 
 /// YesOrNoFieldWidget is a wrapper for FormBuilderRadioGroup to
 /// make writing multiple Yes or No questions easier
@@ -39,11 +36,11 @@ class YesOrNoFieldWidget extends StatefulWidget {
   final String? Function(dynamic)? validators;
   final AutovalidateMode? autovalidateMode;
 
-  final void Function(YesOrNoEnumType?)? onChanged;
+  final void Function(String?)? onChanged;
 
   final IconData? icon;
 
-  final void Function(YesOrNoEnumType?)? onSaved;
+  final void Function(String?)? onSaved;
 
   const YesOrNoFieldWidget(
       {super.key,
@@ -70,25 +67,25 @@ class _YesOrNoFieldWidgetState extends State<YesOrNoFieldWidget> {
   /// Strings in the data. But when we load the field, we need to know if the
   /// String passed from the JSON, or if a valid Enum was passed, both are
   /// acceptable input. Otherwise, assume that the field will be empty.
-  YesOrNoEnumType? _handleInitialValue(dynamic initialValue) {
-    switch (initialValue.runtimeType) {
-      case String:
-        return YesOrNoEnumType.fromString(initialValue as String);
-      case YesOrNoEnumType:
-        return initialValue as YesOrNoEnumType;
-      default:
-        return null;
-    }
-  }
+  // String? _handleInitialValue(String initialValue) {
+  //   switch (initialValue.runtimeType) {
+  //     case String:
+  //       return YesOrNoEnumType.fromString(initialValue as String);
+  //     case YesOrNoEnumType:
+  //       return initialValue as YesOrNoEnumType;
+  //     default:
+  //       return null;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
     return YesOrNoFieldType(
       name: widget.name,
-      initialValue: _handleInitialValue(widget.initialValue),
+      initialValue: widget.initialValue,
       options: options
-          .map((e) => FormBuilderFieldOption<YesOrNoEnumType>(
-                value: e,
+          .map((e) => FormBuilderFieldOption<String?>(
+                value: e.toString(),
                 child: Text(e.label),
               ))
           .toList(),

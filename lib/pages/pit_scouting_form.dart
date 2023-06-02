@@ -67,8 +67,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
             ?.patchValue({key: (value.value as List<String>).sorted()});
       }
 
-      if (value.widget is YesOrNoFieldType &&
-          (value.value == null || value.value == YesOrNoEnumType.empty)) {
+      if (value.widget is YesOrNoFieldType && value.value == null) {
         _formKey.currentState?.patchValue({key: YesOrNoEnumType.no});
       }
     });
@@ -192,7 +191,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
       return Scaffold(
         appBar: AppBar(
           title: const Text(
-            "Pit Scouting Form",
+            "Pit Scouting",
             textAlign: TextAlign.center,
           ),
         ),
