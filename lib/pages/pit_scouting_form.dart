@@ -181,8 +181,6 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
         _isar.pitScoutingEntrys.getByUuidSync(widget.uuid);
 
     _initialValue = decodeJsonFromB64(entry?.b64String ?? "");
-
-    print("initial value :: $_initialValue");
   }
 
   @override
@@ -289,7 +287,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                                   showWhen: _canShowFieldFromMatch(
                                       key: 'has_intake',
                                       match: YesOrNoEnumType.yes.toString()),
-                                  child: FormBuilderCheckboxGroup(
+                                  child: FormBuilderCheckboxGroup<dynamic>(
                                     name: "pickup_from_intake",
                                     decoration: const InputDecoration(
                                         labelText:
@@ -299,7 +297,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                                             value: e.toString()))
                                         .toList(),
                                   )),
-                              FormBuilderCheckboxGroup(
+                              FormBuilderCheckboxGroup<dynamic>(
                                 name: "scorable_pieces",
                                 decoration: const InputDecoration(
                                     labelText:
@@ -337,7 +335,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                                 showWhen: _canShowFieldFromMatch(
                                     key: "can_score_autonomous",
                                     match: YesOrNoEnumType.yes.toString()),
-                                child: FormBuilderCheckboxGroup(
+                                child: FormBuilderCheckboxGroup<dynamic>(
                                   name: "auto_score_cones",
                                   decoration: const InputDecoration(
                                       icon: Icon(Icons.score),
@@ -353,7 +351,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                                 showWhen: _canShowFieldFromMatch(
                                     key: "can_score_autonomous",
                                     match: YesOrNoEnumType.yes.toString()),
-                                child: FormBuilderCheckboxGroup(
+                                child: FormBuilderCheckboxGroup<dynamic>(
                                   name: "auto_score_cubes",
                                   decoration: const InputDecoration(
                                       icon: Icon(Icons.score),
@@ -386,7 +384,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                                   showWhen: _canShowFieldFromMatch(
                                       key: "has_autonomous",
                                       match: YesOrNoEnumType.yes.toString()),
-                                  child: FormBuilderCheckboxGroup(
+                                  child: FormBuilderCheckboxGroup<dynamic>(
                                     name: "auto_starting_positions",
                                     decoration: const InputDecoration(
                                         labelText:
@@ -416,7 +414,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                               const Divider(),
                               const Text("Teleop Questions"),
                               const Divider(),
-                              FormBuilderCheckboxGroup(
+                              FormBuilderCheckboxGroup<dynamic>(
                                 name: "teleop_score_cones",
                                 decoration: const InputDecoration(
                                     icon: Icon(Icons.score),
@@ -427,7 +425,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                                         value: e.toString()))
                                     .toList(),
                               ),
-                              FormBuilderCheckboxGroup(
+                              FormBuilderCheckboxGroup<dynamic>(
                                 name: "teleop_score_cubes",
                                 decoration: const InputDecoration(
                                     icon: Icon(Icons.score),
