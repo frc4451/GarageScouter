@@ -28,51 +28,47 @@ class IncrementFormBuilderField extends FormBuilderField<int> {
   IncrementFormBuilderField({
     super.key,
     super.initialValue,
+    required super.name,
     this.label,
     this.spaceBetween = 20,
     this.spaceOutside = 10,
     this.min = 0,
     this.max = 9,
     this.color,
-    required final String name,
-  }) : super(
-            name: name,
-            builder: (FormFieldState<int> field) {
-              final Color background =
-                  color ?? Theme.of(field.context).colorScheme.primary;
+  }) : super(builder: (FormFieldState<int> field) {
+          final Color background =
+              color ?? Theme.of(field.context).colorScheme.primary;
 
-              return Padding(
-                  padding:
-                      EdgeInsets.fromLTRB(spaceOutside, 0, spaceOutside, 0),
-                  child: Row(
-                    children: [
-                      Text(label ?? name),
-                      const Spacer(),
-                      ElevatedButton(
-                          style: ButtonStyle(
-                              backgroundColor:
-                                  MaterialStateProperty.all<Color>(background)),
-                          onPressed: () {
-                            field.didChange(PageDirection.left.value);
-                          },
-                          child: const Icon(Icons.exposure_minus_1)),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                            spaceBetween, 0, spaceBetween, 0),
-                        child: Text(field.value.toString()),
-                      ),
-                      ElevatedButton(
-                          style: ButtonStyle(
-                              backgroundColor:
-                                  MaterialStateProperty.all<Color>(background)),
-                          // ElevatedButton.styleFrom(primary: Colors.amber),
-                          onPressed: () {
-                            field.didChange(PageDirection.right.value);
-                          },
-                          child: const Icon(Icons.exposure_plus_1)),
-                    ],
-                  ));
-            });
+          return Padding(
+              padding: EdgeInsets.fromLTRB(spaceOutside, 0, spaceOutside, 0),
+              child: Row(
+                children: [
+                  Text(label ?? name),
+                  const Spacer(),
+                  ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(background)),
+                      onPressed: () {
+                        field.didChange(PageDirection.left.value);
+                      },
+                      child: const Icon(Icons.exposure_minus_1)),
+                  Padding(
+                    padding:
+                        EdgeInsets.fromLTRB(spaceBetween, 0, spaceBetween, 0),
+                    child: Text(field.value.toString()),
+                  ),
+                  ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(background)),
+                      onPressed: () {
+                        field.didChange(PageDirection.right.value);
+                      },
+                      child: const Icon(Icons.exposure_plus_1)),
+                ],
+              ));
+        });
 
   @override
   FormBuilderFieldState<IncrementFormBuilderField, int> createState() =>
@@ -94,7 +90,6 @@ class _IncrementFormBuilderFieldState
       } else if (change == PageDirection.none.value) {
         setValue(value! + PageDirection.none.value);
       }
-      // super.didChange(value);
     });
   }
 
@@ -119,5 +114,14 @@ class _IncrementFormBuilderFieldState
     setState(() {
       didChange(PageDirection.none.value);
     });
+  }
+
+  /// Enforces that the initial value cannot be null.
+  @override
+  void initState() {
+    super.initState();
+    if (value == null) {
+      setValue(0);
+    }
   }
 }
