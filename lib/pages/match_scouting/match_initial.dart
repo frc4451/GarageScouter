@@ -6,10 +6,7 @@ import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
 
 /// Initial Input for Match Scouting
 class MatchInitialScreen extends StatefulWidget {
-  final Map<String, dynamic> _matchData;
-  const MatchInitialScreen({super.key, required Map<String, dynamic> matchData})
-      : _matchData = matchData;
-
+  const MatchInitialScreen({super.key});
   @override
   State<MatchInitialScreen> createState() => _MatchInitialScreenState();
 }
@@ -26,33 +23,33 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
     return Scaffold(
         body: Column(children: [
       FormBuilderTextField(
-          name: "team_number",
-          decoration: const InputDecoration(
-              labelText: "Team Number", prefixIcon: Icon(Icons.numbers)),
-          textInputAction: TextInputAction.next,
-          keyboardType: TextInputType.number,
-          validator: FormBuilderValidators.compose([
-            FormBuilderValidators.required(),
-            FormBuilderValidators.integer(),
-            CustomTextValidators.doesNotHaveCommas(),
-            CustomIntegerValidators.notNegative()
-          ]),
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          initialValue: widget._matchData['team_number']),
+        name: "team_number",
+        decoration: const InputDecoration(
+            labelText: "Team Number", prefixIcon: Icon(Icons.numbers)),
+        textInputAction: TextInputAction.next,
+        keyboardType: TextInputType.number,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(),
+          FormBuilderValidators.integer(),
+          CustomTextValidators.doesNotHaveCommas(),
+          CustomIntegerValidators.notNegative()
+        ]),
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+      ),
       FormBuilderTextField(
-          name: "match_number",
-          decoration: const InputDecoration(
-              labelText: "Match Number", prefixIcon: Icon(Icons.numbers)),
-          textInputAction: TextInputAction.next,
-          keyboardType: TextInputType.number,
-          validator: FormBuilderValidators.compose([
-            FormBuilderValidators.required(),
-            FormBuilderValidators.integer(),
-            CustomTextValidators.doesNotHaveCommas(),
-            CustomIntegerValidators.notNegative()
-          ]),
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          initialValue: widget._matchData['match_number']),
+        name: "match_number",
+        decoration: const InputDecoration(
+            labelText: "Match Number", prefixIcon: Icon(Icons.numbers)),
+        textInputAction: TextInputAction.next,
+        keyboardType: TextInputType.number,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(),
+          FormBuilderValidators.integer(),
+          CustomTextValidators.doesNotHaveCommas(),
+          CustomIntegerValidators.notNegative()
+        ]),
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+      ),
       FormBuilderDropdown(
         name: "team_alliance",
         decoration: const InputDecoration(
@@ -62,7 +59,6 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
         items: ["red", "blue"]
             .map((e) => DropdownMenuItem(value: e, child: Text(e)))
             .toList(),
-        initialValue: widget._matchData["team_alliance"],
       ),
       FormBuilderDropdown(
         name: "team_position",
@@ -73,7 +69,6 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
         items: [1, 2, 3]
             .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
             .toList(),
-        initialValue: widget._matchData["team_position"],
       ),
       FormBuilderDropdown(
         name: "field_position",
@@ -84,7 +79,6 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
         items: ["Bump", "Center", "Lane"]
             .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
             .toList(),
-        initialValue: widget._matchData["field_position"],
       )
     ]));
   }

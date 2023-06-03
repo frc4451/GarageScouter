@@ -53,12 +53,12 @@ void informationSnackbar(BuildContext context, String message) {
 
 /// Opens an AlertDialog message to return either a true or false value in order
 /// to determine if the user wants to save the current form data as a draft.
-Future<bool> canSaveDraft(BuildContext context, {exists = false}) async {
+Future<bool> canSaveDraft(BuildContext context, {bool? exists = false}) async {
   bool? response = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(
-        exists ? "Update Draft?" : "Keep Draft?",
+        (exists ?? false) ? "Update Draft?" : "Keep Draft?",
         textAlign: TextAlign.center,
       ),
       actions: [

@@ -6,10 +6,7 @@ import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
 
 /// Scrollable screen that represents the "end of round/match" survey that scouters can submit
 class MatchSummaryScreen extends StatefulWidget {
-  final Map<String, dynamic> _matchData;
-
-  const MatchSummaryScreen({super.key, required Map<String, dynamic> matchData})
-      : _matchData = matchData;
+  const MatchSummaryScreen({super.key});
 
   @override
   State<MatchSummaryScreen> createState() => _MatchSummaryScreenState();
@@ -27,18 +24,17 @@ class _MatchSummaryScreenState extends State<MatchSummaryScreen>
         body: Center(
       child: Column(children: [
         FormBuilderCheckbox(
-            name: "no_show",
-            title: const Text("Did this robot skip the match (no-show)?"),
-            initialValue: widget._matchData["no_show"] ?? false),
+          name: "no_show",
+          title: const Text("Did this robot skip the match (no-show)?"),
+        ),
         FormBuilderCheckbox(
-            name: "broke_down",
-            title: const Text("Did they break down or stop moving?"),
-            initialValue: widget._matchData["broke_down"] ?? false),
+          name: "broke_down",
+          title: const Text("Did they break down or stop moving?"),
+        ),
         FormBuilderTextField(
           name: "summary_notes",
           decoration: const InputDecoration(
               labelText: "Notes from the Match you want to share"),
-          initialValue: widget._matchData["summary_notes"] ?? "",
           maxLength: 256,
           maxLines: 5,
           autovalidateMode: AutovalidateMode.onUserInteraction,

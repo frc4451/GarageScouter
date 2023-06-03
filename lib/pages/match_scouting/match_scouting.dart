@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:go_router/go_router.dart';
 import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
@@ -201,14 +200,12 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   @override
   void initState() {
     super.initState();
-    Map<String, dynamic> matchData = {};
-    // context.read<RetainInfoModel>().matchScouting();
     pages.addAll([
-      MatchInitialScreen(matchData: matchData),
-      MatchAutonomousScreen(matchData: matchData),
-      MatchTeleopScreen(matchData: matchData),
-      MatchEndgameScreen(matchData: matchData),
-      MatchSummaryScreen(matchData: matchData)
+      const MatchInitialScreen(),
+      const MatchAutonomousScreen(),
+      const MatchTeleopScreen(),
+      const MatchEndgameScreen(),
+      const MatchSummaryScreen()
     ]);
 
     _tabController = TabController(length: pages.length, vsync: this);
@@ -223,11 +220,6 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
 
     MatchScoutingEntry? entry =
         _isar.matchScoutingEntrys.getByUuidSync(widget.uuid);
-
-    if (entry == null) {
-      errorMessageSnackbar(context,
-          "UUID doesn't exist, make sure your UUID is valid and try again.");
-    }
 
     _initialValue = decodeJsonFromB64(entry?.b64String ?? "");
   }
@@ -254,7 +246,19 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       return true;
     }
 
-    MatchScoutingEntry entry = MatchScoutingEntry()
+    MatchScoutingEntry entry =
+        await _isar.matchScoutingEntrys.getByUuid(widget.uuid) ??
+            MatchScoutingEntry();
+
+    String currentb64String = encodeJsonToB64(state, urlSafe: true);
+
+    if (currentb64String == entry.b64String) {
+      return true;
+    }
+
+    bool keepDraft = await canSaveDraft(context, exists: entry.isDraft);
+
+    entry
       ..teamNumber = teamNumber
       ..matchNumber = matchNumber
       ..alliance = alliance.toLowerCase() == "red"
@@ -262,20 +266,17 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
           : alliance.toLowerCase() == "blue"
               ? TeamAlliance.blue
               : TeamAlliance.unassigned
-      ..b64String = encodeJsonToB64(state, urlSafe: true)
+      ..b64String = currentb64String
       ..isDraft = true;
 
-    if (entry.teamNumber == null || entry.matchNumber == null) {
-      return true;
+    if (keepDraft) {
+      _isar.writeTxn(() => _isar.matchScoutingEntrys.put(entry)).then((value) {
+        _clearForm();
+        successMessageSnackbar(context, "Saved draft to Isar, Index $value");
+      }).catchError((error) {
+        errorMessageSnackbar(context, error);
+      });
     }
-
-    await _isar
-        .writeTxn(() => _isar.matchScoutingEntrys.put(entry))
-        .then((value) {
-      successMessageSnackbar(context, "Successfully saved Draft to Isar.");
-    }).catchError((error) {
-      errorMessageSnackbar(context, error);
-    });
 
     return true;
   }

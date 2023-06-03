@@ -153,12 +153,18 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
         await _isar.pitScoutingEntrys.getByUuid(widget.uuid) ??
             PitScoutingEntry();
 
+    String currentb64String = encodeJsonToB64(state, urlSafe: true);
+
+    if (currentb64String == entry.b64String) {
+      return true;
+    }
+
+    bool keepDraft = await canSaveDraft(context, exists: entry.isDraft);
+
     entry
       ..teamNumber = int.tryParse(state['team_number'])
-      ..b64String = encodeJsonToB64(state, urlSafe: true)
+      ..b64String = currentb64String
       ..isDraft = true;
-
-    bool keepDraft = await canSaveDraft(context);
 
     if (keepDraft) {
       _isar.writeTxn(() => _isar.pitScoutingEntrys.put(entry)).then((value) {

@@ -4,11 +4,7 @@ import 'package:robotz_garage_scouting/components/forms/increment_field.dart';
 
 /// End Game Page for Match Scouting
 class MatchEndgameScreen extends StatefulWidget {
-  final Map<String, dynamic> _matchData;
-
-  const MatchEndgameScreen({super.key, required Map<String, dynamic> matchData})
-      : _matchData = matchData;
-
+  const MatchEndgameScreen({super.key});
   @override
   State<MatchEndgameScreen> createState() => _MatchEndgameScreenState();
 }
@@ -25,21 +21,20 @@ class _MatchEndgameScreenState extends State<MatchEndgameScreen>
         body: Center(
       child: Column(children: [
         FormBuilderCheckbox(
-            name: "end_balance",
-            title: const Text("End Balance"),
-            initialValue: widget._matchData["end_balance"] ?? false),
+          name: "end_balance",
+          title: const Text("End Balance"),
+        ),
         FormBuilderCheckbox(
-            name: "end_dock",
-            title: const Text("End Dock"),
-            initialValue: widget._matchData["end_dock"] ?? false),
+          name: "end_dock",
+          title: const Text("End Dock"),
+        ),
         FormBuilderCheckbox(
-            name: "end_park",
-            title: const Text("End Park"),
-            initialValue: widget._matchData["end_park"] ?? false),
+          name: "end_park",
+          title: const Text("End Park"),
+        ),
         IncrementFormBuilderField(
           name: "end_num_on_station",
           label: "Number on Station",
-          initialValue: widget._matchData["end_num_on_station"] ?? 0,
           max: 3,
         )
       ]),
