@@ -20,6 +20,8 @@ class ScoutingDataEntry {
   @Index(unique: true)
   String uuid = const Uuid().v4();
 
+  DateTime timestamp = DateTime.now().toUtc();
+
   int? teamNumber;
 
   String? datahash;

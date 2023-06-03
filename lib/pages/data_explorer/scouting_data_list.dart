@@ -7,6 +7,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/models/database_controller_model.dart';
 import 'package:robotz_garage_scouting/router.dart';
+import 'package:robotz_garage_scouting/utils/extensions/datetime_extensions.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 import 'package:robotz_garage_scouting/utils/extensions/string_extensions.dart';
@@ -59,13 +60,13 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
           .filter()
           .b64StringIsNotNull()
           .isDraftEqualTo(true)
-          .sortByTeamNumber()
+          .sortByTimestampDesc()
           .findAll();
       queriedEntries = await _isar.pitScoutingEntrys
           .filter()
           .b64StringIsNotNull()
           .isDraftEqualTo(false)
-          .sortByTeamNumber()
+          .sortByTimestampDesc()
           .findAll();
     }
     if (widget.scoutingRouter.isMatchScouting()) {
@@ -73,13 +74,13 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
           .filter()
           .b64StringIsNotNull()
           .isDraftEqualTo(true)
-          .sortByMatchNumber()
+          .sortByTimestampDesc()
           .findAll();
       queriedEntries = await _isar.matchScoutingEntrys
           .filter()
           .b64StringIsNotNull()
           .isDraftEqualTo(false)
-          .sortByMatchNumber()
+          .sortByTimestampDesc()
           .findAll();
     }
     if (widget.scoutingRouter.isSuperScouting()) {
@@ -87,11 +88,13 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
           .filter()
           .b64StringIsNotNull()
           .isDraftEqualTo(true)
+          .sortByTimestampDesc()
           .findAll();
       queriedEntries = await _isar.superScoutingEntrys
           .filter()
           .b64StringIsNotNull()
           .isDraftEqualTo(false)
+          .sortByTimestampDesc()
           .findAll();
     }
 
@@ -118,6 +121,8 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
       rows.add("Alliance: ${matchEntry.alliance.color.capitalizeFirst()}");
     }
 
+    rows.add("Last updated at ${entry.timestamp.standardizedFormat()}");
+
     return rows.join("\n");
   }
 
@@ -128,7 +133,6 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
           : _selectedIndices.add(index);
 
       if (_selectedIndices.isEmpty) {
-        // _canExport = false;
         _actionState = ScoutingDataActionState.initial;
       }
     });

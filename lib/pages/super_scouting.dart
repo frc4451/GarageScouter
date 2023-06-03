@@ -93,6 +93,24 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     // }
   }
 
+  Future<void> _clearForm() async {
+    _formKey.currentState?.save();
+
+    Map<String, dynamic> patchedValues = {};
+
+    setState(() {
+      _formKey.currentState!.fields.forEach((key, field) {
+        field.didChange(null);
+      });
+      _formKey.currentState?.save();
+      _formKey.currentState?.reset();
+
+      _formKey.currentState?.patchValue(patchedValues);
+      _formKey.currentState?.save();
+      _resetPage();
+    });
+  }
+
   void _resetPage() {
     setState(() {
       _currentPage = _controller.initialPage;
@@ -135,27 +153,54 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     _formKey.currentState?.save();
 
     Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
+    int? teamNumber = int.tryParse(state['team_number']);
 
-    if (state.isEmpty || state['team_number'] == null) {
+    if (state.isEmpty || teamNumber == null) {
       return true;
     }
 
-    final SuperScoutingEntry entry = SuperScoutingEntry()
-      ..isDraft = true
-      ..teamNumber = int.tryParse(state['team_number'])
-      ..b64String = encodeJsonToB64(state, urlSafe: true);
+    // final SuperScoutingEntry entry = SuperScoutingEntry()
+    //   ..isDraft = true
+    //   ..teamNumber = teamNumber
+    //   ..b64String = encodeJsonToB64(state, urlSafe: true);
 
-    if (entry.teamNumber == null) {
+    // if (entry.teamNumber == null) {
+    //   return true;
+    // }
+
+    // await _isar
+    //     .writeTxn(() => _isar.superScoutingEntrys.put(entry))
+    //     .then((value) {
+    //   successMessageSnackbar(context, "Saved Super Scouting Data");
+    // }).catchError((error) {
+    //   errorMessageSnackbar(context, error);
+    // });
+
+    SuperScoutingEntry entry =
+        await _isar.superScoutingEntrys.getByUuid(widget.uuid) ??
+            SuperScoutingEntry();
+
+    String currentb64String = encodeJsonToB64(state, urlSafe: true);
+
+    if (currentb64String == entry.b64String) {
       return true;
     }
 
-    await _isar
-        .writeTxn(() => _isar.superScoutingEntrys.put(entry))
-        .then((value) {
-      successMessageSnackbar(context, "Saved Super Scouting Data");
-    }).catchError((error) {
-      errorMessageSnackbar(context, error);
-    });
+    bool keepDraft = await canSaveDraft(context, exists: entry.isDraft);
+
+    entry
+      ..teamNumber = teamNumber
+      ..b64String = encodeJsonToB64(state, urlSafe: true)
+      ..isDraft = true;
+
+    if (keepDraft) {
+      _isar.writeTxn(() => _isar.superScoutingEntrys.put(entry)).then((value) {
+        _clearForm();
+        successMessageSnackbar(context, "Saved draft to Isar, Index $value");
+      }).catchError((error) {
+        errorMessageSnackbar(context, error);
+      });
+    }
 
     return true;
   }
@@ -166,11 +211,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     _isar = context.read<IsarModel>().isar;
     SuperScoutingEntry? entry =
         _isar.superScoutingEntrys.getByUuidSync(widget.uuid);
-
-    if (entry == null) {
-      errorMessageSnackbar(context,
-          "UUID doesn't exist, make sure your UUID is valid and try again.");
-    }
 
     _initialValue = decodeJsonFromB64(entry?.b64String ?? "");
   }
@@ -229,7 +269,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                         ]),
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                       ),
-                      // Text(),
                       FormBuilderTextField(
                         name: "effective_offense",
                         decoration: const InputDecoration(
