@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
@@ -37,73 +38,19 @@ class ScoutingDataListPage extends StatefulWidget {
 }
 
 class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
-  late Isar _isar;
-
-  bool _loading = true;
+  late IsarModel _isarModel;
 
   List<ScoutingDataEntry> _entries = [];
   List<ScoutingDataEntry> _drafts = [];
 
+  // We opt for StreamSubscriptions over using StreamBuilder to allow
+  // synchronous lookups over drafts and entries and reduce complexity.
+  late StreamSubscription<List<ScoutingDataEntry>> _entriesStreamSubscription;
+  late StreamSubscription<List<ScoutingDataEntry>> _draftsStreamSubscription;
+
   final List<int> _selectedIndices = [];
 
   ScoutingDataActionState _actionState = ScoutingDataActionState.initial;
-
-  Future<void> _listEntries() async {
-    setState(() {
-      _loading = true;
-    });
-
-    List<ScoutingDataEntry> queriedDrafts = [];
-    List<ScoutingDataEntry> queriedEntries = [];
-    if (widget.scoutingRouter.isPitScouting()) {
-      queriedDrafts = await _isar.pitScoutingEntrys
-          .filter()
-          .b64StringIsNotNull()
-          .isDraftEqualTo(true)
-          .sortByTimestampDesc()
-          .findAll();
-      queriedEntries = await _isar.pitScoutingEntrys
-          .filter()
-          .b64StringIsNotNull()
-          .isDraftEqualTo(false)
-          .sortByTimestampDesc()
-          .findAll();
-    }
-    if (widget.scoutingRouter.isMatchScouting()) {
-      queriedDrafts = await _isar.matchScoutingEntrys
-          .filter()
-          .b64StringIsNotNull()
-          .isDraftEqualTo(true)
-          .sortByTimestampDesc()
-          .findAll();
-      queriedEntries = await _isar.matchScoutingEntrys
-          .filter()
-          .b64StringIsNotNull()
-          .isDraftEqualTo(false)
-          .sortByTimestampDesc()
-          .findAll();
-    }
-    if (widget.scoutingRouter.isSuperScouting()) {
-      queriedDrafts = await _isar.superScoutingEntrys
-          .filter()
-          .b64StringIsNotNull()
-          .isDraftEqualTo(true)
-          .sortByTimestampDesc()
-          .findAll();
-      queriedEntries = await _isar.superScoutingEntrys
-          .filter()
-          .b64StringIsNotNull()
-          .isDraftEqualTo(false)
-          .sortByTimestampDesc()
-          .findAll();
-    }
-
-    setState(() {
-      _entries = queriedEntries;
-      _drafts = queriedDrafts;
-      _loading = false;
-    });
-  }
 
   String _getListTileTitle(ScoutingDataEntry entry) {
     if (entry is MatchScoutingEntry) {
@@ -139,9 +86,9 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   }
 
   void _enableDelete() {
-    if (_entries.isEmpty && _drafts.isEmpty) {
-      errorMessageSnackbar(
-          context, "You don't have ${widget.scoutingRouter.displayName} data.");
+    if (_drafts.isEmpty) {
+      errorMessageSnackbar(context,
+          "You don't have ${widget.scoutingRouter.displayName} drafts.");
       return;
     }
 
@@ -210,7 +157,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
 
     // There may be a generic way to do this using Isar, but I haven't found it.
     if (widget.scoutingRouter.isPitScouting()) {
-      _isar.writeTxn(() => _isar.pitScoutingEntrys.deleteAll(ids)).then(
+      _isarModel.deletePitScoutingByIDs(ids).then(
         (_) {
           successMessageSnackbar(context, "Successfully deleted draft(s)");
         },
@@ -219,7 +166,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
       });
     }
     if (widget.scoutingRouter.isMatchScouting()) {
-      _isar.writeTxn(() => _isar.matchScoutingEntrys.deleteAll(ids)).then(
+      _isarModel.deleteMatchScoutingByIDs(ids).then(
         (_) {
           successMessageSnackbar(context, "Successfully deleted draft(s)");
         },
@@ -228,7 +175,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
       });
     }
     if (widget.scoutingRouter.isSuperScouting()) {
-      _isar.writeTxn(() => _isar.superScoutingEntrys.deleteAll(ids)).then(
+      _isarModel.deleteSuperScoutingByIDs(ids).then(
         (_) {
           successMessageSnackbar(context, "Successfully deleted draft(s)");
         },
@@ -237,11 +184,9 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
       });
     }
 
-    _listEntries().then((_) {
-      setState(() {
-        _actionState = ScoutingDataActionState.initial;
-        _listEntries();
-      });
+    setState(() {
+      _selectedIndices.clear();
+      _actionState = ScoutingDataActionState.initial;
     });
   }
 
@@ -287,7 +232,10 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                           version: QrVersions.auto,
                           backgroundColor: Colors.white,
                           size: maxQRCodeSize,
-                          data: encodeMultipleJsonToB64(jsons),
+                          data: encodeJsonToB64({
+                            "type": widget.scoutingRouter.displayName,
+                            "data": jsons
+                          }),
                           errorStateBuilder: (context, error) => Column(
                             children: [
                               const Text(
@@ -312,8 +260,33 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   @override
   void initState() {
     super.initState();
-    _isar = context.read<IsarModel>().isar;
-    _listEntries();
+
+    _isarModel = context.read<IsarModel>();
+
+    Stream<List<ScoutingDataEntry>> entriesStream =
+        _isarModel.getScoutingData(widget.scoutingRouter.dataType);
+    Stream<List<ScoutingDataEntry>> draftsStream =
+        _isarModel.getScoutingDrafts(widget.scoutingRouter.dataType);
+
+    _entriesStreamSubscription = entriesStream.listen((entries) {
+      setState(() {
+        _entries = entries;
+      });
+    });
+
+    _draftsStreamSubscription = draftsStream.listen((drafts) {
+      setState(() {
+        _drafts = drafts;
+      });
+    });
+  }
+
+  @override
+  void deactivate() {
+    _entriesStreamSubscription.cancel();
+    _draftsStreamSubscription.cancel();
+
+    super.deactivate();
   }
 
   @override
@@ -328,32 +301,6 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                   : widget.scoutingRouter.displayName,
           textAlign: TextAlign.center,
         ),
-        // actions: [
-        //   PopupMenuButton(
-        //       onSelected: (value) {
-        //         if (value == "export") {
-        //           setState(() {
-        //             _canExport = true;
-        //           });
-        //         } else if (value == "cancel") {
-        //           setState(() {
-        //             _selectedIndices.clear();
-        //             _canExport = false;
-        //           });
-        //         } else if (value == "confirm") {}
-        //       },
-        //       itemBuilder: (context) => _canExport
-        //           ? [
-        //               const PopupMenuItem(
-        //                   value: "cancel", child: Text("Cancel Export")),
-        //               const PopupMenuItem(
-        //                   value: "confirm", child: Text("Confirm Export"))
-        //             ]
-        //           : [
-        //               const PopupMenuItem(
-        //                   value: "export", child: Text("Export"))
-        //             ])
-        // ],
       ),
       bottomNavigationBar: Visibility(
           visible: _actionState.isNotInitial(),
@@ -378,119 +325,105 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
           Color iconColor = Theme.of(context).colorScheme.primary;
           bool databaseNotEmpty = _drafts.isNotEmpty || _entries.isNotEmpty;
 
-          // if (_loading) {
-          //   return const Center(
-          //     child: CircularProgressIndicator(),
-          //   );
-          // }
-          // if (_drafts.isEmpty && _entries.isEmpty && !_loading) {
-          //   return ListTile(
-          //     title: Text(
-          //       "No items are in the database for ${widget.scoutingRouter.displayName}.",
-          //       textAlign: TextAlign.center,
-          //     ),
-          //   );
-          // }
-
           return ListView(
             children: [
-              if (_actionState.isInitial()) ...[
-                ListTile(
-                  leading: const Icon(Icons.my_library_add_sharp),
-                  iconColor: iconColor,
-                  title:
-                      Text("Collect ${widget.scoutingRouter.displayName} Data"),
-                  onTap: () {
-                    context
-                        .pushNamed(
-                            '${widget.scoutingRouter.urlPath}-collection')
-                        .then((value) {
-                      _listEntries();
-                    });
-                  },
-                ),
-                ListTile(
-                    leading: const Icon(Icons.import_export),
+              Visibility(
+                visible: _actionState.isInitial(),
+                child: Column(children: [
+                  ListTile(
+                    leading: const Icon(Icons.my_library_add_sharp),
                     iconColor: iconColor,
                     title: Text(
-                        "Import ${widget.scoutingRouter.displayName} Data"),
-                    onTap: () => _enableImport()),
-                ListTile(
-                    leading: const Icon(Icons.import_export),
-                    iconColor: iconColor,
-                    title: Text(
-                        "Export ${widget.scoutingRouter.displayName} Data"),
-                    onTap: () => _enableExport()),
-                // ListTile(
-                //     leading: const Icon(Icons.archive),
-                //     iconColor: iconColor,
-                //     title: Text(
-                //         "Archive ${widget.scoutingRouter.displayName} Data"),
-                //     onTap: () => _enableArchive()),
-                ListTile(
-                    leading: const Icon(Icons.delete),
-                    iconColor: iconColor,
-                    title: Text(
-                        "Delete ${widget.scoutingRouter.displayName} Drafts"),
-                    onTap: () => _enableDelete())
-              ],
-              if (_loading)
-                const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              if (!databaseNotEmpty && !_loading)
-                ListTile(
+                        "Collect ${widget.scoutingRouter.displayName} Data"),
+                    onTap: () {
+                      context.pushNamed(
+                          '${widget.scoutingRouter.urlPath}-collection');
+                    },
+                  ),
+                  ListTile(
+                      leading: const Icon(Icons.import_export),
+                      iconColor: iconColor,
+                      title: Text(
+                          "Import ${widget.scoutingRouter.displayName} Data"),
+                      onTap: () => _enableImport()),
+                  ListTile(
+                      leading: const Icon(Icons.import_export),
+                      iconColor: iconColor,
+                      title: Text(
+                          "Export ${widget.scoutingRouter.displayName} Data"),
+                      onTap: () => _enableExport()),
+                  // ListTile(
+                  //     leading: const Icon(Icons.archive),
+                  //     iconColor: iconColor,
+                  //     title: Text(
+                  //         "Archive ${widget.scoutingRouter.displayName} Data"),
+                  //     onTap: () => _enableArchive()),
+                  ListTile(
+                      leading: const Icon(Icons.delete),
+                      iconColor: iconColor,
+                      title: Text(
+                          "Delete ${widget.scoutingRouter.displayName} Drafts"),
+                      onTap: () => _enableDelete())
+                ]),
+              ),
+              Visibility(
+                visible: !databaseNotEmpty,
+                child: ListTile(
                   title: Text(
                     "No items are in the database for ${widget.scoutingRouter.displayName}.",
                     textAlign: TextAlign.center,
                   ),
                 ),
-              if (!_actionState.isExport() && databaseNotEmpty && !_loading)
-                ExpansionTile(
-                  leading: const Icon(Icons.drafts),
-                  title: const Text("Drafts"),
-                  initiallyExpanded: _drafts.isNotEmpty,
-                  children: [
-                    ..._drafts.mapIndexed((index, draft) => ListTile(
-                          title: Text(_getListTileTitle(draft)),
-                          subtitle: Text(_getListTileSubtitle(draft)),
-                          selected: _actionState.isDelete() &&
-                              _selectedIndices.contains(index),
-                          onTap: () {
-                            if (_actionState.isDelete()) {
-                              _selectIndex(index);
-                              return;
-                            }
-                            context.pushNamed(
-                                "${widget.scoutingRouter.urlPath}-collection",
-                                queryParams: {"uuid": draft.uuid});
-                          },
-                        ))
-                  ],
-                ),
-              if (!_actionState.isDelete() && databaseNotEmpty && !_loading)
-                ExpansionTile(
-                  leading: const Icon(Icons.done),
-                  title: const Text("Completed"),
-                  initiallyExpanded: _entries.isNotEmpty,
-                  children: [
-                    ..._entries.mapIndexed((index, entry) => ListTile(
-                          title: Text(_getListTileTitle(entry)),
-                          subtitle: Text(_getListTileSubtitle(entry)),
-                          selected: _actionState.isExport() &&
-                              _selectedIndices.contains(index),
-                          onTap: () {
-                            if (_actionState.isExport()) {
-                              _selectIndex(index);
-                              return;
-                            }
-                            context.goNamed(
-                                '${widget.scoutingRouter.urlPath}-display',
-                                params: {'hash': entry.b64String ?? ""});
-                          },
-                        ))
-                  ],
-                ),
+              ),
+              Visibility(
+                  visible: !_actionState.isExport() && databaseNotEmpty,
+                  child: ExpansionTile(
+                      leading: const Icon(Icons.drafts),
+                      title: const Text("Drafts"),
+                      initiallyExpanded: true,
+                      children: ListTile.divideTiles(
+                          context: context,
+                          tiles: _drafts.mapIndexed(
+                            (index, draft) => ListTile(
+                              title: Text(_getListTileTitle(draft)),
+                              subtitle: Text(_getListTileSubtitle(draft)),
+                              selected: _actionState.isDelete() &&
+                                  _selectedIndices.contains(index),
+                              onTap: () {
+                                if (_actionState.isDelete()) {
+                                  _selectIndex(index);
+                                  return;
+                                }
+                                context.pushNamed(
+                                    "${widget.scoutingRouter.urlPath}-collection",
+                                    queryParams: {"uuid": draft.uuid});
+                              },
+                            ),
+                          )).toList())),
+              Visibility(
+                visible: !_actionState.isDelete() && databaseNotEmpty,
+                child: ExpansionTile(
+                    title: const Text("Completed"),
+                    leading: const Icon(Icons.done),
+                    initiallyExpanded: true,
+                    children: ListTile.divideTiles(
+                        context: context,
+                        tiles: _entries.mapIndexed((index, entry) => ListTile(
+                              title: Text(_getListTileTitle(entry)),
+                              subtitle: Text(_getListTileSubtitle(entry)),
+                              selected: _actionState.isExport() &&
+                                  _selectedIndices.contains(index),
+                              onTap: () {
+                                if (_actionState.isExport()) {
+                                  _selectIndex(index);
+                                  return;
+                                }
+                                context.goNamed(
+                                    '${widget.scoutingRouter.urlPath}-display',
+                                    params: {'hash': entry.b64String ?? ""});
+                              },
+                            ))).toList()),
+              ),
             ],
           );
         },

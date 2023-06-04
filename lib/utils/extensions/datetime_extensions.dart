@@ -6,5 +6,5 @@ extension FormatDateTime on DateTime {
   String getFormattedDateTime(String format) => DateFormat(format).format(this);
 
   /// Shorthand for a human readable formatted datetime string.
-  String standardizedFormat() => getFormattedDateTime("MMMM dd y, hh:mm:ss a");
+  String standardizedFormat() => getFormattedDateTime("MMMM dd y, hh:mm a");
 }

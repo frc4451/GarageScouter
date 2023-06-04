@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robotz_garage_scouting/constants/platform_check.dart';
+import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/data_explorer.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_details.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_list.dart';
@@ -16,17 +17,28 @@ import 'package:robotz_garage_scouting/pages/super_scouting.dart';
 
 enum ScoutingRouter {
   home(displayName: "Home", urlPath: "/"),
-  pitScouting(displayName: "Pit Scouting", urlPath: "pit-scouting"),
-  matchScouting(displayName: "Match Scouting", urlPath: "match-scouting"),
-  superScouting(displayName: "Super Scouting", urlPath: "super-scouting"),
+  pitScouting(
+      displayName: "Pit Scouting",
+      urlPath: "pit-scouting",
+      dataType: PitScoutingEntry),
+  matchScouting(
+      displayName: "Match Scouting",
+      urlPath: "match-scouting",
+      dataType: MatchScoutingEntry),
+  superScouting(
+      displayName: "Super Scouting",
+      urlPath: "super-scouting",
+      dataType: SuperScoutingEntry),
   collectionScreen(displayName: "", urlPath: "collection"),
   displayScreen(displayName: "Display Data", urlPath: ":hash"),
   settings(displayName: "Settings", urlPath: "settings");
 
   final String displayName;
   final String urlPath;
+  final Type? dataType;
 
-  const ScoutingRouter({required this.displayName, required this.urlPath});
+  const ScoutingRouter(
+      {required this.displayName, required this.urlPath, this.dataType});
 
   bool isPitScouting() => this == ScoutingRouter.pitScouting;
   bool isMatchScouting() => this == ScoutingRouter.matchScouting;

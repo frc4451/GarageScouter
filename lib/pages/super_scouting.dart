@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:isar/isar.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/models/database_controller_model.dart';
@@ -33,7 +33,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   // internally managed "page state" to know when we need to submit the form.
   int _currentPage = 0;
 
-  late Isar _isar;
+  late IsarModel _isarModel;
   late Map<String, dynamic> _initialValue;
 
   /// Handles form submission
@@ -65,15 +65,22 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
 
     final String teamNumber = state["team_number"].toString();
 
-    final SuperScoutingEntry entry = SuperScoutingEntry()
+    SuperScoutingEntry entry = await _isarModel.getSuperDataByUUID(widget.uuid);
+
+    bool wasDraft = entry.isDraft ?? false;
+
+    entry
       ..isDraft = false
       ..teamNumber = int.tryParse(teamNumber)
       ..b64String = encodeJsonToB64(state, urlSafe: true);
 
-    await _isar
-        .writeTxn(() => _isar.superScoutingEntrys.put(entry))
-        .then((value) {
+    await _isarModel.putScoutingData(entry).then((value) {
+      _clearForm();
       successMessageSnackbar(context, "Saved Super Scouting Data");
+
+      if (wasDraft) {
+        context.pop();
+      }
     }).catchError((error) {
       errorMessageSnackbar(context, error);
     });
@@ -97,7 +104,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     _formKey.currentState?.save();
 
     Map<String, dynamic> patchedValues = {};
-
     setState(() {
       _formKey.currentState!.fields.forEach((key, field) {
         field.didChange(null);
@@ -107,7 +113,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
 
       _formKey.currentState?.patchValue(patchedValues);
       _formKey.currentState?.save();
-      _resetPage();
+      // _resetPage();
     });
   }
 
@@ -153,7 +159,12 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     _formKey.currentState?.save();
 
     Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
-    int? teamNumber = int.tryParse(state['team_number']);
+
+    if (state.isEmpty) {
+      return true;
+    }
+
+    int? teamNumber = int.tryParse(state['team_number'] ?? "");
 
     if (state.isEmpty || teamNumber == null) {
       return true;
@@ -176,9 +187,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     //   errorMessageSnackbar(context, error);
     // });
 
-    SuperScoutingEntry entry =
-        await _isar.superScoutingEntrys.getByUuid(widget.uuid) ??
-            SuperScoutingEntry();
+    SuperScoutingEntry entry = await _isarModel.getSuperDataByUUID(widget.uuid);
 
     String currentb64String = encodeJsonToB64(state, urlSafe: true);
 
@@ -194,7 +203,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
       ..isDraft = true;
 
     if (keepDraft) {
-      _isar.writeTxn(() => _isar.superScoutingEntrys.put(entry)).then((value) {
+      _isarModel.putScoutingData(entry).then((value) {
         _clearForm();
         successMessageSnackbar(context, "Saved draft to Isar, Index $value");
       }).catchError((error) {
@@ -208,11 +217,11 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   @override
   void initState() {
     super.initState();
-    _isar = context.read<IsarModel>().isar;
-    SuperScoutingEntry? entry =
-        _isar.superScoutingEntrys.getByUuidSync(widget.uuid);
+    _isarModel = context.read<IsarModel>();
 
-    _initialValue = decodeJsonFromB64(entry?.b64String ?? "");
+    SuperScoutingEntry? entry = _isarModel.getSuperDataByUUIDSync(widget.uuid);
+
+    _initialValue = decodeJsonFromB64(entry.b64String ?? "");
   }
 
   /// Clean up the component, but also the FormBuilderController

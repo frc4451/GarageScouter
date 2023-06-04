@@ -1,9 +1,7 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:isar/isar.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/components/forms/conditional_hidden_input.dart';
 import 'package:robotz_garage_scouting/components/forms/conditional_hidden_field.dart';
@@ -29,7 +27,7 @@ class PitScoutingPage extends StatefulWidget {
 class _PitScoutingPageState extends State<PitScoutingPage> {
   final _formKey = GlobalKey<FormBuilderState>();
 
-  late Isar _isar;
+  late IsarModel _isarModel;
   late Map<String, dynamic> _initialValue;
 
   /// Handles form submission
@@ -63,12 +61,16 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
         if (value.value == null) {
           _formKey.currentState?.patchValue({key: <String>[]});
         }
-        _formKey.currentState
-            ?.patchValue({key: (value.value as List<String>).sorted()});
+        _formKey.currentState?.patchValue({
+          key: (value.value as List<dynamic>)
+              .sorted((dynamic left, dynamic right) {
+            return left.toString().compareTo(right.toString());
+          })
+        });
       }
 
       if (value.widget is YesOrNoFieldType && value.value == null) {
-        _formKey.currentState?.patchValue({key: YesOrNoEnumType.no});
+        _formKey.currentState?.patchValue({key: YesOrNoEnumType.no.label});
       }
     });
 
@@ -80,13 +82,22 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
 
     final String teamNumber = state["team_number"].toString();
 
-    PitScoutingEntry entry = PitScoutingEntry()
+    PitScoutingEntry entry = await _isarModel.getPitDataByUUID(widget.uuid);
+
+    bool wasDraft = entry.isDraft ?? false;
+
+    entry
       ..teamNumber = int.tryParse(teamNumber)
       ..b64String = encodeJsonToB64(state, urlSafe: true)
       ..isDraft = false;
-    _isar.writeTxn(() => _isar.pitScoutingEntrys.put(entry)).then((value) {
+
+    _isarModel.putScoutingData(entry).then((value) {
       _clearForm();
       successMessageSnackbar(context, "Saved data to Isar, Index $value");
+
+      if (wasDraft) {
+        context.pop();
+      }
     }).catchError((error) {
       errorMessageSnackbar(context, error);
     });
@@ -149,9 +160,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
       return true;
     }
 
-    PitScoutingEntry entry =
-        await _isar.pitScoutingEntrys.getByUuid(widget.uuid) ??
-            PitScoutingEntry();
+    PitScoutingEntry entry = await _isarModel.getPitDataByUUID(widget.uuid);
 
     String currentb64String = encodeJsonToB64(state, urlSafe: true);
 
@@ -167,7 +176,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
       ..isDraft = true;
 
     if (keepDraft) {
-      _isar.writeTxn(() => _isar.pitScoutingEntrys.put(entry)).then((value) {
+      _isarModel.putScoutingData(entry).then((value) {
         _clearForm();
         successMessageSnackbar(context, "Saved draft to Isar, Index $value");
       }).catchError((error) {
@@ -181,12 +190,11 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
   @override
   void initState() {
     super.initState();
-    _isar = context.read<IsarModel>().isar;
+    _isarModel = context.read<IsarModel>();
 
-    PitScoutingEntry? entry =
-        _isar.pitScoutingEntrys.getByUuidSync(widget.uuid);
+    PitScoutingEntry entry = _isarModel.getPitDataByUUIDSync(widget.uuid);
 
-    _initialValue = decodeJsonFromB64(entry?.b64String ?? "");
+    _initialValue = decodeJsonFromB64(entry.b64String ?? "");
   }
 
   @override

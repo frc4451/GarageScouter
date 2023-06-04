@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:isar/isar.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/models/database_controller_model.dart';
@@ -37,7 +37,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   final List<Widget> pages = [];
 
   late TabController _tabController;
-  late Isar _isar;
+  late IsarModel _isarModel;
   late Map<String, dynamic> _initialValue;
 
   // We can't rely on _controller.page because the page is not fully updated
@@ -94,7 +94,11 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     //   errorMessageSnackbar(context, error);
     // });
 
-    MatchScoutingEntry entry = MatchScoutingEntry()
+    MatchScoutingEntry entry = await _isarModel.getMatchDataByUUID(widget.uuid);
+
+    bool wasDraft = entry.isDraft ?? false;
+
+    entry
       ..teamNumber = int.tryParse(teamNumber)
       ..matchNumber = int.tryParse(matchNumber)
       ..alliance =
@@ -102,9 +106,13 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       ..b64String = encodeJsonToB64(state, urlSafe: true)
       ..isDraft = false;
 
-    _isar.writeTxn(() => _isar.matchScoutingEntrys.put(entry)).then((value) {
+    _isarModel.putScoutingData(entry).then((value) {
       _clearForm(isSubmission: true);
       successMessageSnackbar(context, "Saved data to Isar, Index $value");
+
+      if (wasDraft) {
+        context.pop();
+      }
     }).catchError((error) {
       errorMessageSnackbar(context, error);
     });
@@ -216,12 +224,11 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       });
     });
 
-    _isar = context.read<IsarModel>().isar;
+    _isarModel = context.read<IsarModel>();
 
-    MatchScoutingEntry? entry =
-        _isar.matchScoutingEntrys.getByUuidSync(widget.uuid);
+    MatchScoutingEntry entry = _isarModel.getMatchDataByUUIDSync(widget.uuid);
 
-    _initialValue = decodeJsonFromB64(entry?.b64String ?? "");
+    _initialValue = decodeJsonFromB64(entry.b64String ?? "");
   }
 
   /// We safely save the state of the form when the user pops the Widget from
@@ -246,9 +253,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       return true;
     }
 
-    MatchScoutingEntry entry =
-        await _isar.matchScoutingEntrys.getByUuid(widget.uuid) ??
-            MatchScoutingEntry();
+    MatchScoutingEntry entry = await _isarModel.getMatchDataByUUID(widget.uuid);
 
     String currentb64String = encodeJsonToB64(state, urlSafe: true);
 
@@ -270,7 +275,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       ..isDraft = true;
 
     if (keepDraft) {
-      _isar.writeTxn(() => _isar.matchScoutingEntrys.put(entry)).then((value) {
+      _isarModel.putScoutingData(entry).then((value) {
         _clearForm();
         successMessageSnackbar(context, "Saved draft to Isar, Index $value");
       }).catchError((error) {
