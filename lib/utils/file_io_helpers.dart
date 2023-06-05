@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:robotz_garage_scouting/constants/platform_check.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
@@ -145,7 +146,7 @@ Future<File> saveFileToDevice(File file) async {
   } else if (isMobilePlatform()) {
     return saveFilesForMobileApplication(file);
   } else {
-    throw Exception("Platform not supported yet");
+    throw PlatformException(code: "Platform not supported yet");
   }
 }
 

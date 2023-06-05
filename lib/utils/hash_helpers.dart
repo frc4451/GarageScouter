@@ -79,3 +79,18 @@ Map<String, dynamic> decodeJsonFromB64(String data) {
 String convertMapStateToString(Map<String, dynamic> state) =>
     const ListToCsvConverter()
         .convert([state.keys.toList(), state.values.toList()]);
+
+String convertListToCSVRow(List<dynamic> data) =>
+    const ListToCsvConverter().convert([data]);
+
+/// Confirms that all props in the list of Maps are the same
+bool validateProperties(List<Map<String, dynamic>> listOfMaps) {
+  if (listOfMaps.isEmpty) {
+    return true;
+  }
+
+  Set<String> firstProperties = listOfMaps.first.keys.toSet();
+
+  return listOfMaps
+      .every((map) => map.keys.toSet().containsAll(firstProperties));
+}

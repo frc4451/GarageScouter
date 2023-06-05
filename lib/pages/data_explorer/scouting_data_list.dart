@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/models/database_controller_model.dart';
 import 'package:robotz_garage_scouting/router.dart';
 import 'package:robotz_garage_scouting/utils/extensions/datetime_extensions.dart';
+import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 import 'package:robotz_garage_scouting/utils/extensions/string_extensions.dart';
@@ -190,11 +192,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
     });
   }
 
-  void _exportScoutingData() {
-    List<Map<String, dynamic>> jsons = _entries
-        .map((entry) => decodeJsonFromB64(entry.b64String ?? "{}"))
-        .toList();
-
+  Future<void> _handleDisplayQRCode(List<Map<String, dynamic>> jsons) async {
     showDialog(
         context: context,
         builder: (context) => Dialog(
@@ -255,6 +253,76 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                     ));
               },
             )));
+  }
+
+  Future<void> _handleFileDialog(List<Map<String, dynamic>> jsons) async {
+    final String filePath = await generateUniqueFilePath(
+      extension: "csv",
+      prefix:
+          widget.scoutingRouter.displayName.toLowerCase().replaceAll(" ", "_"),
+    );
+
+    final File file = File(filePath);
+
+    final List<String> rows = [];
+
+    if (!validateProperties(jsons)) {
+      errorMessageSnackbar(context, "Not all entries have the same schema.");
+    }
+
+    rows.add(convertListToCSVRow(jsons.first.keys.toList()));
+
+    for (final json in jsons) {
+      rows.add(convertListToCSVRow(json.values.toList()));
+    }
+
+    final File finalFile = await file.writeAsString(rows.join("\n"));
+
+    saveFileToDevice(finalFile).then((File file) {
+      saveFileSnackbar(context, file);
+    }).catchError((error) {
+      errorMessageSnackbar(context, error);
+    });
+  }
+
+  void _exportScoutingData() {
+    List<Map<String, dynamic>> jsons = _selectedIndices
+        .map((index) => _entries[index])
+        .map((entry) => decodeJsonFromB64(entry.b64String ?? "{}"))
+        .toList();
+
+    const String qrKey = "qr";
+    const String csvkey = "csv";
+
+    showModalBottomSheet(
+        isDismissible: true,
+        context: context,
+        builder: (context) => Container(
+              height: 100,
+              child: Column(children: [
+                ListTile(
+                  title: const Text("QR Code"),
+                  leading: const Icon(Icons.qr_code),
+                  onTap: () {
+                    context.pop(qrKey);
+                  },
+                ),
+                ListTile(
+                  title: const Text("CSV Export"),
+                  leading: const Icon(Icons.file_download),
+                  onTap: () {
+                    context.pop(csvkey);
+                  },
+                ),
+              ]),
+            )).then((dynamic value) {
+      String? response = value?.toString();
+      if (response == qrKey) {
+        _handleDisplayQRCode(jsons);
+      } else if (response == csvkey) {
+        _handleFileDialog(jsons);
+      }
+    });
   }
 
   @override
