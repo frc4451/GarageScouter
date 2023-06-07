@@ -1,37 +1,17 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/models/database_controller_model.dart';
+import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_utils.dart';
 import 'package:robotz_garage_scouting/router.dart';
-import 'package:robotz_garage_scouting/utils/extensions/datetime_extensions.dart';
-import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
-import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
-import 'package:robotz_garage_scouting/utils/extensions/string_extensions.dart';
-
-enum ScoutingDataActionState {
-  initial,
-  import,
-  export,
-  archive,
-  delete;
-
-  bool isInitial() => this == ScoutingDataActionState.initial;
-  bool isNotInitial() => this != ScoutingDataActionState.initial;
-  bool isImport() => this == ScoutingDataActionState.import;
-  bool isExport() => this == ScoutingDataActionState.export;
-  bool isArchive() => this == ScoutingDataActionState.archive;
-  bool isDelete() => this == ScoutingDataActionState.delete;
-}
 
 class ScoutingDataListPage extends StatefulWidget {
-  final ScoutingRouter scoutingRouter;
+  final GarageRouter scoutingRouter;
 
   const ScoutingDataListPage({super.key, required this.scoutingRouter});
 
@@ -50,279 +30,41 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   late StreamSubscription<List<ScoutingDataEntry>> _entriesStreamSubscription;
   late StreamSubscription<List<ScoutingDataEntry>> _draftsStreamSubscription;
 
-  final List<int> _selectedIndices = [];
+  void _goToImportPage() {
+    context.goNamed(widget.scoutingRouter.getImportRouteName());
+  }
 
-  ScoutingDataActionState _actionState = ScoutingDataActionState.initial;
-
-  String _getListTileTitle(ScoutingDataEntry entry) {
-    if (entry is MatchScoutingEntry) {
-      MatchScoutingEntry matchEntry = entry;
-      return "Team Number: ${matchEntry.teamNumber}, Match Number: ${matchEntry.matchNumber}";
+  void _goToExportPage() {
+    if (_entries.isEmpty) {
+      errorMessageSnackbar(context,
+          "You don't have completed ${widget.scoutingRouter.displayName} data.");
+      return;
     }
-    return "Team Number: ${entry.teamNumber}";
+    context.goNamed(widget.scoutingRouter.getExportRouteName());
   }
 
-  String _getListTileSubtitle(ScoutingDataEntry entry) {
-    List<String> rows = [];
-
-    if (entry is MatchScoutingEntry) {
-      MatchScoutingEntry matchEntry = entry;
-      rows.add("Alliance: ${matchEntry.alliance.color.capitalizeFirst()}");
-    }
-
-    rows.add("Last updated at ${entry.timestamp.standardizedFormat()}");
-
-    return rows.join("\n");
-  }
-
-  void _selectIndex(int index) {
-    setState(() {
-      _actionState.isExport() && _selectedIndices.contains(index)
-          ? _selectedIndices.remove(index)
-          : _selectedIndices.add(index);
-
-      if (_selectedIndices.isEmpty) {
-        _actionState = ScoutingDataActionState.initial;
-      }
-    });
-  }
-
-  void _enableDelete() {
+  void _goToDeletePage() {
     if (_drafts.isEmpty) {
       errorMessageSnackbar(context,
           "You don't have ${widget.scoutingRouter.displayName} drafts.");
       return;
     }
 
-    setState(() {
-      _selectedIndices.clear();
-      _actionState = ScoutingDataActionState.delete;
-    });
+    context.goNamed(widget.scoutingRouter.getDeleteRouteName());
   }
 
-  void _enableImport() {
-    informationSnackbar(context, "Will be implemented eventually.");
+  void _goToCollectionPage() {
+    context.pushNamed('${widget.scoutingRouter.urlPath}-collection');
   }
 
-  void _enableArchive() {
-    informationSnackbar(context, "Will be implemented eventually.");
+  void _goToDraftCompletionPage(ScoutingDataEntry draft) {
+    context.pushNamed("${widget.scoutingRouter.urlPath}-collection",
+        queryParams: {"uuid": draft.uuid});
   }
 
-  void _enableExport() {
-    if (_entries.isEmpty) {
-      errorMessageSnackbar(context,
-          "You don't have completed ${widget.scoutingRouter.displayName} data.");
-      return;
-    }
-
-    setState(() {
-      _selectedIndices.clear();
-      _actionState = ScoutingDataActionState.export;
-    });
-  }
-
-  void _resetState() {
-    setState(() {
-      _selectedIndices.clear();
-      _actionState = ScoutingDataActionState.initial;
-    });
-  }
-
-  String _getSubmitText() {
-    return _actionState.isExport()
-        ? "Export"
-        : _actionState.isDelete()
-            ? "Delete"
-            : "Submit";
-  }
-
-  void _handleSubmit() {
-    switch (_actionState) {
-      case ScoutingDataActionState.import:
-        return;
-      case ScoutingDataActionState.export:
-        _exportScoutingData();
-        break;
-      case ScoutingDataActionState.delete:
-        _deleteDrafts();
-        break;
-      default:
-        break;
-    }
-  }
-
-  void _deleteDrafts() async {
-    List<int> ids = _selectedIndices
-        .map((index) => _drafts[index])
-        .map((draft) => draft.id)
-        .toList();
-
-    // There may be a generic way to do this using Isar, but I haven't found it.
-    if (widget.scoutingRouter.isPitScouting()) {
-      _isarModel.deletePitScoutingByIDs(ids).then(
-        (_) {
-          successMessageSnackbar(context, "Successfully deleted draft(s)");
-        },
-      ).catchError((error) {
-        errorMessageSnackbar(context, error);
-      });
-    }
-    if (widget.scoutingRouter.isMatchScouting()) {
-      _isarModel.deleteMatchScoutingByIDs(ids).then(
-        (_) {
-          successMessageSnackbar(context, "Successfully deleted draft(s)");
-        },
-      ).catchError((error) {
-        errorMessageSnackbar(context, error);
-      });
-    }
-    if (widget.scoutingRouter.isSuperScouting()) {
-      _isarModel.deleteSuperScoutingByIDs(ids).then(
-        (_) {
-          successMessageSnackbar(context, "Successfully deleted draft(s)");
-        },
-      ).catchError((error) {
-        errorMessageSnackbar(context, error);
-      });
-    }
-
-    setState(() {
-      _selectedIndices.clear();
-      _actionState = ScoutingDataActionState.initial;
-    });
-  }
-
-  Future<void> _handleDisplayQRCode(List<Map<String, dynamic>> jsons) async {
-    showDialog(
-        context: context,
-        builder: (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            elevation: 16.0,
-            insetPadding: const EdgeInsets.all(0.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                const double spaceBetween = 18.0;
-
-                final double maxQRCodeSize =
-                    constraints.maxWidth > constraints.maxHeight
-                        ? constraints.maxHeight * 0.75
-                        : constraints.maxWidth * 0.9;
-
-                const double padY = 16;
-                const double padX = padY / 2;
-
-                return Padding(
-                    padding: const EdgeInsets.fromLTRB(padX, padY, padX, padY),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "Scan this data with Import Manager",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18.0,
-                          ),
-                        ),
-                        const SizedBox(height: spaceBetween),
-                        QrImageView(
-                          version: QrVersions.auto,
-                          backgroundColor: Colors.white,
-                          size: maxQRCodeSize,
-                          data: encodeJsonToB64({
-                            "type": widget.scoutingRouter.displayName,
-                            "data": jsons
-                          }),
-                          errorStateBuilder: (context, error) => Column(
-                            children: [
-                              const Text(
-                                  "QR Code Failed to load because of the following"),
-                              Text(error.toString())
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: spaceBetween),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text("OK"),
-                        ),
-                      ],
-                    ));
-              },
-            )));
-  }
-
-  Future<void> _handleFileDialog(List<Map<String, dynamic>> jsons) async {
-    final String filePath = await generateUniqueFilePath(
-      extension: "csv",
-      prefix:
-          widget.scoutingRouter.displayName.toLowerCase().replaceAll(" ", "_"),
-    );
-
-    final File file = File(filePath);
-
-    final List<String> rows = [];
-
-    if (!validateProperties(jsons)) {
-      errorMessageSnackbar(context, "Not all entries have the same schema.");
-    }
-
-    rows.add(convertListToCSVRow(jsons.first.keys.toList()));
-
-    for (final json in jsons) {
-      rows.add(convertListToCSVRow(json.values.toList()));
-    }
-
-    final File finalFile = await file.writeAsString(rows.join("\n"));
-
-    saveFileToDevice(finalFile).then((File file) {
-      saveFileSnackbar(context, file);
-    }).catchError((error) {
-      errorMessageSnackbar(context, error);
-    });
-  }
-
-  void _exportScoutingData() {
-    List<Map<String, dynamic>> jsons = _selectedIndices
-        .map((index) => _entries[index])
-        .map((entry) => decodeJsonFromB64(entry.b64String ?? "{}"))
-        .toList();
-
-    const String qrKey = "qr";
-    const String csvkey = "csv";
-
-    showModalBottomSheet(
-        isDismissible: true,
-        context: context,
-        builder: (context) => Container(
-              height: 100,
-              child: Column(children: [
-                ListTile(
-                  title: const Text("QR Code"),
-                  leading: const Icon(Icons.qr_code),
-                  onTap: () {
-                    context.pop(qrKey);
-                  },
-                ),
-                ListTile(
-                  title: const Text("CSV Export"),
-                  leading: const Icon(Icons.file_download),
-                  onTap: () {
-                    context.pop(csvkey);
-                  },
-                ),
-              ]),
-            )).then((dynamic value) {
-      String? response = value?.toString();
-      if (response == qrKey) {
-        _handleDisplayQRCode(jsons);
-      } else if (response == csvkey) {
-        _handleFileDialog(jsons);
-      }
-    });
+  void _goToDisplayPage(ScoutingDataEntry entry) {
+    context.goNamed('${widget.scoutingRouter.urlPath}-display',
+        params: {'hash': entry.b64String ?? ""});
   }
 
   @override
@@ -362,32 +104,10 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _actionState.isExport()
-              ? "Export Data"
-              : _actionState.isDelete()
-                  ? "Delete Drafts"
-                  : widget.scoutingRouter.displayName,
+          widget.scoutingRouter.displayName,
           textAlign: TextAlign.center,
         ),
       ),
-      bottomNavigationBar: Visibility(
-          visible: _actionState.isNotInitial(),
-          child: Container(
-            decoration: BoxDecoration(
-                border: Border(
-                    top: BorderSide(color: Theme.of(context).dividerColor))),
-            padding: const EdgeInsets.all(16),
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  OutlinedButton(
-                      onPressed: _resetState, child: const Text("Cancel")),
-                  ElevatedButton(
-                    onPressed: _handleSubmit,
-                    child: Text(_getSubmitText()),
-                  ),
-                ]),
-          )),
       body: Builder(
         builder: (context) {
           Color iconColor = Theme.of(context).colorScheme.primary;
@@ -395,45 +115,39 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
 
           return ListView(
             children: [
-              Visibility(
-                visible: _actionState.isInitial(),
-                child: Column(children: [
-                  ListTile(
+              Column(children: [
+                ListTile(
                     leading: const Icon(Icons.my_library_add_sharp),
                     iconColor: iconColor,
                     title: Text(
                         "Collect ${widget.scoutingRouter.displayName} Data"),
-                    onTap: () {
-                      context.pushNamed(
-                          '${widget.scoutingRouter.urlPath}-collection');
-                    },
-                  ),
-                  ListTile(
-                      leading: const Icon(Icons.import_export),
-                      iconColor: iconColor,
-                      title: Text(
-                          "Import ${widget.scoutingRouter.displayName} Data"),
-                      onTap: () => _enableImport()),
-                  ListTile(
-                      leading: const Icon(Icons.import_export),
-                      iconColor: iconColor,
-                      title: Text(
-                          "Export ${widget.scoutingRouter.displayName} Data"),
-                      onTap: () => _enableExport()),
-                  // ListTile(
-                  //     leading: const Icon(Icons.archive),
-                  //     iconColor: iconColor,
-                  //     title: Text(
-                  //         "Archive ${widget.scoutingRouter.displayName} Data"),
-                  //     onTap: () => _enableArchive()),
-                  ListTile(
-                      leading: const Icon(Icons.delete),
-                      iconColor: iconColor,
-                      title: Text(
-                          "Delete ${widget.scoutingRouter.displayName} Drafts"),
-                      onTap: () => _enableDelete())
-                ]),
-              ),
+                    subtitle:
+                        const Text("Open form input and collect new data."),
+                    onTap: () => _goToCollectionPage()),
+                ListTile(
+                    leading: const Icon(Icons.import_contacts),
+                    iconColor: iconColor,
+                    title: Text(
+                        "Import ${widget.scoutingRouter.displayName} Data"),
+                    subtitle: const Text("Import data from other users."),
+                    onTap: () => _goToImportPage()),
+                ListTile(
+                    leading: const Icon(Icons.file_download),
+                    iconColor: iconColor,
+                    title: Text(
+                        "Export ${widget.scoutingRouter.displayName} Data"),
+                    subtitle: const Text(
+                        "Export data from device for external applcations, or sharing with other users. CSV outputs can be imported to Microsoft Excel or Google Sheets."),
+                    onTap: () => _goToExportPage()),
+                ListTile(
+                    leading: const Icon(Icons.delete),
+                    iconColor: iconColor,
+                    title: Text(
+                        "Delete ${widget.scoutingRouter.displayName} Drafts"),
+                    subtitle: const Text(
+                        "Delete drafts that are no longer needed. Completed entries cannot be deleted at this time."),
+                    onTap: () => _goToDeletePage())
+              ]),
               Visibility(
                 visible: !databaseNotEmpty,
                 child: ListTile(
@@ -444,52 +158,38 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                 ),
               ),
               Visibility(
-                  visible: !_actionState.isExport() && databaseNotEmpty,
+                  visible: databaseNotEmpty,
                   child: ExpansionTile(
                       leading: const Icon(Icons.drafts),
                       title: const Text("Drafts"),
+                      subtitle: const Text(
+                          "Incomplete entries. Click on a draft to fill-out the form and move to the 'Complete' tab."),
                       initiallyExpanded: true,
                       children: ListTile.divideTiles(
                           context: context,
                           tiles: _drafts.mapIndexed(
                             (index, draft) => ListTile(
-                              title: Text(_getListTileTitle(draft)),
-                              subtitle: Text(_getListTileSubtitle(draft)),
-                              selected: _actionState.isDelete() &&
-                                  _selectedIndices.contains(index),
-                              onTap: () {
-                                if (_actionState.isDelete()) {
-                                  _selectIndex(index);
-                                  return;
-                                }
-                                context.pushNamed(
-                                    "${widget.scoutingRouter.urlPath}-collection",
-                                    queryParams: {"uuid": draft.uuid});
-                              },
+                              title: Text(getScoutingListTileTitle(draft)),
+                              subtitle:
+                                  Text(getScoutingListTileSubtitle(draft)),
+                              onTap: () => _goToDraftCompletionPage(draft),
                             ),
                           )).toList())),
               Visibility(
-                visible: !_actionState.isDelete() && databaseNotEmpty,
+                visible: databaseNotEmpty,
                 child: ExpansionTile(
                     title: const Text("Completed"),
+                    subtitle: const Text(
+                        "Finished entries. Click on an entry to see the results from the entry."),
                     leading: const Icon(Icons.done),
                     initiallyExpanded: true,
                     children: ListTile.divideTiles(
                         context: context,
                         tiles: _entries.mapIndexed((index, entry) => ListTile(
-                              title: Text(_getListTileTitle(entry)),
-                              subtitle: Text(_getListTileSubtitle(entry)),
-                              selected: _actionState.isExport() &&
-                                  _selectedIndices.contains(index),
-                              onTap: () {
-                                if (_actionState.isExport()) {
-                                  _selectIndex(index);
-                                  return;
-                                }
-                                context.goNamed(
-                                    '${widget.scoutingRouter.urlPath}-display',
-                                    params: {'hash': entry.b64String ?? ""});
-                              },
+                              title: Text(getScoutingListTileTitle(entry)),
+                              subtitle:
+                                  Text(getScoutingListTileSubtitle(entry)),
+                              onTap: () => _goToDisplayPage(entry),
                             ))).toList()),
               ),
             ],
