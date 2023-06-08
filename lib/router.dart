@@ -32,6 +32,7 @@ enum GarageRouter {
       displayName: "Super Scouting",
       urlPath: "super-scouting",
       dataType: SuperScoutingEntry),
+  photoCollection(displayName: "Photo Collection", urlPath: "photo-collection"),
   collectionScreen(displayName: "", urlPath: "collection"),
   displayScreen(displayName: "Display Data", urlPath: ":hash"),
   settings(displayName: "Settings", urlPath: "settings"),
@@ -179,8 +180,8 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
         // These are not available at this time on Web yet because of dart:io
         if (!isWebPlatform()) ...[
           GoRoute(
-            name: 'photo_collection',
-            path: 'photo_collection',
+            name: GarageRouter.photoCollection.urlPath,
+            path: GarageRouter.photoCollection.urlPath,
             builder: (context, state) => const PhotoCollectionPage(),
           ),
           GoRoute(

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/database_controller_model.dart';
+import 'package:robotz_garage_scouting/models/isar_model.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_utils.dart';
 import 'package:robotz_garage_scouting/router.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
@@ -115,39 +115,33 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
 
           return ListView(
             children: [
-              Column(children: [
+              Column(
+                  children: ListTile.divideTiles(context: context, tiles: [
                 ListTile(
                     leading: const Icon(Icons.my_library_add_sharp),
                     iconColor: iconColor,
                     title: Text(
                         "Collect ${widget.scoutingRouter.displayName} Data"),
-                    subtitle:
-                        const Text("Open form input and collect new data."),
                     onTap: () => _goToCollectionPage()),
                 ListTile(
                     leading: const Icon(Icons.import_contacts),
                     iconColor: iconColor,
                     title: Text(
                         "Import ${widget.scoutingRouter.displayName} Data"),
-                    subtitle: const Text("Import data from other users."),
                     onTap: () => _goToImportPage()),
                 ListTile(
                     leading: const Icon(Icons.file_download),
                     iconColor: iconColor,
                     title: Text(
                         "Export ${widget.scoutingRouter.displayName} Data"),
-                    subtitle: const Text(
-                        "Export data from device for external applcations, or sharing with other users. CSV outputs can be imported to Microsoft Excel or Google Sheets."),
                     onTap: () => _goToExportPage()),
                 ListTile(
                     leading: const Icon(Icons.delete),
                     iconColor: iconColor,
                     title: Text(
                         "Delete ${widget.scoutingRouter.displayName} Drafts"),
-                    subtitle: const Text(
-                        "Delete drafts that are no longer needed. Completed entries cannot be deleted at this time."),
                     onTap: () => _goToDeletePage())
-              ]),
+              ]).toList()),
               Visibility(
                 visible: !databaseNotEmpty,
                 child: ListTile(
@@ -163,7 +157,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                       leading: const Icon(Icons.drafts),
                       title: const Text("Drafts"),
                       subtitle: const Text(
-                          "Incomplete entries. Click on a draft to fill-out the form and move to the 'Complete' tab."),
+                          "Incomplete entries. Click on a draft to complete the form."),
                       initiallyExpanded: true,
                       children: ListTile.divideTiles(
                           context: context,
@@ -180,7 +174,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                 child: ExpansionTile(
                     title: const Text("Completed"),
                     subtitle: const Text(
-                        "Finished entries. Click on an entry to see the results from the entry."),
+                        "Finished entries. Click on an entry to see the data."),
                     leading: const Icon(Icons.done),
                     initiallyExpanded: true,
                     children: ListTile.divideTiles(

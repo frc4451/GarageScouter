@@ -3,7 +3,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/database/test.database.dart';
-import 'package:robotz_garage_scouting/models/database_controller_model.dart';
+import 'package:robotz_garage_scouting/models/isar_model.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 
 class DatabaseTestingPage extends StatefulWidget {

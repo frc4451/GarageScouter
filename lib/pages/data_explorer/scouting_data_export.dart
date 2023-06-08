@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/database_controller_model.dart';
+import 'package:robotz_garage_scouting/models/isar_model.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_utils.dart';
 import 'package:robotz_garage_scouting/router.dart';
 import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
@@ -209,6 +209,8 @@ class _ScoutingDataExportPageState extends State<ScoutingDataExportPage> {
       ),
       body: ExpansionTile(
           title: const Text("Completed"),
+          subtitle: const Text(
+              "Select each completed entry you would like to share, then press 'Export' at the bottom."),
           leading: const Icon(Icons.done),
           initiallyExpanded: true,
           children: ListTile.divideTiles(

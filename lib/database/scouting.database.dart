@@ -20,13 +20,15 @@ class ScoutingDataEntry {
   @Index(unique: true)
   String uuid = const Uuid().v4();
 
+  @Index()
+  String? b64String;
+
   DateTime timestamp = DateTime.now().toUtc();
 
   int? teamNumber;
 
   String? datahash;
   String? schemaHash;
-  String? b64String;
 
   bool? isDraft;
 }

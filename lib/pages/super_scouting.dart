@@ -4,7 +4,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/database_controller_model.dart';
+import 'package:robotz_garage_scouting/models/isar_model.dart';
 import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 import 'package:robotz_garage_scouting/validators/custom_integer_validators.dart';

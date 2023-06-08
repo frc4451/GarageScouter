@@ -4,9 +4,8 @@ import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/database_controller_model.dart';
+import 'package:robotz_garage_scouting/models/isar_model.dart';
 import 'package:robotz_garage_scouting/models/input_helper_model.dart';
-import 'package:robotz_garage_scouting/models/retain_info_model.dart';
 import 'package:robotz_garage_scouting/models/theme_model.dart';
 import 'package:robotz_garage_scouting/models/scroll_model.dart';
 import 'package:robotz_garage_scouting/router.dart';
@@ -27,9 +26,6 @@ Future<void> main() async {
   final InputHelperModel inputHelperModel = InputHelperModel(prefs);
   inputHelperModel.initialize();
 
-  final RetainInfoModel retainInfoModel = RetainInfoModel(prefs);
-  retainInfoModel.initialize();
-
   final isar = await Isar.open(
     [
       PitScoutingEntrySchema,
@@ -45,7 +41,6 @@ Future<void> main() async {
     providers: [
       ChangeNotifierProvider<ThemeModel>(create: (_) => themeModel),
       ChangeNotifierProvider<ScrollModel>(create: (_) => scrollModel),
-      ChangeNotifierProvider<RetainInfoModel>(create: (_) => retainInfoModel),
       ChangeNotifierProvider<InputHelperModel>(create: (_) => inputHelperModel),
       ChangeNotifierProvider<IsarModel>(create: (_) => isarModel)
     ],

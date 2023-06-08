@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/database_controller_model.dart';
+import 'package:robotz_garage_scouting/models/isar_model.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_utils.dart';
 import 'package:robotz_garage_scouting/router.dart';
 import 'package:robotz_garage_scouting/utils/notification_helpers.dart';

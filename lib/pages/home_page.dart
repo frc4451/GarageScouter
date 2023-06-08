@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:robotz_garage_scouting/constants/platform_check.dart';
 import 'package:robotz_garage_scouting/components/drawer/drawer_tile.dart';
+import 'package:robotz_garage_scouting/router.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Center(
             child: Text(
-          "Robotz Garage Scouting",
+          "Garage Scouter",
           textAlign: TextAlign.center,
         )),
       ),
@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(color: Theme.of(context).primaryColor),
             child: const Center(
               child: Text(
-                "Robotz Garage Scouting",
+                "Garage Scouter",
                 style: TextStyle(color: Colors.white),
               ),
             ),
@@ -46,48 +46,49 @@ class _HomePageState extends State<HomePage> {
             padding: EdgeInsets.zero,
             children: [
               ExpansionTile(
-                title: const Text("Data Collection"),
-                initiallyExpanded: true,
-                children: [
-                  DrawerTile(
-                      tileText: "Pit Scouting Form",
-                      onTap: () => _route('pit-scouting')),
-                  DrawerTile(
-                      tileText: "Match Scouting Form",
-                      onTap: () => _route('match-scouting')),
-                  DrawerTile(
-                      tileText: "Super Scouting Form",
-                      onTap: () => _route('super-scouting')),
-                  if (!isWebPlatform())
-                    DrawerTile(
-                        tileText: "Photo Collection",
-                        onTap: () => _route('photo_collection')),
-                ],
-              ),
-              ExpansionTile(
-                title: const Text("Data Management"),
-                initiallyExpanded: true,
-                children: [
-                  DrawerTile(
-                    tileText: "Database Tester",
-                    onTap: () => _route("database_tester"),
-                  ),
-                  DrawerTile(
-                    tileText: "Data Explorer",
-                    onTap: () => _route("data"),
-                  ),
-                  if (!isWebPlatform()) ...[
-                    DrawerTile(
-                        tileText: "Export Manager",
-                        onTap: () => _route('export_manager')),
-                    DrawerTile(
-                        tileText: "Import Manager",
-                        onTap: () => _route('import_manager')),
-                  ] else
-                    const DrawerTile(
-                        tileText: "Not available on Web at this time.")
-                ],
-              ),
+                  title: const Text("Data Collection"),
+                  initiallyExpanded: true,
+                  children: ListTile.divideTiles(context: context, tiles: [
+                    ListTile(
+                        title: const Text("Pit Scouting"),
+                        onTap: () => _route(GarageRouter.pitScouting.urlPath)),
+                    ListTile(
+                        title: const Text("Match Scouting"),
+                        onTap: () =>
+                            _route(GarageRouter.matchScouting.urlPath)),
+                    ListTile(
+                        title: const Text("Super Scouting"),
+                        onTap: () =>
+                            _route(GarageRouter.superScouting.urlPath)),
+                    ListTile(
+                        title: const Text("Photo Collection"),
+                        onTap: () =>
+                            _route(GarageRouter.photoCollection.urlPath)),
+                  ]).toList()),
+              // ExpansionTile(
+              //   title: const Text("Data Management"),
+              //   initiallyExpanded: true,
+              //   children: [
+              //     DrawerTile(
+              //       tileText: "Database Tester",
+              //       onTap: () => _route("database_tester"),
+              //     ),
+              //     DrawerTile(
+              //       tileText: "Data Explorer",
+              //       onTap: () => _route("data"),
+              //     ),
+              //     if (!isWebPlatform()) ...[
+              //       DrawerTile(
+              //           tileText: "Export Manager",
+              //           onTap: () => _route('export_manager')),
+              //       DrawerTile(
+              //           tileText: "Import Manager",
+              //           onTap: () => _route('import_manager')),
+              //     ] else
+              //       const DrawerTile(
+              //           tileText: "Not available on Web at this time.")
+              //   ],
+              // ),
               DrawerTile(tileText: "Settings", onTap: () => _route('settings')),
             ],
           ))
