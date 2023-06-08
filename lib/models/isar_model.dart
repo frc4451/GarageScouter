@@ -130,15 +130,15 @@ class IsarModel extends ChangeNotifier {
     return isar.superScoutingEntrys.getByUuidSync(uuid) ?? SuperScoutingEntry();
   }
 
-  dynamic deletePitScoutingByIDs(List<int> ids) {
+  Future<int> deletePitScoutingByIDs(List<int> ids) {
     return isar.writeTxn(() => isar.pitScoutingEntrys.deleteAll(ids));
   }
 
-  dynamic deleteMatchScoutingByIDs(List<int> ids) {
+  Future<int> deleteMatchScoutingByIDs(List<int> ids) {
     return isar.writeTxn(() => isar.matchScoutingEntrys.deleteAll(ids));
   }
 
-  dynamic deleteSuperScoutingByIDs(List<int> ids) {
+  Future<int> deleteSuperScoutingByIDs(List<int> ids) {
     return isar.writeTxn(() => isar.superScoutingEntrys.deleteAll(ids));
   }
 }

@@ -54,7 +54,7 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
           row[key] = df[key].data.elementAt(i);
         }
 
-        if (row["team_number"] == null || row["Team Number"]) {
+        if (row["team_number"] == null && row["Team Number"] == null) {
           errorMessageSnackbar(context,
               "`Team Number` or `team_number` column is missing from ${getBaseName(file)}");
           return;
@@ -70,7 +70,9 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
         if (row.keys
             .map((e) => e.toLowerCase().replaceAll(" ", "_"))
             .contains("match_number")) {
-          if (row["alliance"] == null || row["Alliance"]) {
+          if (row["alliance"] == null &&
+              row["Alliance"] == null &&
+              row["team_alliance"] == null) {
             errorMessageSnackbar(context,
                 "`alliance` or `Alliance` column is missing from ${getBaseName(file)}, assuming it's Match Scouting Data");
             return;
