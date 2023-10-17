@@ -126,12 +126,12 @@ flutter:
 flutter_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/robotz_garage_scouting_icon.jpg"
+  image_path: "assets/garage_scouter_icon_square.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   windows:
     generate: true
-    image_path: "assets/robotz_garage_scouting_icon.jpg"
+    image_path: "assets/garage_scouter_icon_square.png"
     icon_size: 48 # min:48, max:256, default: 48
   macos:
     generate: true
-    image_path: "assets/robotz_garage_scouting_icon.jpg"
+    image_path: "assets/garage_scouter_icon_square.png"

@@ -100,6 +100,24 @@ class IsarModel extends ChangeNotifier {
     return -1;
   }
 
+  
+  Future<List<int>> putAllScoutingData(List<ScoutingDataEntry> entries) async {
+    final timestamp = DateTime.now().toUtc();
+
+    for (final entry in entries) {
+      entry.timestamp = timestamp;
+    }
+
+    if (entries is List<PitScoutingEntry>) {
+      return isar.writeTxn(() => isar.pitScoutingEntrys.putAll(entries));
+    } else if (entries is List<MatchScoutingEntry>) {
+      return isar.writeTxn(() => isar.matchScoutingEntrys.putAll(entries));
+    } else if (entries is List<SuperScoutingEntry>) {
+      return isar.writeTxn(() => isar.superScoutingEntrys.putAll(entries));
+    }
+    return [-1];
+  }
+
   Future<PitScoutingEntry> getPitDataByUUID(String uuid) async {
     PitScoutingEntry? entry =
         await isar.txn(() => isar.pitScoutingEntrys.getByUuid(uuid));

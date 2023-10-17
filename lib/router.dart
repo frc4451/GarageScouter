@@ -6,7 +6,9 @@ import 'package:robotz_garage_scouting/pages/data_explorer/data_explorer.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_delete.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_details.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_export.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_import.dart';
+import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_import/qr_reader/scouting_data_import_qr_reader.dart';
+import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_import/qr_reader/scouting_data_import_qr_reader_confirm.dart';
+import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_import/scouting_data_import.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_list.dart';
 import 'package:robotz_garage_scouting/pages/database_tester.dart';
 import 'package:robotz_garage_scouting/pages/export_manager.dart';
@@ -38,7 +40,9 @@ enum GarageRouter {
   settings(displayName: "Settings", urlPath: "settings"),
   import(displayName: "Import", urlPath: "import"),
   export(displayName: "Export", urlPath: "export"),
-  delete(displayName: "Delete", urlPath: "delete");
+  delete(displayName: "Delete", urlPath: "delete"),
+  qrReader(displayName: "QR Reader", urlPath: "qr-reader"),
+  results(displayName: "Results", urlPath: "results");
 
   final String displayName;
   final String urlPath;
@@ -56,6 +60,8 @@ enum GarageRouter {
   String getExportRouteName() => "$urlPath-export";
   String getImportRouteName() => "$urlPath-import";
   String getDeleteRouteName() => "$urlPath-delete";
+  String getQRReaderRouteName() => "${getImportRouteName()}-qrreader";
+  String getQRReaderResultsRouteName() => "${getImportRouteName()}-results";
 }
 
 final GoRouter router = GoRouter(routes: <RouteBase>[
@@ -89,11 +95,28 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                     scoutingRouter: GarageRouter.pitScouting),
               ),
               GoRoute(
-                name: GarageRouter.pitScouting.getImportRouteName(),
-                path: GarageRouter.import.urlPath,
-                builder: (context, state) => const ScoutingDataImportPage(
-                    scoutingRouter: GarageRouter.pitScouting),
-              ),
+                  name: GarageRouter.pitScouting.getImportRouteName(),
+                  path: GarageRouter.import.urlPath,
+                  builder: (context, state) => const ScoutingDataImportPage(
+                      scoutingRouter: GarageRouter.pitScouting),
+                  routes: [
+                    GoRoute(
+                        name: GarageRouter.pitScouting.getQRReaderRouteName(),
+                        path: GarageRouter.qrReader.urlPath,
+                        builder: (context, state) =>
+                            const ScoutingDataQRReaderPage(
+                                scoutingRouter: GarageRouter.pitScouting),
+                        routes: [
+                          GoRoute(
+                              name: GarageRouter.pitScouting
+                                  .getQRReaderResultsRouteName(),
+                              path: GarageRouter.results.urlPath,
+                              builder: (context, state) =>
+                                  ScoutingDataQRConfirmationPage(
+                                      scoutingRouter: GarageRouter.pitScouting,
+                                      qrCodeData: state.queryParams['data']))
+                        ])
+                  ]),
               GoRoute(
                 name: GarageRouter.pitScouting.getDisplayRouteName(),
                 path: GarageRouter.displayScreen.urlPath,
@@ -127,11 +150,29 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                     scoutingRouter: GarageRouter.matchScouting),
               ),
               GoRoute(
-                name: GarageRouter.matchScouting.getImportRouteName(),
-                path: GarageRouter.import.urlPath,
-                builder: (context, state) => const ScoutingDataImportPage(
-                    scoutingRouter: GarageRouter.matchScouting),
-              ),
+                  name: GarageRouter.matchScouting.getImportRouteName(),
+                  path: GarageRouter.import.urlPath,
+                  builder: (context, state) => const ScoutingDataImportPage(
+                      scoutingRouter: GarageRouter.matchScouting),
+                  routes: [
+                    GoRoute(
+                        name: GarageRouter.matchScouting.getQRReaderRouteName(),
+                        path: GarageRouter.qrReader.urlPath,
+                        builder: (context, state) =>
+                            const ScoutingDataQRReaderPage(
+                                scoutingRouter: GarageRouter.matchScouting),
+                        routes: [
+                          GoRoute(
+                              name: GarageRouter.matchScouting
+                                  .getQRReaderResultsRouteName(),
+                              path: GarageRouter.results.urlPath,
+                              builder: (context, state) =>
+                                  ScoutingDataQRConfirmationPage(
+                                      scoutingRouter:
+                                          GarageRouter.matchScouting,
+                                      qrCodeData: state.queryParams['data']))
+                        ])
+                  ]),
               GoRoute(
                 name: GarageRouter.matchScouting.getDisplayRouteName(),
                 path: GarageRouter.displayScreen.urlPath,
@@ -165,11 +206,29 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                     scoutingRouter: GarageRouter.superScouting),
               ),
               GoRoute(
-                name: GarageRouter.superScouting.getImportRouteName(),
-                path: GarageRouter.import.urlPath,
-                builder: (context, state) => const ScoutingDataImportPage(
-                    scoutingRouter: GarageRouter.superScouting),
-              ),
+                  name: GarageRouter.superScouting.getImportRouteName(),
+                  path: GarageRouter.import.urlPath,
+                  builder: (context, state) => const ScoutingDataImportPage(
+                      scoutingRouter: GarageRouter.superScouting),
+                  routes: [
+                    GoRoute(
+                        name: GarageRouter.superScouting.getQRReaderRouteName(),
+                        path: GarageRouter.qrReader.urlPath,
+                        builder: (context, state) =>
+                            const ScoutingDataQRReaderPage(
+                                scoutingRouter: GarageRouter.superScouting),
+                        routes: [
+                          GoRoute(
+                              name: GarageRouter.superScouting
+                                  .getQRReaderResultsRouteName(),
+                              path: GarageRouter.results.urlPath,
+                              builder: (context, state) =>
+                                  ScoutingDataQRConfirmationPage(
+                                      scoutingRouter:
+                                          GarageRouter.superScouting,
+                                      qrCodeData: state.queryParams['data']))
+                        ])
+                  ]),
               GoRoute(
                 name: GarageRouter.superScouting.getDisplayRouteName(),
                 path: GarageRouter.displayScreen.urlPath,

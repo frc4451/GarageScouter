@@ -73,6 +73,11 @@ class _ScoutingDataExportPageState extends State<ScoutingDataExportPage> {
                     const double padY = 16;
                     const double padX = padY / 2;
 
+                    final String qrCodeData = encodeJsonToB64({
+                      "type": widget.scoutingRouter.displayName,
+                      "data": jsons
+                    }, urlSafe: true);
+
                     return Padding(
                         padding:
                             const EdgeInsets.fromLTRB(padX, padY, padX, padY),
@@ -91,10 +96,7 @@ class _ScoutingDataExportPageState extends State<ScoutingDataExportPage> {
                               version: QrVersions.auto,
                               backgroundColor: Colors.white,
                               size: maxQRCodeSize,
-                              data: encodeJsonToB64({
-                                "type": widget.scoutingRouter.displayName,
-                                "data": jsons
-                              }),
+                              data: qrCodeData,
                               errorStateBuilder: (context, error) => Column(
                                 children: [
                                   const Text(
