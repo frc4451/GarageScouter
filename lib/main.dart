@@ -30,12 +30,15 @@ Future<void> main() async {
     [
       PitScoutingEntrySchema,
       MatchScoutingEntrySchema,
-      SuperScoutingEntrySchema
+      SuperScoutingEntrySchema,
+      EventSchema
     ],
     directory: (await getApplicationSupportDirectory()).path,
   );
 
-  final IsarModel isarModel = IsarModel(isar);
+  final IsarModel isarModel = IsarModel(isar, prefs);
+
+  // await isarModel.putDefaultEvent();
 
   runApp(MultiProvider(
     providers: [

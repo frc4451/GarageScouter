@@ -4,19 +4,20 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
-            "name": "robotz_garage_scouting",
+            "name": "Garage Scouter",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "robotz_garage_scouting (profile mode)",
+            "name": "Garage Scouter (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "robotz_garage_scouting (release mode)",
+            "name": "Garage Scouter (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

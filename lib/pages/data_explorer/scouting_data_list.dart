@@ -22,6 +22,8 @@ class ScoutingDataListPage extends StatefulWidget {
 class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   late IsarModel _isarModel;
 
+  Event? _selectedEvent;
+
   List<ScoutingDataEntry> _entries = [];
   List<ScoutingDataEntry> _drafts = [];
 
@@ -67,6 +69,10 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
         params: {'hash': entry.b64String ?? ""});
   }
 
+  void _goToEventSelectionPage() {
+    context.goNamed(widget.scoutingRouter.getEventsRouteName());
+  }
+
   @override
   void initState() {
     super.initState();
@@ -87,6 +93,12 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
     _draftsStreamSubscription = draftsStream.listen((drafts) {
       setState(() {
         _drafts = drafts;
+      });
+    });
+
+    _isarModel.getCurrentEvent().then((Event event) {
+      setState(() {
+        _selectedEvent = event;
       });
     });
   }
@@ -117,6 +129,12 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
             children: [
               Column(
                   children: ListTile.divideTiles(context: context, tiles: [
+                ListTile(
+                  leading: const Icon(Icons.event),
+                  iconColor: iconColor,
+                  title: Text("Event: ${_selectedEvent?.name}"),
+                  onTap: () => _goToEventSelectionPage(),
+                ),
                 ListTile(
                     leading: const Icon(Icons.my_library_add_sharp),
                     iconColor: iconColor,

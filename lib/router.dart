@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:robotz_garage_scouting/constants/platform_check.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/data_explorer.dart';
+import 'package:robotz_garage_scouting/pages/data_explorer/event_selection.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_delete.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_details.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_export.dart';
@@ -42,7 +43,8 @@ enum GarageRouter {
   export(displayName: "Export", urlPath: "export"),
   delete(displayName: "Delete", urlPath: "delete"),
   qrReader(displayName: "QR Reader", urlPath: "qr-reader"),
-  results(displayName: "Results", urlPath: "results");
+  results(displayName: "Results", urlPath: "results"),
+  event(displayName: "Events", urlPath: "event");
 
   final String displayName;
   final String urlPath;
@@ -55,6 +57,7 @@ enum GarageRouter {
   bool isMatchScouting() => this == GarageRouter.matchScouting;
   bool isSuperScouting() => this == GarageRouter.superScouting;
 
+  String getEventsRouteName() => "$urlPath-events";
   String getCollectionRouteName() => "$urlPath-collection";
   String getDisplayRouteName() => "$urlPath-display";
   String getExportRouteName() => "$urlPath-export";
@@ -131,6 +134,11 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                   scoutingRouter: GarageRouter.matchScouting,
                 ),
             routes: [
+              GoRoute(
+                name: GarageRouter.matchScouting.getEventsRouteName(),
+                path: GarageRouter.event.urlPath,
+                builder: (context, state) => const EventSelectionPage(),
+              ),
               GoRoute(
                 name: GarageRouter.matchScouting.getCollectionRouteName(),
                 path: GarageRouter.collectionScreen.urlPath,

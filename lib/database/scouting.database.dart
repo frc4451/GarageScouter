@@ -14,6 +14,14 @@ enum TeamAlliance {
   const TeamAlliance({required this.color});
 }
 
+@collection
+class Event {
+  Id id = Isar.autoIncrement;
+
+  @Index(unique: true)
+  String? name;
+}
+
 class ScoutingDataEntry {
   Id id = Isar.autoIncrement;
 
@@ -22,6 +30,8 @@ class ScoutingDataEntry {
 
   @Index()
   String? b64String;
+
+  IsarLink<Event> event = IsarLink<Event>();
 
   DateTime timestamp = DateTime.now().toUtc();
 
