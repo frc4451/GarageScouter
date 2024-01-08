@@ -31,6 +31,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   // synchronous lookups over drafts and entries and reduce complexity.
   late StreamSubscription<List<ScoutingDataEntry>> _entriesStreamSubscription;
   late StreamSubscription<List<ScoutingDataEntry>> _draftsStreamSubscription;
+  late StreamSubscription<Event?> _eventSubscription;
 
   void _goToImportPage() {
     context.goNamed(widget.scoutingRouter.getImportRouteName());
@@ -61,12 +62,12 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
 
   void _goToDraftCompletionPage(ScoutingDataEntry draft) {
     context.pushNamed("${widget.scoutingRouter.urlPath}-collection",
-        queryParams: {"uuid": draft.uuid});
+        queryParameters: {"uuid": draft.uuid});
   }
 
   void _goToDisplayPage(ScoutingDataEntry entry) {
     context.goNamed('${widget.scoutingRouter.urlPath}-display',
-        params: {'hash': entry.b64String ?? ""});
+        queryParameters: {'hash': entry.b64String ?? ""});
   }
 
   void _goToEventSelectionPage() {
@@ -84,6 +85,8 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
     Stream<List<ScoutingDataEntry>> draftsStream =
         _isarModel.getScoutingDrafts(widget.scoutingRouter.dataType);
 
+    Stream<Event?> eventStream = _isarModel.getCurrentEventStream();
+
     _entriesStreamSubscription = entriesStream.listen((entries) {
       setState(() {
         _entries = entries;
@@ -96,17 +99,26 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
       });
     });
 
-    _isarModel.getCurrentEvent().then((Event event) {
+    _eventSubscription = eventStream.listen((event) {
       setState(() {
-        _selectedEvent = event;
+        if (event != null) {
+          _selectedEvent = event;
+        }
       });
     });
+
+    // _isarModel.getCurrentEvent().then((Event event) {
+    //   setState(() {
+    //     _selectedEvent = event;
+    //   });
+    // });
   }
 
   @override
   void deactivate() {
     _entriesStreamSubscription.cancel();
     _draftsStreamSubscription.cancel();
+    _eventSubscription.cancel();
 
     super.deactivate();
   }

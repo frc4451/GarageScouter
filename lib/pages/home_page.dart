@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robotz_garage_scouting/components/drawer/drawer_tile.dart';
@@ -22,8 +23,11 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // final ThemeData themeData = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
+        // backgroundColor: themeData.primaryColor,
         title: const Center(
             child: Text(
           "Garage Scouter",
@@ -33,12 +37,22 @@ class _HomePageState extends State<HomePage> {
       drawer: Drawer(
         child: Column(children: [
           DrawerHeader(
-            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-            child: const Center(
-              child: Text(
-                "Garage Scouter",
-                style: TextStyle(color: Colors.white),
-              ),
+            margin: EdgeInsets.zero,
+            padding: EdgeInsets.zero,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              // image: const DecorationImage(
+              //     fit: BoxFit.fitWidth,
+              //     image:
+              //         AssetImage("assets/garage_scouter_icon_square.png"))
+            ),
+            child: Image.asset(
+              "assets/garage_scouter_icon_square.png",
+              // This is a hacky workaround. Please investigate this in a
+              // future Flutter release.
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
             ),
           ),
           Expanded(

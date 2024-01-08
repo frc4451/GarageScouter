@@ -195,7 +195,8 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
       return true;
     }
 
-    bool keepDraft = await canSaveDraft(context, exists: entry.isDraft);
+    bool keepDraft =
+        await canSaveDraft(context, exists: entry.isDraft) ?? false;
 
     entry
       ..teamNumber = teamNumber

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:robotz_garage_scouting/database/scouting.database.dart';
+import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String kSelectedEventKey = "selectedEvent";
@@ -107,6 +108,14 @@ class IsarModel extends ChangeNotifier {
         .watch(fireImmediately: true);
   }
 
+  Stream<List<Event>> getEvents() async* {
+    yield* isar.events
+        .filter()
+        .nameIsNotEmpty()
+        .sortByName()
+        .watch(fireImmediately: true);
+  }
+
   /// Adds all entries without an event to the "default" event.
   ///
   /// This is more for debugging and should only be used if there are missing
@@ -116,56 +125,53 @@ class IsarModel extends ChangeNotifier {
         await isar.txn(() => isar.events.getByName(kDefaultEventName));
 
     if (defaultEvent == null) {
-      defaultEvent = Event()..name = kDefaultEventName;
+      defaultEvent = Event()
+        ..name = kDefaultEventName
+        ..description =
+            "The DEFAULT event, unmarked entries are assumed DEFAULT.";
       await isar.writeTxn(() => isar.events.put(defaultEvent!));
     }
 
-    await isar.writeTxn(() async {
-      List<PitScoutingEntry> pitScoutingEntries = [];
+    List<PitScoutingEntry> pitScoutingEntriesWithoutEvent = await isar
+        .txn(() => isar.pitScoutingEntrys.filter().eventIsNull().findAll());
 
-      for (final entry in await isar.pitScoutingEntrys.where().findAll()) {
-        if (entry.event.value == null) {
-          entry.event.value = defaultEvent;
-          pitScoutingEntries.add(entry);
-        }
-      }
+    List<MatchScoutingEntry> matchScoutingEntriesWithoutEvent = await isar
+        .txn(() => isar.matchScoutingEntrys.filter().eventIsNull().findAll());
 
-      if (pitScoutingEntries.isNotEmpty) {
-        isar.pitScoutingEntrys.putAll(pitScoutingEntries);
-      }
-    });
+    List<SuperScoutingEntry> superScoutingEntriesWithoutEvent = await isar
+        .txn(() => isar.superScoutingEntrys.filter().eventIsNull().findAll());
 
     await isar.writeTxn(() async {
-      List<MatchScoutingEntry> matchScoutingEntries = [];
-
-      for (final entry in await isar.matchScoutingEntrys.where().findAll()) {
-        if (entry.event.value == null) {
-          entry.event.value = defaultEvent;
-          matchScoutingEntries.add(entry);
-        }
+      for (final entry in pitScoutingEntriesWithoutEvent) {
+        entry.event.value = defaultEvent;
       }
+      isar.pitScoutingEntrys.putAll(pitScoutingEntriesWithoutEvent);
 
-      if (matchScoutingEntries.isNotEmpty) {
-        await isar.matchScoutingEntrys.putAll(matchScoutingEntries);
+      for (final entry in matchScoutingEntriesWithoutEvent) {
+        entry.event.value = defaultEvent;
       }
-    });
+      isar.matchScoutingEntrys.putAll(matchScoutingEntriesWithoutEvent);
 
-    await isar.writeTxn(() async {
-      List<SuperScoutingEntry> superScoutingEntries = [];
-
-      for (final entry in await isar.superScoutingEntrys.where().findAll()) {
-        if (entry.event.value == null) {
-          entry.event.value = defaultEvent;
-          superScoutingEntries.add(entry);
-        }
+      for (final entry in superScoutingEntriesWithoutEvent) {
+        entry.event.value = defaultEvent;
       }
-
-      if (superScoutingEntries.isNotEmpty) {
-        await isar.superScoutingEntrys.putAll(superScoutingEntries);
-      }
+      isar.superScoutingEntrys.putAll(superScoutingEntriesWithoutEvent);
     });
 
     return defaultEvent;
+  }
+
+  Future<bool> addEventByName(String name) async {
+    Event? event = await isar.txn(() => isar.events.getByName(name));
+
+    if (event != null) {
+      return false;
+    }
+
+    Event? newEvent = Event()..name = name;
+
+    isar.writeTxn(() => isar.events.put(newEvent));
+    return true;
   }
 
   Future<int> putScoutingData(ScoutingDataEntry entry) async {
@@ -200,10 +206,19 @@ class IsarModel extends ChangeNotifier {
 
   Future<Event> getCurrentEvent() async => getEventByName(_selectedEvent);
 
+  Stream<Event?> getCurrentEventStream() async* {
+    yield* isar.events.getByName(_selectedEvent).asStream();
+  }
+
   Future<Event> getEventByName(String name) async {
     Event? event = await isar.events.getByName(name);
 
     return event!;
+  }
+
+  Future<List<Event>> getAllEvents() async {
+    List<Event> events = await isar.events.where().findAll();
+    return events;
   }
 
   Future<PitScoutingEntry> getPitDataByUUID(String uuid) async {

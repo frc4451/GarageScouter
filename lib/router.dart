@@ -11,7 +11,6 @@ import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_import/
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_import/qr_reader/scouting_data_import_qr_reader_confirm.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_import/scouting_data_import.dart';
 import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_list.dart';
-import 'package:robotz_garage_scouting/pages/database_tester.dart';
 import 'package:robotz_garage_scouting/pages/export_manager.dart';
 import 'package:robotz_garage_scouting/pages/home_page.dart';
 import 'package:robotz_garage_scouting/pages/import_manager.dart';
@@ -80,10 +79,15 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 ),
             routes: [
               GoRoute(
+                name: GarageRouter.pitScouting.getEventsRouteName(),
+                path: GarageRouter.event.urlPath,
+                builder: (context, state) => const EventSelectionPage(),
+              ),
+              GoRoute(
                 name: GarageRouter.pitScouting.getCollectionRouteName(),
                 path: GarageRouter.collectionScreen.urlPath,
-                builder: (context, state) =>
-                    PitScoutingPage(uuid: state.queryParams["uuid"] ?? ""),
+                builder: (context, state) => PitScoutingPage(
+                    uuid: state.uri.queryParameters["uuid"] ?? ""),
               ),
               GoRoute(
                 name: GarageRouter.pitScouting.getExportRouteName(),
@@ -117,14 +121,15 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                               builder: (context, state) =>
                                   ScoutingDataQRConfirmationPage(
                                       scoutingRouter: GarageRouter.pitScouting,
-                                      qrCodeData: state.queryParams['data']))
+                                      qrCodeData:
+                                          state.uri.queryParameters['data']))
                         ])
                   ]),
               GoRoute(
                 name: GarageRouter.pitScouting.getDisplayRouteName(),
                 path: GarageRouter.displayScreen.urlPath,
                 builder: (context, state) =>
-                    ScoutingDataDetailsPage(hash: state.params['hash']),
+                    ScoutingDataDetailsPage(hash: state.pathParameters['hash']),
               ),
             ]),
         GoRoute(
@@ -142,8 +147,8 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
               GoRoute(
                 name: GarageRouter.matchScouting.getCollectionRouteName(),
                 path: GarageRouter.collectionScreen.urlPath,
-                builder: (context, state) =>
-                    MatchScoutingPage(uuid: state.queryParams["uuid"] ?? ""),
+                builder: (context, state) => MatchScoutingPage(
+                    uuid: state.uri.queryParameters["uuid"] ?? ""),
               ),
               GoRoute(
                 name: GarageRouter.matchScouting.getExportRouteName(),
@@ -178,14 +183,15 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                                   ScoutingDataQRConfirmationPage(
                                       scoutingRouter:
                                           GarageRouter.matchScouting,
-                                      qrCodeData: state.queryParams['data']))
+                                      qrCodeData:
+                                          state.uri.queryParameters['data']))
                         ])
                   ]),
               GoRoute(
                 name: GarageRouter.matchScouting.getDisplayRouteName(),
                 path: GarageRouter.displayScreen.urlPath,
-                builder: (context, state) =>
-                    ScoutingDataDetailsPage(hash: state.params['hash']),
+                builder: (context, state) => ScoutingDataDetailsPage(
+                    hash: state.uri.queryParameters['hash']),
               ),
             ]),
         GoRoute(
@@ -196,10 +202,15 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 ),
             routes: [
               GoRoute(
+                name: GarageRouter.superScouting.getEventsRouteName(),
+                path: GarageRouter.event.urlPath,
+                builder: (context, state) => const EventSelectionPage(),
+              ),
+              GoRoute(
                 name: GarageRouter.superScouting.getCollectionRouteName(),
                 path: GarageRouter.collectionScreen.urlPath,
-                builder: (context, state) =>
-                    SuperScoutingPage(uuid: state.queryParams["uuid"] ?? ""),
+                builder: (context, state) => SuperScoutingPage(
+                    uuid: state.uri.queryParameters["uuid"] ?? ""),
               ),
               GoRoute(
                 name: GarageRouter.superScouting.getExportRouteName(),
@@ -234,14 +245,15 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                                   ScoutingDataQRConfirmationPage(
                                       scoutingRouter:
                                           GarageRouter.superScouting,
-                                      qrCodeData: state.queryParams['data']))
+                                      qrCodeData:
+                                          state.uri.queryParameters['data']))
                         ])
                   ]),
               GoRoute(
                 name: GarageRouter.superScouting.getDisplayRouteName(),
                 path: GarageRouter.displayScreen.urlPath,
                 builder: (context, state) =>
-                    ScoutingDataDetailsPage(hash: state.params['hash']),
+                    ScoutingDataDetailsPage(hash: state.pathParameters['hash']),
               ),
             ]),
         // These are not available at this time on Web yet because of dart:io
@@ -262,11 +274,11 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
             builder: (context, state) => const ExportManagerPage(),
           ),
         ],
-        GoRoute(
-          name: 'database_tester',
-          path: 'database_tester',
-          builder: (context, state) => const DatabaseTestingPage(),
-        ),
+        // GoRoute(
+        //   name: 'database_tester',
+        //   path: 'database_tester',
+        //   builder: (context, state) => const DatabaseTestingPage(),
+        // ),
         GoRoute(
             name: 'data',
             path: 'data',
@@ -280,8 +292,8 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                   routes: [
                     GoRoute(
                       path: ':hash',
-                      builder: (context, state) =>
-                          ScoutingDataDetailsPage(hash: state.params['hash']),
+                      builder: (context, state) => ScoutingDataDetailsPage(
+                          hash: state.pathParameters['hash']),
                     ),
                   ]),
               GoRoute(
@@ -292,8 +304,8 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                   routes: [
                     GoRoute(
                       path: ':hash',
-                      builder: (context, state) =>
-                          ScoutingDataDetailsPage(hash: state.params['hash']),
+                      builder: (context, state) => ScoutingDataDetailsPage(
+                          hash: state.pathParameters['hash']),
                     ),
                   ]),
               GoRoute(
@@ -304,8 +316,8 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                   routes: [
                     GoRoute(
                       path: ':hash',
-                      builder: (context, state) =>
-                          ScoutingDataDetailsPage(hash: state.params['hash']),
+                      builder: (context, state) => ScoutingDataDetailsPage(
+                          hash: state.pathParameters['hash']),
                     ),
                   ]),
             ]),

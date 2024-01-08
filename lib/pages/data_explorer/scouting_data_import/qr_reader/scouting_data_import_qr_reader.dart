@@ -122,7 +122,7 @@ class _ScoutingDataQRReaderPageState extends State<ScoutingDataQRReaderPage> {
     } else {
       await context.pushNamed(
           widget.scoutingRouter.getQRReaderResultsRouteName(),
-          queryParams: {"data": discoveredData});
+          pathParameters: {"data": discoveredData});
     }
 
     setState(() {

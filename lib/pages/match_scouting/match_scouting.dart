@@ -261,7 +261,14 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       return true;
     }
 
-    bool keepDraft = await canSaveDraft(context, exists: entry.isDraft);
+    bool? keepDraft = await canSaveDraft(context, exists: entry.isDraft);
+
+    // This can be null if the user clicks outside of the notification dialog.
+    // When a user clicks outside of a dialog, it's assumed the user doesn't
+    // want to leave the screen.
+    if (keepDraft == null) {
+      return false;
+    }
 
     entry
       ..teamNumber = teamNumber
@@ -304,8 +311,29 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
               textAlign: TextAlign.center,
             ),
           ),
-          body: WillPopScope(
-              onWillPop: _onWillPop,
+          // We're aware that WillPopScope is deprecated, however, as
+          // of writing, we do not have an asynchronous way to handle user
+          // dialogs with `PopScope` or `PopEntry` without a dedicated
+          // NavigatorState. Please follow the following GitHub discussion
+          // in case this changes.
+          // https://github.com/flutter/flutter/issues/138614
+          // body: WillPopScope(
+          //     onWillPop: _onWillPop,
+          body: PopScope(
+              canPop: false,
+              onPopInvoked: (didPop) async {
+                if (didPop) {
+                  return;
+                }
+
+                final NavigatorState navigator = Navigator.of(context);
+                final bool shouldPop = await _onWillPop();
+
+                if (shouldPop) {
+                  navigator.pop();
+                }
+              },
+              // onWillPop: _onWillPop,
               child: FormBuilder(
                   initialValue: _initialValue,
                   key: _formKey,

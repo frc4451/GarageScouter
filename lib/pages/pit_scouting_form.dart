@@ -167,7 +167,8 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
       return true;
     }
 
-    bool keepDraft = await canSaveDraft(context, exists: entry.isDraft);
+    bool keepDraft =
+        await canSaveDraft(context, exists: entry.isDraft) ?? false;
 
     entry
       ..teamNumber = int.tryParse(state['team_number'])

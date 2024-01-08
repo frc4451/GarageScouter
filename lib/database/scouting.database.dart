@@ -20,6 +20,7 @@ class Event {
 
   @Index(unique: true)
   String? name;
+  String? description;
 }
 
 class ScoutingDataEntry {
