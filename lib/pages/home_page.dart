@@ -1,8 +1,7 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:robotz_garage_scouting/components/drawer/drawer_tile.dart';
-import 'package:robotz_garage_scouting/router.dart';
+import 'package:garagescouter/components/drawer/drawer_tile.dart';
+import 'package:garagescouter/router.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,11 +27,8 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         // backgroundColor: themeData.primaryColor,
-        title: const Center(
-            child: Text(
-          "Garage Scouter",
-          textAlign: TextAlign.center,
-        )),
+        title: const Text("Garage Scouter"),
+        centerTitle: true,
       ),
       drawer: Drawer(
         child: Column(children: [
@@ -114,7 +110,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Padding(
               padding: EdgeInsets.all(25),
-              child: Text("Welcome to the Robotz Garage Scouting App!"),
+              child: Text("Welcome to GarageScouter!"),
             ),
             Padding(
               padding: EdgeInsets.all(25),

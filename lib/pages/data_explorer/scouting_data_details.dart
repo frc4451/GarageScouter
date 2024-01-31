@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
+import 'package:garagescouter/utils/hash_helpers.dart';
 
 class ScoutingDataDetailsPage extends StatefulWidget {
   final String? hash;

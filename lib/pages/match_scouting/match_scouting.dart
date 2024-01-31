@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:garagescouter/constants/platform_check.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/isar_model.dart';
-import 'package:robotz_garage_scouting/models/input_helper_model.dart';
-import 'package:robotz_garage_scouting/models/scroll_model.dart';
-import 'package:robotz_garage_scouting/models/theme_model.dart';
-import 'package:robotz_garage_scouting/pages/match_scouting/match_auto.dart';
-import 'package:robotz_garage_scouting/pages/match_scouting/match_initial.dart';
-import 'package:robotz_garage_scouting/pages/match_scouting/match_summary.dart';
-import 'package:robotz_garage_scouting/pages/match_scouting/match_endgame.dart';
-import 'package:robotz_garage_scouting/pages/match_scouting/match_teleop.dart';
+import 'package:garagescouter/database/scouting.database.dart';
+import 'package:garagescouter/models/isar_model.dart';
+import 'package:garagescouter/models/input_helper_model.dart';
+import 'package:garagescouter/models/scroll_model.dart';
+import 'package:garagescouter/models/theme_model.dart';
+import 'package:garagescouter/pages/match_scouting/match_auto.dart';
+import 'package:garagescouter/pages/match_scouting/match_initial.dart';
+import 'package:garagescouter/pages/match_scouting/match_summary.dart';
+import 'package:garagescouter/pages/match_scouting/match_endgame.dart';
+import 'package:garagescouter/pages/match_scouting/match_teleop.dart';
 
-import 'package:robotz_garage_scouting/utils/enums.dart';
-import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
-import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
+import 'package:garagescouter/utils/enums.dart';
+import 'package:garagescouter/utils/hash_helpers.dart';
+import 'package:garagescouter/utils/notification_helpers.dart';
 
 class MatchScoutingPage extends StatefulWidget {
   const MatchScoutingPage({super.key, this.uuid = ""});
@@ -306,10 +307,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     return Consumer<ScrollModel>(builder: (context, scroll, _) {
       return Scaffold(
           appBar: AppBar(
-            title: const Text(
-              "Match Scouting",
-              textAlign: TextAlign.center,
-            ),
+            title: const Text("Match Scouting"),
+            centerTitle: true,
           ),
           // We're aware that WillPopScope is deprecated, however, as
           // of writing, we do not have an asynchronous way to handle user
@@ -341,7 +340,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
                     children: [
                       Consumer<ThemeModel>(
                         builder: (context, model, _) => IgnorePointer(
-                            ignoring: true,
+                            ignoring: isMobilePlatform(),
                             child: TabBar(
                               controller: _tabController,
                               labelColor: model.getLabelColor(),
@@ -356,6 +355,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
                                 Text('End'),
                                 Text('Summary')
                               ],
+                              tabAlignment: TabAlignment.center,
                             )),
                       ),
                       Expanded(

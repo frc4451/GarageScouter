@@ -7,9 +7,9 @@ import 'package:form_builder_image_picker/form_builder_image_picker.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:robotz_garage_scouting/components/forms/photo_form_field.dart';
-import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
-import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
+import 'package:garagescouter/components/forms/photo_form_field.dart';
+import 'package:garagescouter/utils/file_io_helpers.dart';
+import 'package:garagescouter/utils/notification_helpers.dart';
 
 class PhotoCollectionPage extends StatefulWidget {
   const PhotoCollectionPage({super.key});
@@ -229,10 +229,8 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Photo Collection",
-          textAlign: TextAlign.center,
-        ),
+        title: const Text("Photo Collection"),
+        centerTitle: true,
         actions: [
           IconButton(
               onPressed: _showAddPictureDialog,

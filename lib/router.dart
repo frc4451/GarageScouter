@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:robotz_garage_scouting/constants/platform_check.dart';
-import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/data_explorer.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/event_selection.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_delete.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_details.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_export.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_import/qr_reader/scouting_data_import_qr_reader.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_import/qr_reader/scouting_data_import_qr_reader_confirm.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_import/scouting_data_import.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_list.dart';
-import 'package:robotz_garage_scouting/pages/export_manager.dart';
-import 'package:robotz_garage_scouting/pages/home_page.dart';
-import 'package:robotz_garage_scouting/pages/import_manager.dart';
-import 'package:robotz_garage_scouting/pages/match_scouting/match_scouting.dart';
-import 'package:robotz_garage_scouting/pages/photo_collecting.dart';
-import 'package:robotz_garage_scouting/pages/pit_scouting_form.dart';
-import 'package:robotz_garage_scouting/pages/settings.dart';
-import 'package:robotz_garage_scouting/pages/super_scouting.dart';
+import 'package:garagescouter/constants/platform_check.dart';
+import 'package:garagescouter/database/scouting.database.dart';
+import 'package:garagescouter/pages/data_explorer/data_explorer.dart';
+import 'package:garagescouter/pages/data_explorer/event_selection.dart';
+import 'package:garagescouter/pages/data_explorer/scouting_data_delete.dart';
+import 'package:garagescouter/pages/data_explorer/scouting_data_details.dart';
+import 'package:garagescouter/pages/data_explorer/scouting_data_export.dart';
+import 'package:garagescouter/pages/data_explorer/scouting_data_import/qr_reader/scouting_data_import_qr_reader.dart';
+import 'package:garagescouter/pages/data_explorer/scouting_data_import/qr_reader/scouting_data_import_qr_reader_confirm.dart';
+import 'package:garagescouter/pages/data_explorer/scouting_data_import/scouting_data_import.dart';
+import 'package:garagescouter/pages/data_explorer/scouting_data_list.dart';
+import 'package:garagescouter/pages/export_manager.dart';
+import 'package:garagescouter/pages/home_page.dart';
+import 'package:garagescouter/pages/import_manager.dart';
+import 'package:garagescouter/pages/match_scouting/match_scouting.dart';
+import 'package:garagescouter/pages/photo_collecting.dart';
+import 'package:garagescouter/pages/pit_scouting_form.dart';
+import 'package:garagescouter/pages/settings.dart';
+import 'package:garagescouter/pages/super_scouting.dart';
 
 enum GarageRouter {
   home(displayName: "Home", urlPath: "/"),
@@ -36,7 +36,7 @@ enum GarageRouter {
       dataType: SuperScoutingEntry),
   photoCollection(displayName: "Photo Collection", urlPath: "photo-collection"),
   collectionScreen(displayName: "", urlPath: "collection"),
-  displayScreen(displayName: "Display Data", urlPath: ":hash"),
+  displayScreen(displayName: "Display Data", urlPath: "hash"),
   settings(displayName: "Settings", urlPath: "settings"),
   import(displayName: "Import", urlPath: "import"),
   export(displayName: "Export", urlPath: "export"),

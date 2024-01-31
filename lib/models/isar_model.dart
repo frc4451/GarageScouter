@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
-import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
+import 'package:garagescouter/database/scouting.database.dart';
+import 'package:garagescouter/utils/notification_helpers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String kSelectedEventKey = "selectedEvent";
@@ -116,6 +116,10 @@ class IsarModel extends ChangeNotifier {
         .watch(fireImmediately: true);
   }
 
+  Stream<Event?> getCurrentEventStream() async* {
+    yield* isar.events.getByName(_selectedEvent).asStream();
+  }
+
   /// Adds all entries without an event to the "default" event.
   ///
   /// This is more for debugging and should only be used if there are missing
@@ -205,10 +209,6 @@ class IsarModel extends ChangeNotifier {
   }
 
   Future<Event> getCurrentEvent() async => getEventByName(_selectedEvent);
-
-  Stream<Event?> getCurrentEventStream() async* {
-    yield* isar.events.getByName(_selectedEvent).asStream();
-  }
 
   Future<Event> getEventByName(String name) async {
     Event? event = await isar.events.getByName(name);

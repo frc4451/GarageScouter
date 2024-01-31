@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/isar_model.dart';
+import 'package:garagescouter/database/scouting.database.dart';
+import 'package:garagescouter/models/isar_model.dart';
 
 class EventSelectionPage extends StatefulWidget {
   const EventSelectionPage({super.key});

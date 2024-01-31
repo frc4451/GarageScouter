@@ -2,8 +2,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
-import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
+import 'package:garagescouter/utils/hash_helpers.dart';
+import 'package:garagescouter/utils/notification_helpers.dart';
 
 /// Export Management Page for Mobile Devices that may not have wireless
 /// communications (IE Fire Tablets) and solely provides a QR Code to make

@@ -7,13 +7,13 @@ import 'package:go_router/go_router.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
-import 'package:robotz_garage_scouting/constants/platform_check.dart';
-import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/isar_model.dart';
-import 'package:robotz_garage_scouting/router.dart';
-import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
-import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
-import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
+import 'package:garagescouter/constants/platform_check.dart';
+import 'package:garagescouter/database/scouting.database.dart';
+import 'package:garagescouter/models/isar_model.dart';
+import 'package:garagescouter/router.dart';
+import 'package:garagescouter/utils/file_io_helpers.dart';
+import 'package:garagescouter/utils/hash_helpers.dart';
+import 'package:garagescouter/utils/notification_helpers.dart';
 
 class ScoutingDataImportPage extends StatefulWidget {
   final GarageRouter scoutingRouter;
@@ -232,7 +232,6 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
                     context.pop();
                   },
                   child: const Text("Cancel")),
-
             ])));
   }
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
-import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
+import 'package:garagescouter/validators/custom_text_validators.dart';
 
 /// Scrollable screen that represents the "end of round/match" survey that scouters can submit
 class MatchSummaryScreen extends StatefulWidget {

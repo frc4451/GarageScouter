@@ -3,12 +3,12 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/isar_model.dart';
-import 'package:robotz_garage_scouting/models/input_helper_model.dart';
-import 'package:robotz_garage_scouting/models/theme_model.dart';
-import 'package:robotz_garage_scouting/models/scroll_model.dart';
-import 'package:robotz_garage_scouting/router.dart';
+import 'package:garagescouter/database/scouting.database.dart';
+import 'package:garagescouter/models/isar_model.dart';
+import 'package:garagescouter/models/input_helper_model.dart';
+import 'package:garagescouter/models/theme_model.dart';
+import 'package:garagescouter/models/scroll_model.dart';
+import 'package:garagescouter/router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -47,18 +47,18 @@ Future<void> main() async {
       ChangeNotifierProvider<InputHelperModel>(create: (_) => inputHelperModel),
       ChangeNotifierProvider<IsarModel>(create: (_) => isarModel)
     ],
-    child: const RobotzGarageScoutingApp(),
+    child: const GarageScouterApp(),
   ));
 }
 
-class RobotzGarageScoutingApp extends StatelessWidget {
-  const RobotzGarageScoutingApp({super.key});
+class GarageScouterApp extends StatelessWidget {
+  const GarageScouterApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeModel>(builder: (context, model, _) {
       return MaterialApp.router(
-        title: 'Robotz Garage Scouting',
+        title: 'Garage Scouter',
         theme: model.getLightTheme(),
         darkTheme: model.getDarkTheme(),
         themeMode: model.theme,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import 'package:robotz_garage_scouting/components/forms/increment_field.dart';
+import 'package:garagescouter/components/forms/increment_field.dart';
 
 /// Automous Page of Match Scouting
 class MatchAutonomousScreen extends StatefulWidget {

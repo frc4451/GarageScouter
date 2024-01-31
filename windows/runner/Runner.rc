@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "robotz_garage_scouting" "\0"
+            VALUE "FileDescription", "garagescouter" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "robotz_garage_scouting" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "robotz_garage_scouting.exe" "\0"
-            VALUE "ProductName", "robotz_garage_scouting" "\0"
+            VALUE "InternalName", "garagescouter" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2023 com.robotzgarage. All rights reserved." "\0"
+            VALUE "OriginalFilename", "garagescouter.exe" "\0"
+            VALUE "ProductName", "garagescouter" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

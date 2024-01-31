@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:robotz_garage_scouting/utils/enums.dart';
+import 'package:garagescouter/utils/enums.dart';
 
 /// IncrementFormBuilderField is used for any -1/+1 operations such
 /// as score counting for Match Scouting. This extends the

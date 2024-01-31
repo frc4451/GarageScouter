@@ -1,6 +1,6 @@
-import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/utils/extensions/datetime_extensions.dart';
-import 'package:robotz_garage_scouting/utils/extensions/string_extensions.dart';
+import 'package:garagescouter/database/scouting.database.dart';
+import 'package:garagescouter/utils/extensions/datetime_extensions.dart';
+import 'package:garagescouter/utils/extensions/string_extensions.dart';
 
 String getScoutingListTileTitle(ScoutingDataEntry entry) {
   if (entry is MatchScoutingEntry) {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:robotz_garage_scouting/models/input_helper_model.dart';
-import 'package:robotz_garage_scouting/models/scroll_model.dart';
-import 'package:robotz_garage_scouting/models/theme_model.dart';
+import 'package:garagescouter/models/input_helper_model.dart';
+import 'package:garagescouter/models/scroll_model.dart';
+import 'package:garagescouter/models/theme_model.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 /// Handles Settings for the Scouting App. Heavily relies on formatting from
@@ -22,10 +22,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text(
-            "Settings",
-            textAlign: TextAlign.center,
-          ),
+          title: const Text("Settings"),
+          centerTitle: true,
         ),
         body: Consumer3<ThemeModel, ScrollModel, InputHelperModel>(
           builder: (context, theme, scroll, inputHelperModel, __) =>

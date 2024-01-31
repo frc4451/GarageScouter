@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:robotz_garage_scouting/components/forms/conditional_hidden_input.dart';
-import 'package:robotz_garage_scouting/components/forms/conditional_hidden_field.dart';
-import 'package:robotz_garage_scouting/components/forms/yes_or_no_field.dart';
-import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/isar_model.dart';
+import 'package:garagescouter/components/forms/conditional_hidden_input.dart';
+import 'package:garagescouter/components/forms/conditional_hidden_field.dart';
+import 'package:garagescouter/components/forms/yes_or_no_field.dart';
+import 'package:garagescouter/database/scouting.database.dart';
+import 'package:garagescouter/models/isar_model.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:robotz_garage_scouting/utils/extensions/map_extensions.dart';
-import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
-import 'package:robotz_garage_scouting/validators/custom_integer_validators.dart';
-import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
-import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
+import 'package:garagescouter/utils/extensions/map_extensions.dart';
+import 'package:garagescouter/utils/notification_helpers.dart';
+import 'package:garagescouter/validators/custom_integer_validators.dart';
+import 'package:garagescouter/utils/hash_helpers.dart';
+import 'package:garagescouter/validators/custom_text_validators.dart';
 
 class PitScoutingPage extends StatefulWidget {
   const PitScoutingPage({super.key, this.uuid = ""});

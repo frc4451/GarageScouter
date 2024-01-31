@@ -4,11 +4,11 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:robotz_garage_scouting/database/scouting.database.dart';
-import 'package:robotz_garage_scouting/models/isar_model.dart';
-import 'package:robotz_garage_scouting/pages/data_explorer/scouting_data_utils.dart';
-import 'package:robotz_garage_scouting/router.dart';
-import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
+import 'package:garagescouter/database/scouting.database.dart';
+import 'package:garagescouter/models/isar_model.dart';
+import 'package:garagescouter/pages/data_explorer/scouting_data_utils.dart';
+import 'package:garagescouter/router.dart';
+import 'package:garagescouter/utils/notification_helpers.dart';
 
 class ScoutingDataListPage extends StatefulWidget {
   final GarageRouter scoutingRouter;
@@ -127,10 +127,8 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.scoutingRouter.displayName,
-          textAlign: TextAlign.center,
-        ),
+        title: Text(widget.scoutingRouter.displayName),
+        centerTitle: true,
       ),
       body: Builder(
         builder: (context) {

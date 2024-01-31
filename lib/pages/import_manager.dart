@@ -5,9 +5,9 @@ import 'package:flutter_archive/flutter_archive.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
-import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
-import 'package:robotz_garage_scouting/utils/notification_helpers.dart';
+import 'package:garagescouter/utils/file_io_helpers.dart';
+import 'package:garagescouter/utils/hash_helpers.dart';
+import 'package:garagescouter/utils/notification_helpers.dart';
 
 class ImportManagerPage extends StatefulWidget {
   const ImportManagerPage({super.key});
