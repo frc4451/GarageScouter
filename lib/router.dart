@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garagescouter/pages/data_explorer/scouting_data_table.dart';
 import 'package:go_router/go_router.dart';
 import 'package:garagescouter/constants/platform_check.dart';
 import 'package:garagescouter/database/scouting.database.dart';
@@ -43,7 +44,8 @@ enum GarageRouter {
   delete(displayName: "Delete", urlPath: "delete"),
   qrReader(displayName: "QR Reader", urlPath: "qr-reader"),
   results(displayName: "Results", urlPath: "results"),
-  event(displayName: "Events", urlPath: "event");
+  event(displayName: "Events", urlPath: "event"),
+  dataTable(displayName: "Table", urlPath: "table");
 
   final String displayName;
   final String urlPath;
@@ -62,6 +64,7 @@ enum GarageRouter {
   String getExportRouteName() => "$urlPath-export";
   String getImportRouteName() => "$urlPath-import";
   String getDeleteRouteName() => "$urlPath-delete";
+  String getDataTableRouteName() => "$urlPath-table";
   String getQRReaderRouteName() => "${getImportRouteName()}-qrreader";
   String getQRReaderResultsRouteName() => "${getImportRouteName()}-results";
 }
@@ -99,6 +102,12 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 name: GarageRouter.pitScouting.getDeleteRouteName(),
                 path: GarageRouter.delete.urlPath,
                 builder: (context, state) => const ScoutingDataDeletePage(
+                    scoutingRouter: GarageRouter.pitScouting),
+              ),
+              GoRoute(
+                name: GarageRouter.pitScouting.getDataTableRouteName(),
+                path: GarageRouter.dataTable.urlPath,
+                builder: (context, state) => const ScoutingDataTablePage(
                     scoutingRouter: GarageRouter.pitScouting),
               ),
               GoRoute(
@@ -163,6 +172,12 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                     scoutingRouter: GarageRouter.matchScouting),
               ),
               GoRoute(
+                name: GarageRouter.matchScouting.getDataTableRouteName(),
+                path: GarageRouter.dataTable.urlPath,
+                builder: (context, state) => const ScoutingDataTablePage(
+                    scoutingRouter: GarageRouter.matchScouting),
+              ),
+              GoRoute(
                   name: GarageRouter.matchScouting.getImportRouteName(),
                   path: GarageRouter.import.urlPath,
                   builder: (context, state) => const ScoutingDataImportPage(
@@ -223,6 +238,12 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 path: GarageRouter.delete.urlPath,
                 builder: (context, state) => const ScoutingDataDeletePage(
                     scoutingRouter: GarageRouter.superScouting),
+              ),
+              GoRoute(
+                name: GarageRouter.superScouting.getDataTableRouteName(),
+                path: GarageRouter.dataTable.urlPath,
+                builder: (context, state) => const ScoutingDataTablePage(
+                    scoutingRouter: GarageRouter.pitScouting),
               ),
               GoRoute(
                   name: GarageRouter.superScouting.getImportRouteName(),

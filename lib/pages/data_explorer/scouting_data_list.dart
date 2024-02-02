@@ -74,6 +74,15 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
     context.goNamed(widget.scoutingRouter.getEventsRouteName());
   }
 
+  void _goToDataTablePage() {
+    if (_entries.isEmpty) {
+      errorMessageSnackbar(context,
+          "You don't have completed ${widget.scoutingRouter.displayName} data.");
+      return;
+    }
+    context.goNamed(widget.scoutingRouter.getDataTableRouteName());
+  }
+
   @override
   void initState() {
     super.initState();
@@ -168,52 +177,58 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                     iconColor: iconColor,
                     title: Text(
                         "Delete ${widget.scoutingRouter.displayName} Drafts"),
-                    onTap: () => _goToDeletePage())
-              ]).toList()),
-              Visibility(
-                visible: !databaseNotEmpty,
-                child: ListTile(
-                  title: Text(
-                    "No items are in the database for ${widget.scoutingRouter.displayName}.",
-                    textAlign: TextAlign.center,
+                    onTap: () => _goToDeletePage()),
+                ListTile(
+                    leading: const Icon(Icons.view_list),
+                    iconColor: iconColor,
+                    title: Text(
+                        "View all ${widget.scoutingRouter.displayName} Data"),
+                    onTap: () => _goToDataTablePage()),
+                Visibility(
+                  visible: !databaseNotEmpty,
+                  child: ListTile(
+                    title: Text(
+                      "No items are in the database for ${widget.scoutingRouter.displayName}.",
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
-              ),
-              Visibility(
+                Visibility(
+                    visible: databaseNotEmpty,
+                    child: ExpansionTile(
+                        leading: const Icon(Icons.drafts),
+                        title: const Text("Drafts"),
+                        subtitle: const Text(
+                            "Incomplete entries. Click on a draft to complete the form."),
+                        initiallyExpanded: true,
+                        children: ListTile.divideTiles(
+                            context: context,
+                            tiles: _drafts.mapIndexed(
+                              (index, draft) => ListTile(
+                                title: Text(getScoutingListTileTitle(draft)),
+                                subtitle:
+                                    Text(getScoutingListTileSubtitle(draft)),
+                                onTap: () => _goToDraftCompletionPage(draft),
+                              ),
+                            )).toList())),
+                Visibility(
                   visible: databaseNotEmpty,
                   child: ExpansionTile(
-                      leading: const Icon(Icons.drafts),
-                      title: const Text("Drafts"),
+                      title: const Text("Completed"),
                       subtitle: const Text(
-                          "Incomplete entries. Click on a draft to complete the form."),
+                          "Finished entries. Click on an entry to see the data."),
+                      leading: const Icon(Icons.done),
                       initiallyExpanded: true,
                       children: ListTile.divideTiles(
                           context: context,
-                          tiles: _drafts.mapIndexed(
-                            (index, draft) => ListTile(
-                              title: Text(getScoutingListTileTitle(draft)),
-                              subtitle:
-                                  Text(getScoutingListTileSubtitle(draft)),
-                              onTap: () => _goToDraftCompletionPage(draft),
-                            ),
-                          )).toList())),
-              Visibility(
-                visible: databaseNotEmpty,
-                child: ExpansionTile(
-                    title: const Text("Completed"),
-                    subtitle: const Text(
-                        "Finished entries. Click on an entry to see the data."),
-                    leading: const Icon(Icons.done),
-                    initiallyExpanded: true,
-                    children: ListTile.divideTiles(
-                        context: context,
-                        tiles: _entries.mapIndexed((index, entry) => ListTile(
-                              title: Text(getScoutingListTileTitle(entry)),
-                              subtitle:
-                                  Text(getScoutingListTileSubtitle(entry)),
-                              onTap: () => _goToDisplayPage(entry),
-                            ))).toList()),
-              ),
+                          tiles: _entries.mapIndexed((index, entry) => ListTile(
+                                title: Text(getScoutingListTileTitle(entry)),
+                                subtitle:
+                                    Text(getScoutingListTileSubtitle(entry)),
+                                onTap: () => _goToDisplayPage(entry),
+                              ))).toList()),
+                ),
+              ]).toList()),
             ],
           );
         },

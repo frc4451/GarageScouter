@@ -1,3 +1,4 @@
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:garagescouter/utils/hash_helpers.dart';
 
@@ -35,16 +36,17 @@ class _ScoutingDataDetailsPageState extends State<ScoutingDataDetailsPage> {
                         const PopupMenuItem(child: Text("Edit")),
                       ])
             ]),
-        body: ListView(
-          children: [
-            for (final entry in data.entries)
-              Card(
-                child: ListTile(
-                  title: Text(entry.key),
-                  subtitle: Text(entry.value.toString()),
-                ),
-              )
+        body: DataTable2(
+          columns: const [
+            DataColumn2(label: Text("Key")),
+            DataColumn2(label: Text("Value")),
           ],
+          rows: data.keys
+              .map((String key) => DataRow2(cells: [
+                    DataCell(Text(key)),
+                    DataCell(Text(data[key].toString()))
+                  ]))
+              .toList(),
         ));
   }
 }
