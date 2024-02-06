@@ -82,7 +82,7 @@ jobs:
             artifact-name: GarageScouter-Windows
           - os: macos-14
             build-option: "macos"
-            artifact-path: "build/macos/Build/Products/Release/PathPlanner-macOS.zip"
+            artifact-path: "build/macos/Build/Products/Release/GarageScouter-macOS.zip"
             artifact-name: GarageScouter-macOS
           - os: ubuntu-22.04
             build-option: "linux"
