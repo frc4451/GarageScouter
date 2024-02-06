@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 /// FormBuilder Custom Field to conditionally show Form Input
 class ConditionalHiddenField extends StatefulWidget {
   /// Shows when we want to display input for the field
-  bool showWhen;
+  final bool showWhen;
 
   /// Widget to be shown when `showWhen` is set to true
   final Widget child;
 
-  ConditionalHiddenField(
+  const ConditionalHiddenField(
       {super.key, required this.child, this.showWhen = false});
 
   @override

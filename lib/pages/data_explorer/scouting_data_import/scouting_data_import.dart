@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:garagescouter/constants/platform_check.dart';
 import 'package:garagescouter/database/scouting.database.dart';
@@ -36,7 +35,7 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
     _isarModel = context.read<IsarModel>();
   }
 
-  void _cancel() {
+  void _closeDialog() {
     _files.clear();
     context.pop();
   }
@@ -44,7 +43,6 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
   Future<void> _addFiles() async {
     for (final file in _files) {
       if (!await file.exists()) {
-        print("file doesn't exist :: ${file.path}");
         continue;
       }
 
@@ -57,6 +55,8 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
         }
 
         if (row["team_number"] == null && row["Team Number"] == null) {
+          if (!mounted) return;
+
           errorMessageSnackbar(context,
               "`Team Number` or `team_number` column is missing from ${getBaseName(file)}");
           return;
@@ -75,18 +75,52 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
           if (row["alliance"] == null &&
               row["Alliance"] == null &&
               row["team_alliance"] == null) {
+            if (!mounted) return;
+
             errorMessageSnackbar(context,
                 "`alliance` or `Alliance` column is missing from ${getBaseName(file)}, assuming it's Match Scouting Data");
             return;
           }
-          entry = (entry as MatchScoutingEntry)
-            ..alliance = row["alliance"] ?? row["Alliance"]
-            ..matchNumber = row["match_number"] ?? row["Match Number"];
-        }
 
-        _isarModel.putScoutingData(entry);
+          MatchScoutingEntry matchScoutingEntry =
+              MatchScoutingEntry.fromScoutingDataEntry(entry);
+
+          String rawAlliance = (row["alliance"] ??
+                  row["Alliance"] ??
+                  row["team_alliance"] ??
+                  row["Team Alliance"] ??
+                  "unassigned")
+              .toString()
+              .toLowerCase();
+
+          TeamAlliance alliance = rawAlliance == "red"
+              ? TeamAlliance.red
+              : rawAlliance == "blue"
+                  ? TeamAlliance.blue
+                  : TeamAlliance.unassigned;
+
+          matchScoutingEntry = matchScoutingEntry
+            ..alliance = alliance
+            ..matchNumber = row["match_number"] ?? row["Match Number"];
+
+          entry = matchScoutingEntry;
+        }
+        try {
+          await _isarModel.putScoutingData(entry);
+        } catch (error) {
+          if (!mounted) return;
+
+          errorMessageSnackbar(context, error);
+        }
       }
     }
+
+    _closeDialog();
+
+    if (!mounted) return;
+
+    successMessageSnackbar(
+        context, "Successfully imported data to GarageScouter");
   }
 
   Future<void> _readFromFiles() async {
@@ -138,7 +172,7 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             OutlinedButton(
-                                onPressed: _cancel,
+                                onPressed: _closeDialog,
                                 child: const Text("Cancel")),
                             ElevatedButton(
                                 onPressed: () async {
@@ -166,75 +200,6 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
             ));
   }
 
-  void _detectInput(BarcodeCapture capture) {
-    final List<Barcode> barcodes = capture.barcodes;
-    // setState(() {
-    //   _qrCodeData = decodeJsonFromB64(barcodes[0].rawValue!);
-    // });
-
-    final Map<String, dynamic> value =
-        decodeJsonFromB64(barcodes[0].rawValue ?? "");
-    final String dataType = value['type'];
-    final List<Map<String, dynamic>> data = value['jsons'];
-
-    final Map<String, Type> typeOptions = {
-      "Pit Scouting": PitScoutingEntry,
-      "Match Scouting": MatchScoutingEntry,
-      "Super Scouting": SuperScoutingEntry
-    };
-
-    // Sanity checks for looking at types we either don't expect,
-    // or aren't the data type we care about at this time.
-    if (!typeOptions.containsKey(dataType)) {
-      errorMessageSnackbar(
-          context, "QR Code came from an invalid type selection.");
-    } else if (dataType != widget.scoutingRouter.displayName) {
-      errorMessageSnackbar(context,
-          "You're trying to read data for ${widget.scoutingRouter.displayName}, but are looking at data from $dataType");
-    }
-
-    List<ScoutingDataEntry> entries = [];
-
-    for (final row in data) {
-      dynamic entry = ScoutingDataEntry()
-        ..b64String = encodeJsonToB64(row, urlSafe: true)
-        ..teamNumber = row['team_number'] ?? row['Team Number'];
-
-      if (dataType == "Pit Scouting") {
-        entry = entry as PitScoutingEntry;
-      } else if (dataType == "Match Scouting") {
-        entry = entry as MatchScoutingEntry;
-        entry.matchNumber = row['match_number'] ?? row['Match Number'];
-        entry.alliance = row['alliance'] ?? row['Alliance'];
-      } else if (dataType == "Super Scouting") {
-        entry = entry as SuperScoutingEntry;
-      }
-
-      entries.add(entry);
-    }
-
-    showGeneralDialog(
-        context: context,
-        pageBuilder: ((context, animation, secondaryAnimation) =>
-            Column(children: [
-              ...ListTile.divideTiles(
-                  tiles: entries.mapIndexed((index, element) => ListTile(
-                        title: Text("Team Number: ${element.teamNumber}"),
-                      ))).toList(),
-              ElevatedButton(
-                  onPressed: () {
-                    _isarModel.putAllScoutingData(entries);
-                    context.pop();
-                  },
-                  child: const Text("Confirm")),
-              ElevatedButton(
-                  onPressed: () {
-                    context.pop();
-                  },
-                  child: const Text("Cancel")),
-            ])));
-  }
-
   Future<void> _readFromQRCode() async {
     if (isDesktopPlatform()) {
       errorMessageSnackbar(context,
@@ -247,16 +212,6 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> options = [
-      // Container(
-      //   padding: const EdgeInsets.all(16.0),
-      //   child: const Column(children: [
-      //     Text("Select an option for importing data to GarageScouter",
-      //         style: TextStyle(fontSize: 24)),
-      //     Text(
-      //         "Some options may not be available depending on the application's platform",
-      //         style: TextStyle(fontSize: 16))
-      //   ]),
-      // ),
       ListTile(
         leading: const Icon(Icons.file_download),
         title: const Text("Import data from CSV"),
@@ -278,10 +233,8 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Import Data",
-          textAlign: TextAlign.center,
-        ),
+        title: const Text("Import Data"),
+        centerTitle: true,
       ),
       body: Column(children: options),
     );

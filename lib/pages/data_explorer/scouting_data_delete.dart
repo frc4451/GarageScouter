@@ -137,10 +137,8 @@ class _ScoutingDataDeletePageState extends State<ScoutingDataDeletePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Delete Drafts",
-          textAlign: TextAlign.center,
-        ),
+        title: const Text("Delete Drafts"),
+        centerTitle: true,
       ),
       body: ExpansionTile(
           title: const Text("Drafts"),

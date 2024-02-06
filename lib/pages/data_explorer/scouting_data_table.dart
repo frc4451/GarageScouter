@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:garagescouter/constants/platform_check.dart';
 import 'package:garagescouter/database/scouting.database.dart';
 import 'package:garagescouter/models/isar_model.dart';
 import 'package:garagescouter/router.dart';
@@ -53,7 +54,7 @@ class _ScoutingDataTablePageState extends State<ScoutingDataTablePage> {
     if (_entries.isNotEmpty) {
       columns = _entries
           .map((ScoutingDataEntry e) =>
-              decodeJsonFromB64(e.b64String ?? "{}").keys.toList())
+              decodeJsonFromB64(e.b64String).keys.toList())
           .reduce((List<String> commonColumns, List<String> row) =>
               commonColumns.where((column) => row.contains(column)).toList())
           .toList();
@@ -61,10 +62,8 @@ class _ScoutingDataTablePageState extends State<ScoutingDataTablePage> {
 
     return Scaffold(
         appBar: AppBar(
-          title: Text(
-            "${widget.scoutingRouter.displayName} Data",
-            textAlign: TextAlign.center,
-          ),
+          title: Text("${widget.scoutingRouter.displayName} Data"),
+          centerTitle: true,
         ),
         body: columns.isEmpty
             ? const Center(child: CircularProgressIndicator())
@@ -72,13 +71,13 @@ class _ScoutingDataTablePageState extends State<ScoutingDataTablePage> {
                 columnSpacing: 12,
                 horizontalMargin: 12,
                 minWidth: columns.length * 120,
-                fixedLeftColumns: 2,
+                fixedLeftColumns: isDesktopPlatform() ? 2 : 1,
                 columns: columns
                     .map((column) => DataColumn2(label: Text(column)))
                     .toList(),
                 rows: _entries.map((ScoutingDataEntry entry) {
                   Map<String, dynamic> data =
-                      decodeJsonFromB64(entry.b64String ?? "{}");
+                      decodeJsonFromB64(entry.b64String);
 
                   return DataRow2(
                       cells: columns

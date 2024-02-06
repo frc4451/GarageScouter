@@ -139,6 +139,8 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
     if (fieldName != null && fieldName.isNotEmpty) {
       _addPhotoFormField(fieldName: fieldName);
     } else {
+      if (!mounted) return;
+
       errorMessageSnackbar(
           context, "No input was provided. No new fields added.");
     }
@@ -183,6 +185,8 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
       }
 
       if (files.isEmpty) {
+        if (!mounted) return;
+
         errorMessageSnackbar(context, "No images were provided.");
         return;
       }
@@ -205,6 +209,8 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
         errorMessageSnackbar(context, exception);
       });
     } catch (e) {
+      if (!mounted) return;
+
       errorMessageSnackbar(context, e.toString());
     }
   }

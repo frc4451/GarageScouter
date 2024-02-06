@@ -130,6 +130,7 @@ class _ScoutingDataExportPageState extends State<ScoutingDataExportPage> {
     final List<String> rows = [];
 
     if (!validateProperties(jsons)) {
+      if (!mounted) return;
       errorMessageSnackbar(context, "Not all entries have the same schema.");
     }
 
@@ -155,7 +156,7 @@ class _ScoutingDataExportPageState extends State<ScoutingDataExportPage> {
   void _exportScoutingData() {
     List<Map<String, dynamic>> jsons = _selectedIndices
         .map((index) => _entries[index])
-        .map((entry) => decodeJsonFromB64(entry.b64String ?? "{}"))
+        .map((entry) => decodeJsonFromB64(entry.b64String))
         .toList();
 
     const String qrKey = "qr";
@@ -204,10 +205,8 @@ class _ScoutingDataExportPageState extends State<ScoutingDataExportPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Export Data",
-          textAlign: TextAlign.center,
-        ),
+        title: const Text("Export Data"),
+        centerTitle: true,
       ),
       body: ExpansionTile(
           title: const Text("Completed"),

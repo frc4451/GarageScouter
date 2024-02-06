@@ -1,10 +1,7 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:provider/provider.dart';
 import 'package:garagescouter/database/scouting.database.dart';
-import 'package:garagescouter/models/isar_model.dart';
 import 'package:garagescouter/router.dart';
 import 'package:garagescouter/utils/hash_helpers.dart';
 import 'package:garagescouter/utils/notification_helpers.dart';
@@ -20,16 +17,7 @@ class ScoutingDataQRReaderPage extends StatefulWidget {
 }
 
 class _ScoutingDataQRReaderPageState extends State<ScoutingDataQRReaderPage> {
-  late final IsarModel _isarModel;
-
   bool _readingInput = true;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _isarModel = context.read<IsarModel>();
-  }
 
   void _cancel() {
     context.pop();
@@ -37,9 +25,6 @@ class _ScoutingDataQRReaderPageState extends State<ScoutingDataQRReaderPage> {
 
   Future<void> _detectInput(BarcodeCapture capture) async {
     final List<Barcode> barcodes = capture.barcodes;
-    // setState(() {
-    //   _qrCodeData = decodeJsonFromB64(barcodes[0].rawValue!);
-    // });
 
     setState(() {
       _readingInput = false;
@@ -87,10 +72,7 @@ class _ScoutingDataQRReaderPageState extends State<ScoutingDataQRReaderPage> {
                   Row(
                     children: [
                       ElevatedButton(
-                          onPressed: () {
-                            context.pop();
-                          },
-                          child: const Text("Close"))
+                          onPressed: _cancel, child: const Text("Close"))
                     ],
                   )
                 ],
@@ -111,10 +93,7 @@ class _ScoutingDataQRReaderPageState extends State<ScoutingDataQRReaderPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       ElevatedButton(
-                          onPressed: () {
-                            context.pop();
-                          },
-                          child: const Text("Close"))
+                          onPressed: _cancel, child: const Text("Close"))
                     ],
                   )
                 ],
@@ -122,7 +101,7 @@ class _ScoutingDataQRReaderPageState extends State<ScoutingDataQRReaderPage> {
     } else {
       await context.pushNamed(
           widget.scoutingRouter.getQRReaderResultsRouteName(),
-          pathParameters: {"data": discoveredData});
+          queryParameters: {"data": discoveredData});
     }
 
     setState(() {
@@ -155,10 +134,8 @@ class _ScoutingDataQRReaderPageState extends State<ScoutingDataQRReaderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Scan QR Code",
-          textAlign: TextAlign.center,
-        ),
+        title: const Text("Scan QR Code"),
+        centerTitle: true,
       ),
       body: _readingInput
           ? MobileScanner(

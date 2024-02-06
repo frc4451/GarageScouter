@@ -25,9 +25,9 @@ class ConditionalHiddenTextField extends StatefulWidget {
   final int maxLines;
 
   /// Shows when we want to display input for the field
-  bool showWhen;
+  final bool showWhen;
 
-  ConditionalHiddenTextField(
+  const ConditionalHiddenTextField(
       {super.key,
       required this.name,
       this.label,

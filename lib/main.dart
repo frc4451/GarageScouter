@@ -37,8 +37,9 @@ Future<void> main() async {
   );
 
   final IsarModel isarModel = IsarModel(isar, prefs);
+  await isarModel.initialize();
 
-  await isarModel.putDefaultEvent();
+  // await isarModel.putDefaultEvent();
 
   runApp(MultiProvider(
     providers: [

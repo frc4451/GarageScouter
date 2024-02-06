@@ -1,7 +1,5 @@
-import 'dart:convert';
-
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:garagescouter/utils/may_pop_scope.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:garagescouter/database/scouting.database.dart';
@@ -43,27 +41,27 @@ class _ScoutingDataQRConfirmationPageState
   }
 
   void _writeToDatabase() {
-    // List<ScoutingDataEntry> entries = [];
-
-    if (_importType == "Pit Scouting") {
-      final List<PitScoutingEntry> entries = [];
-      for (final row in _entries) {
-        PitScoutingEntry entry = PitScoutingEntry()
-          ..b64String = encodeJsonToB64(row, urlSafe: true)
-          ..teamNumber = int.tryParse(row['team_number'] ?? row['Team Number'])
-          ..isDraft = false;
-
-        entries.add(entry);
-      }
+    // Pit Scouting Logic
+    if (_importType == GarageRouter.pitScouting.displayName) {
+      final List<PitScoutingEntry> entries = _entries
+          .map((row) => PitScoutingEntry()
+            ..b64String = encodeJsonToB64(row, urlSafe: true)
+            ..teamNumber =
+                int.tryParse(row['team_number'] ?? row['Team Number']) ?? 0
+            ..isDraft = false)
+          .toList();
 
       _isarModel.putAllScoutingData(entries).then((value) {
         successMessageSnackbar(
             context, "Successfully imported $_importType entries.");
         context.pop(true);
+      }).catchError((error) {
+        errorMessageSnackbar(context, error);
       });
-    } else if (_importType == "Match Scouting") {
-      final List<MatchScoutingEntry> entries = [];
-      for (final row in _entries) {
+    }
+    // Match Scouting logic
+    else if (_importType == GarageRouter.matchScouting.displayName) {
+      final List<MatchScoutingEntry> entries = _entries.map((row) {
         String comparison = (row['team_alliance'] ?? row['Team Alliance'] ?? "")
             .toString()
             .toLowerCase();
@@ -75,80 +73,42 @@ class _ScoutingDataQRConfirmationPageState
 
         MatchScoutingEntry entry = MatchScoutingEntry()
           ..b64String = encodeJsonToB64(row, urlSafe: true)
-          ..teamNumber = int.tryParse(row['team_number'] ?? row['Team Number'])
+          ..teamNumber =
+              int.tryParse(row['team_number'] ?? row['Team Number']) ?? 0
           ..matchNumber =
               int.tryParse(row['match_number'] ?? row['Match Number'])
           ..alliance = alliance
           ..isDraft = false;
 
-        entries.add(entry);
-      }
+        return entry;
+      }).toList();
 
       _isarModel.putAllScoutingData(entries).then((value) {
         successMessageSnackbar(
             context, "Successfully imported $_importType entries.");
         context.pop(true);
-      });
-    } else if (_importType == "Super Scouting") {
-      final List<SuperScoutingEntry> entries = [];
-      for (final row in _entries) {
-        SuperScoutingEntry entry = SuperScoutingEntry()
-          ..b64String = encodeJsonToB64(row, urlSafe: true)
-          ..teamNumber = int.tryParse(row['team_number'] ?? row['Team Number'])
-          ..isDraft = false;
-
-        entries.add(entry);
-      }
-
-      _isarModel.putAllScoutingData(entries).then((value) {
-        successMessageSnackbar(
-            context, "Successfully imported $_importType entries.");
-        context.pop(true);
+      }).catchError((error) {
+        errorMessageSnackbar(context, error);
       });
     }
+    // Super Scouting logic
+    else if (_importType == GarageRouter.superScouting.displayName) {
+      final List<SuperScoutingEntry> entries = _entries
+          .map((row) => SuperScoutingEntry()
+            ..b64String = encodeJsonToB64(row, urlSafe: true)
+            ..teamNumber =
+                int.tryParse(row['team_number'] ?? row['Team Number']) ?? 0
+            ..isDraft = false)
+          .toList();
 
-    // try {
-    //   for (final row in _entries) {
-    //     dynamic entry;
-    //     if (_importType == "Pit Scouting") {
-    //       entry = PitScoutingEntry()
-    //         ..b64String = encodeJsonToB64(row, urlSafe: true)
-    //         ..teamNumber =
-    //             int.tryParse(row['team_number'] ?? row['Team Number']);
-    //     } else if (_importType == "Match Scouting") {
-    //       String comparison =
-    //           (row['team_alliance'] ?? row['Team Alliance'] ?? "")
-    //               .toString()
-    //               .toLowerCase();
-    //       TeamAlliance alliance = comparison == "blue"
-    //           ? TeamAlliance.blue
-    //           : comparison == "red"
-    //               ? TeamAlliance.red
-    //               : TeamAlliance.unassigned;
-
-    //       entry = MatchScoutingEntry()
-    //         ..b64String = encodeJsonToB64(row, urlSafe: true)
-    //         ..teamNumber =
-    //             int.tryParse(row['team_number'] ?? row['Team Number'])
-    //         ..matchNumber =
-    //             int.tryParse(row['match_number'] ?? row['Match Number'])
-    //         ..alliance = alliance;
-    //     } else if (_importType == "Super Scouting") {
-    //       entry = SuperScoutingEntry()
-    //         ..b64String = encodeJsonToB64(row, urlSafe: true)
-    //         ..teamNumber =
-    //             int.tryParse(row['team_number'] ?? row['Team Number']);
-    //     }
-
-    //     entries.add(entry);
-    //   }
-
-    //   _isarModel.putAllScoutingData(entries).then((value) {
-    //     context.pop(true);
-    //   });
-    // } catch (error) {
-    //   errorMessageSnackbar(context, error);
-    // }
+      _isarModel.putAllScoutingData(entries).then((value) {
+        successMessageSnackbar(
+            context, "Successfully imported $_importType entries.");
+        context.pop(true);
+      }).catchError((error) {
+        errorMessageSnackbar(context, error);
+      });
+    }
   }
 
   void _cancel() {
@@ -157,35 +117,45 @@ class _ScoutingDataQRConfirmationPageState
 
   @override
   Widget build(BuildContext context) {
+    List<String> cols = ["Team Number"];
+    List<String> rows = ["team_number"];
+
+    if (_importType == GarageRouter.matchScouting.displayName) {
+      cols.add("Match Number");
+      rows.add("match_number");
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Confirm Import",
-          textAlign: TextAlign.center,
+        appBar: AppBar(
+          title: const Text("Confirm Import"),
+          centerTitle: true,
         ),
-      ),
-      body: WillPopScope(
-          onWillPop: (() async {
-            context.pop(false);
-            return true;
-          }),
-          child: Column(children: [
-            ...ListTile.divideTiles(
-                tiles: _entries.mapIndexed((index, element) => ListTile(
-                      title: Text("Team Number: ${element['team_number']}"),
-                      subtitle: element['match_number'] != null
-                          ? Text("Match Number: ${element['match_number']}")
-                          : Text(_importType),
-                    ))).toList(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                OutlinedButton(onPressed: _cancel, child: const Text("Cancel")),
-                ElevatedButton(
-                    onPressed: _writeToDatabase, child: const Text("Confirm")),
-              ],
-            )
-          ])),
-    );
+        body: MayPopScope(
+            onWillPop: (() async {
+              context.pop(false);
+              return true;
+            }),
+            child: Column(children: [
+              DataTable(
+                columns:
+                    cols.map((col) => DataColumn(label: Text(col))).toList(),
+                rows: _entries
+                    .map((e) => DataRow(
+                        cells: rows
+                            .map((col) => DataCell(Text(e[col].toString())))
+                            .toList()))
+                    .toList(),
+              ),
+            ])),
+        persistentFooterButtons: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              OutlinedButton(onPressed: _cancel, child: const Text("Cancel")),
+              ElevatedButton(
+                  onPressed: _writeToDatabase, child: const Text("Confirm")),
+            ],
+          )
+        ]);
   }
 }

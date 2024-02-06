@@ -71,6 +71,9 @@ class _HomePageState extends State<HomePage> {
                         onTap: () =>
                             _route(GarageRouter.superScouting.urlPath)),
                     ListTile(
+                        title: const Text("Event Management"),
+                        onTap: () => _route(GarageRouter.event.urlPath)),
+                    ListTile(
                         title: const Text("Photo Collection"),
                         onTap: () =>
                             _route(GarageRouter.photoCollection.urlPath)),

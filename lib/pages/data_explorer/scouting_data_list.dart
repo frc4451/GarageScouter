@@ -31,7 +31,6 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
   // synchronous lookups over drafts and entries and reduce complexity.
   late StreamSubscription<List<ScoutingDataEntry>> _entriesStreamSubscription;
   late StreamSubscription<List<ScoutingDataEntry>> _draftsStreamSubscription;
-  late StreamSubscription<Event?> _eventSubscription;
 
   void _goToImportPage() {
     context.goNamed(widget.scoutingRouter.getImportRouteName());
@@ -67,11 +66,7 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
 
   void _goToDisplayPage(ScoutingDataEntry entry) {
     context.goNamed('${widget.scoutingRouter.urlPath}-display',
-        queryParameters: {'hash': entry.b64String ?? ""});
-  }
-
-  void _goToEventSelectionPage() {
-    context.goNamed(widget.scoutingRouter.getEventsRouteName());
+        queryParameters: {'uuid': entry.uuid});
   }
 
   void _goToDataTablePage() {
@@ -94,8 +89,6 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
     Stream<List<ScoutingDataEntry>> draftsStream =
         _isarModel.getScoutingDrafts(widget.scoutingRouter.dataType);
 
-    Stream<Event?> eventStream = _isarModel.getCurrentEventStream();
-
     _entriesStreamSubscription = entriesStream.listen((entries) {
       setState(() {
         _entries = entries;
@@ -108,26 +101,13 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
       });
     });
 
-    _eventSubscription = eventStream.listen((event) {
-      setState(() {
-        if (event != null) {
-          _selectedEvent = event;
-        }
-      });
-    });
-
-    // _isarModel.getCurrentEvent().then((Event event) {
-    //   setState(() {
-    //     _selectedEvent = event;
-    //   });
-    // });
+    _selectedEvent = _isarModel.currentEvent;
   }
 
   @override
   void deactivate() {
     _entriesStreamSubscription.cancel();
     _draftsStreamSubscription.cancel();
-    _eventSubscription.cancel();
 
     super.deactivate();
   }
@@ -152,7 +132,6 @@ class _ScoutingDataListPageState extends State<ScoutingDataListPage> {
                   leading: const Icon(Icons.event),
                   iconColor: iconColor,
                   title: Text("Event: ${_selectedEvent?.name}"),
-                  onTap: () => _goToEventSelectionPage(),
                 ),
                 ListTile(
                     leading: const Icon(Icons.my_library_add_sharp),

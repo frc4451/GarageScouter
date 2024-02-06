@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:garagescouter/utils/may_pop_scope.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:garagescouter/components/forms/conditional_hidden_input.dart';
@@ -83,10 +84,10 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
 
     PitScoutingEntry entry = await _isarModel.getPitDataByUUID(widget.uuid);
 
-    bool wasDraft = entry.isDraft ?? false;
+    bool wasDraft = entry.isDraft;
 
     entry
-      ..teamNumber = int.tryParse(teamNumber)
+      ..teamNumber = int.tryParse(teamNumber) ?? 0
       ..b64String = encodeJsonToB64(state, urlSafe: true)
       ..isDraft = false;
 
@@ -134,14 +135,12 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
   Future<void> _clearForm() async {
     _formKey.currentState?.save();
 
-    // setState(() {
-    //   _formKey.currentState!.fields.forEach((key, field) {
-    //     field.didChange(null);
-    //   });
-    //   _formKey.currentState?.save();
-
-    //   context.read<RetainInfoModel>().resetPitScouting();
-    // });
+    setState(() {
+      _formKey.currentState!.fields.forEach((key, field) {
+        field.didChange(null);
+      });
+      _formKey.currentState?.save();
+    });
   }
 
   /// We safely save the state of the form when the user pops the Widget from
@@ -167,11 +166,13 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
       return true;
     }
 
+    if (!mounted) return false;
+
     bool keepDraft =
         await canSaveDraft(context, exists: entry.isDraft) ?? false;
 
     entry
-      ..teamNumber = int.tryParse(state['team_number'])
+      ..teamNumber = int.tryParse(state['team_number']) ?? 0
       ..b64String = currentb64String
       ..isDraft = true;
 
@@ -194,21 +195,19 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
 
     PitScoutingEntry entry = _isarModel.getPitDataByUUIDSync(widget.uuid);
 
-    _initialValue = decodeJsonFromB64(entry.b64String ?? "");
+    _initialValue = decodeJsonFromB64(entry.b64String);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Pit Scouting",
-          textAlign: TextAlign.center,
-        ),
+        title: const Text("Pit Scouting"),
+        centerTitle: true,
       ),
       body: CustomScrollView(slivers: <Widget>[
         SliverToBoxAdapter(
-          child: WillPopScope(
+          child: MayPopScope(
               onWillPop: _onWillPop,
               child: Column(
                 children: [

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:garagescouter/database/scouting.database.dart';
-import 'package:garagescouter/utils/notification_helpers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String kSelectedEventKey = "selectedEvent";
@@ -14,17 +13,31 @@ class IsarModel extends ChangeNotifier {
 
   String _selectedEvent = kDefaultEventName;
 
-  IsarModel(this.isar, this.prefs);
-
-  void initialize() {
-    _selectedEvent = prefs.getString(kSelectedEventKey) ?? kDefaultEventName;
-  }
-
   String get selectedEvent => _selectedEvent;
 
-  void setEvent(String event) {
+  Event? _currentEvent;
+  Event? get currentEvent => _currentEvent;
+
+  IsarModel(this.isar, this.prefs);
+
+  Future<void> initialize() async {
+    // Link selected event from SharedPreferences
+    _selectedEvent = prefs.getString(kSelectedEventKey) ?? kDefaultEventName;
+
+    // Define a "current event" and put the default value if it doesn't exist.
+    Event? currentEvent =
+        await isar.writeTxn(() => isar.events.getByName(_selectedEvent));
+    _currentEvent = currentEvent ?? await putDefaultEvent();
+  }
+
+  void setEvent(String event) async {
     _selectedEvent = event;
-    prefs.setString(kSelectedEventKey, _selectedEvent);
+    prefs.setString(kSelectedEventKey, event);
+
+    _currentEvent = await isar.writeTxn(() {
+      return isar.events.getByName(_selectedEvent);
+    });
+
     notifyListeners();
   }
 
@@ -57,8 +70,9 @@ class IsarModel extends ChangeNotifier {
   Stream<List<PitScoutingEntry>> _getPitScoutingDrafts() async* {
     yield* isar.pitScoutingEntrys
         .filter()
-        .b64StringIsNotNull()
         .isDraftEqualTo(true)
+        .event((q) => q.nameEqualTo(_selectedEvent))
+        // .event((q) => q.nameIsNotEmpty())
         .sortByTimestampDesc()
         .watch(fireImmediately: true);
   }
@@ -66,8 +80,8 @@ class IsarModel extends ChangeNotifier {
   Stream<List<PitScoutingEntry>> _getPitScoutingData() async* {
     yield* isar.pitScoutingEntrys
         .filter()
-        .b64StringIsNotNull()
         .isDraftEqualTo(false)
+        // .event((q) => q.nameEqualTo(_selectedEvent))
         .sortByTimestampDesc()
         .watch(fireImmediately: true);
   }
@@ -75,8 +89,8 @@ class IsarModel extends ChangeNotifier {
   Stream<List<MatchScoutingEntry>> _getMatchScoutingDrafts() async* {
     yield* isar.matchScoutingEntrys
         .filter()
-        .b64StringIsNotNull()
         .isDraftEqualTo(true)
+        .event((q) => q.nameEqualTo(_currentEvent!.name))
         .sortByTimestampDesc()
         .watch(fireImmediately: true);
   }
@@ -84,8 +98,8 @@ class IsarModel extends ChangeNotifier {
   Stream<List<MatchScoutingEntry>> _getMatchScoutingData() async* {
     yield* isar.matchScoutingEntrys
         .filter()
-        .b64StringIsNotNull()
         .isDraftEqualTo(false)
+        .event((q) => q.nameEqualTo(_currentEvent!.name))
         .sortByTimestampDesc()
         .watch(fireImmediately: true);
   }
@@ -93,8 +107,8 @@ class IsarModel extends ChangeNotifier {
   Stream<List<SuperScoutingEntry>> _getSuperScoutingDrafts() async* {
     yield* isar.superScoutingEntrys
         .filter()
-        .b64StringIsNotNull()
         .isDraftEqualTo(true)
+        .event((q) => q.nameEqualTo(_selectedEvent))
         .sortByTimestampDesc()
         .watch(fireImmediately: true);
   }
@@ -102,8 +116,8 @@ class IsarModel extends ChangeNotifier {
   Stream<List<SuperScoutingEntry>> _getSuperScoutingData() async* {
     yield* isar.superScoutingEntrys
         .filter()
-        .b64StringIsNotNull()
         .isDraftEqualTo(false)
+        .event((q) => q.nameEqualTo(_selectedEvent))
         .sortByTimestampDesc()
         .watch(fireImmediately: true);
   }
@@ -117,7 +131,14 @@ class IsarModel extends ChangeNotifier {
   }
 
   Stream<Event?> getCurrentEventStream() async* {
-    yield* isar.events.getByName(_selectedEvent).asStream();
+    yield* isar.events.getByName(_currentEvent!.name).asStream();
+  }
+
+  Stream<List<Event>> getEventChanged() async* {
+    yield* isar.events
+        .filter()
+        .nameEqualTo(_currentEvent!.name)
+        .watch(fireImmediately: true);
   }
 
   /// Adds all entries without an event to the "default" event.
@@ -125,16 +146,18 @@ class IsarModel extends ChangeNotifier {
   /// This is more for debugging and should only be used if there are missing
   /// forms when debugging.
   Future<Event> putDefaultEvent() async {
-    Event? defaultEvent =
+    Event? maybeDefaultEvent =
         await isar.txn(() => isar.events.getByName(kDefaultEventName));
 
-    if (defaultEvent == null) {
-      defaultEvent = Event()
+    if (maybeDefaultEvent == null) {
+      int id = await isar.writeTxn(() => isar.events.put(Event()
         ..name = kDefaultEventName
         ..description =
-            "The DEFAULT event, unmarked entries are assumed DEFAULT.";
-      await isar.writeTxn(() => isar.events.put(defaultEvent!));
+            "The DEFAULT event, unmarked entries are assumed DEFAULT."));
+      maybeDefaultEvent = await isar.txn(() => isar.events.get(id));
     }
+
+    Event defaultEvent = maybeDefaultEvent!;
 
     List<PitScoutingEntry> pitScoutingEntriesWithoutEvent = await isar
         .txn(() => isar.pitScoutingEntrys.filter().eventIsNull().findAll());
@@ -148,16 +171,19 @@ class IsarModel extends ChangeNotifier {
     await isar.writeTxn(() async {
       for (final entry in pitScoutingEntriesWithoutEvent) {
         entry.event.value = defaultEvent;
+        await entry.event.save();
       }
       isar.pitScoutingEntrys.putAll(pitScoutingEntriesWithoutEvent);
 
       for (final entry in matchScoutingEntriesWithoutEvent) {
         entry.event.value = defaultEvent;
+        await entry.event.save();
       }
       isar.matchScoutingEntrys.putAll(matchScoutingEntriesWithoutEvent);
 
       for (final entry in superScoutingEntriesWithoutEvent) {
         entry.event.value = defaultEvent;
+        await entry.event.save();
       }
       isar.superScoutingEntrys.putAll(superScoutingEntriesWithoutEvent);
     });
@@ -165,28 +191,69 @@ class IsarModel extends ChangeNotifier {
     return defaultEvent;
   }
 
-  Future<bool> addEventByName(String name) async {
+  Future<bool> addEventByName(String name, {String? description}) async {
     Event? event = await isar.txn(() => isar.events.getByName(name));
 
     if (event != null) {
       return false;
     }
 
-    Event? newEvent = Event()..name = name;
+    Event? newEvent = Event()
+      ..name = name
+      ..description = description;
 
     isar.writeTxn(() => isar.events.put(newEvent));
     return true;
   }
 
+  Future<int> putEvent(Event newEvent) {
+    return isar.writeTxn(() => isar.events.put(newEvent));
+  }
+
+  Future<int> updateEvent(Event event) {
+    return isar.writeTxn(() => isar.events.put(event));
+  }
+
+  Future<void> deleteEvent(Event event) {
+    return isar.writeTxn(() {
+      isar.pitScoutingEntrys
+          .filter()
+          .event((q) => q.idEqualTo(event.id))
+          .deleteAll();
+      isar.matchScoutingEntrys
+          .filter()
+          .event((q) => q.idEqualTo(event.id))
+          .deleteAll();
+      isar.superScoutingEntrys
+          .filter()
+          .event((q) => q.idEqualTo(event.id))
+          .deleteAll();
+      return isar.events.delete(event.id);
+    });
+  }
+
   Future<int> putScoutingData(ScoutingDataEntry entry) async {
     entry.timestamp = DateTime.now().toUtc();
+    entry.event.value = _currentEvent;
 
     if (entry is PitScoutingEntry) {
-      return isar.writeTxn(() => isar.pitScoutingEntrys.put(entry));
+      return isar.writeTxn(() async {
+        int id = await isar.pitScoutingEntrys.put(entry);
+        await entry.event.save();
+        return id;
+      });
     } else if (entry is MatchScoutingEntry) {
-      return isar.writeTxn(() => isar.matchScoutingEntrys.put(entry));
+      return isar.writeTxn(() async {
+        int id = await isar.matchScoutingEntrys.put(entry);
+        await entry.event.save();
+        return id;
+      });
     } else if (entry is SuperScoutingEntry) {
-      return isar.writeTxn(() => isar.superScoutingEntrys.put(entry));
+      return isar.writeTxn(() async {
+        int id = await isar.superScoutingEntrys.put(entry);
+        await entry.event.save();
+        return id;
+      });
     }
     return -1;
   }
@@ -196,12 +263,19 @@ class IsarModel extends ChangeNotifier {
 
     for (final entry in entries) {
       entry.timestamp = timestamp;
+      entry.event.value = _currentEvent;
     }
 
     if (entries is List<PitScoutingEntry>) {
       return isar.writeTxn(() => isar.pitScoutingEntrys.putAll(entries));
     } else if (entries is List<MatchScoutingEntry>) {
-      return isar.writeTxn(() => isar.matchScoutingEntrys.putAll(entries));
+      return isar.writeTxn(() async {
+        List<int> ids = await isar.matchScoutingEntrys.putAll(entries);
+        for (final element in entries) {
+          await element.event.save();
+        }
+        return ids;
+      });
     } else if (entries is List<SuperScoutingEntry>) {
       return isar.writeTxn(() => isar.superScoutingEntrys.putAll(entries));
     }
@@ -249,6 +323,18 @@ class IsarModel extends ChangeNotifier {
 
   SuperScoutingEntry getSuperDataByUUIDSync(String uuid) {
     return isar.superScoutingEntrys.getByUuidSync(uuid) ?? SuperScoutingEntry();
+  }
+
+  Future<bool> deletePitScoutingByID(int id) {
+    return isar.writeTxn(() => isar.pitScoutingEntrys.delete(id));
+  }
+
+  Future<bool> deleteMatchScoutingByID(int id) {
+    return isar.writeTxn(() => isar.matchScoutingEntrys.delete(id));
+  }
+
+  Future<bool> deleteSuperScoutingByID(int id) {
+    return isar.writeTxn(() => isar.superScoutingEntrys.delete(id));
   }
 
   Future<int> deletePitScoutingByIDs(List<int> ids) {

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:garagescouter/pages/data_explorer/scouting_data_table.dart';
 import 'package:go_router/go_router.dart';
-import 'package:garagescouter/constants/platform_check.dart';
 import 'package:garagescouter/database/scouting.database.dart';
-import 'package:garagescouter/pages/data_explorer/data_explorer.dart';
-import 'package:garagescouter/pages/data_explorer/event_selection.dart';
+import 'package:garagescouter/pages/event_selection.dart';
 import 'package:garagescouter/pages/data_explorer/scouting_data_delete.dart';
 import 'package:garagescouter/pages/data_explorer/scouting_data_details.dart';
 import 'package:garagescouter/pages/data_explorer/scouting_data_export.dart';
@@ -12,14 +10,11 @@ import 'package:garagescouter/pages/data_explorer/scouting_data_import/qr_reader
 import 'package:garagescouter/pages/data_explorer/scouting_data_import/qr_reader/scouting_data_import_qr_reader_confirm.dart';
 import 'package:garagescouter/pages/data_explorer/scouting_data_import/scouting_data_import.dart';
 import 'package:garagescouter/pages/data_explorer/scouting_data_list.dart';
-import 'package:garagescouter/pages/export_manager.dart';
 import 'package:garagescouter/pages/home_page.dart';
-import 'package:garagescouter/pages/import_manager.dart';
-import 'package:garagescouter/pages/match_scouting/match_scouting.dart';
-import 'package:garagescouter/pages/photo_collecting.dart';
-import 'package:garagescouter/pages/pit_scouting_form.dart';
+import 'package:garagescouter/pages/scouting/match_scouting.dart';
+import 'package:garagescouter/pages/scouting/pit_scouting.dart';
 import 'package:garagescouter/pages/settings.dart';
-import 'package:garagescouter/pages/super_scouting.dart';
+import 'package:garagescouter/pages/scouting/super_scouting.dart';
 
 enum GarageRouter {
   home(displayName: "Home", urlPath: "/"),
@@ -58,7 +53,6 @@ enum GarageRouter {
   bool isMatchScouting() => this == GarageRouter.matchScouting;
   bool isSuperScouting() => this == GarageRouter.superScouting;
 
-  String getEventsRouteName() => "$urlPath-events";
   String getCollectionRouteName() => "$urlPath-collection";
   String getDisplayRouteName() => "$urlPath-display";
   String getExportRouteName() => "$urlPath-export";
@@ -81,11 +75,6 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                   scoutingRouter: GarageRouter.pitScouting,
                 ),
             routes: [
-              GoRoute(
-                name: GarageRouter.pitScouting.getEventsRouteName(),
-                path: GarageRouter.event.urlPath,
-                builder: (context, state) => const EventSelectionPage(),
-              ),
               GoRoute(
                 name: GarageRouter.pitScouting.getCollectionRouteName(),
                 path: GarageRouter.collectionScreen.urlPath,
@@ -137,8 +126,9 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
               GoRoute(
                 name: GarageRouter.pitScouting.getDisplayRouteName(),
                 path: GarageRouter.displayScreen.urlPath,
-                builder: (context, state) =>
-                    ScoutingDataDetailsPage(hash: state.pathParameters['hash']),
+                builder: (context, state) => ScoutingDataDetailsPage(
+                    scoutingRouter: GarageRouter.pitScouting,
+                    uuid: state.uri.queryParameters['uuid']),
               ),
             ]),
         GoRoute(
@@ -148,11 +138,6 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                   scoutingRouter: GarageRouter.matchScouting,
                 ),
             routes: [
-              GoRoute(
-                name: GarageRouter.matchScouting.getEventsRouteName(),
-                path: GarageRouter.event.urlPath,
-                builder: (context, state) => const EventSelectionPage(),
-              ),
               GoRoute(
                 name: GarageRouter.matchScouting.getCollectionRouteName(),
                 path: GarageRouter.collectionScreen.urlPath,
@@ -206,7 +191,8 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                 name: GarageRouter.matchScouting.getDisplayRouteName(),
                 path: GarageRouter.displayScreen.urlPath,
                 builder: (context, state) => ScoutingDataDetailsPage(
-                    hash: state.uri.queryParameters['hash']),
+                    scoutingRouter: GarageRouter.matchScouting,
+                    uuid: state.uri.queryParameters['uuid']),
               ),
             ]),
         GoRoute(
@@ -216,11 +202,6 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
                   scoutingRouter: GarageRouter.superScouting,
                 ),
             routes: [
-              GoRoute(
-                name: GarageRouter.superScouting.getEventsRouteName(),
-                path: GarageRouter.event.urlPath,
-                builder: (context, state) => const EventSelectionPage(),
-              ),
               GoRoute(
                 name: GarageRouter.superScouting.getCollectionRouteName(),
                 path: GarageRouter.collectionScreen.urlPath,
@@ -273,75 +254,16 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
               GoRoute(
                 name: GarageRouter.superScouting.getDisplayRouteName(),
                 path: GarageRouter.displayScreen.urlPath,
-                builder: (context, state) =>
-                    ScoutingDataDetailsPage(hash: state.pathParameters['hash']),
+                builder: (context, state) => ScoutingDataDetailsPage(
+                    scoutingRouter: GarageRouter.superScouting,
+                    uuid: state.uri.queryParameters['uuid']),
               ),
             ]),
-        // These are not available at this time on Web yet because of dart:io
-        if (!isWebPlatform()) ...[
-          GoRoute(
-            name: GarageRouter.photoCollection.urlPath,
-            path: GarageRouter.photoCollection.urlPath,
-            builder: (context, state) => const PhotoCollectionPage(),
-          ),
-          GoRoute(
-            name: 'import_manager',
-            path: 'import_manager',
-            builder: (context, state) => const ImportManagerPage(),
-          ),
-          GoRoute(
-            name: 'export_manager',
-            path: 'export_manager',
-            builder: (context, state) => const ExportManagerPage(),
-          ),
-        ],
-        // GoRoute(
-        //   name: 'database_tester',
-        //   path: 'database_tester',
-        //   builder: (context, state) => const DatabaseTestingPage(),
-        // ),
         GoRoute(
-            name: 'data',
-            path: 'data',
-            builder: (context, state) => const DataExplorerPage(),
-            routes: [
-              GoRoute(
-                  path: 'pit-scouting',
-                  builder: (context, state) => const ScoutingDataListPage(
-                        scoutingRouter: GarageRouter.pitScouting,
-                      ),
-                  routes: [
-                    GoRoute(
-                      path: ':hash',
-                      builder: (context, state) => ScoutingDataDetailsPage(
-                          hash: state.pathParameters['hash']),
-                    ),
-                  ]),
-              GoRoute(
-                  path: 'match-scouting',
-                  builder: (context, state) => const ScoutingDataListPage(
-                        scoutingRouter: GarageRouter.matchScouting,
-                      ),
-                  routes: [
-                    GoRoute(
-                      path: ':hash',
-                      builder: (context, state) => ScoutingDataDetailsPage(
-                          hash: state.pathParameters['hash']),
-                    ),
-                  ]),
-              GoRoute(
-                  path: 'super-scouting',
-                  builder: (context, state) => const ScoutingDataListPage(
-                        scoutingRouter: GarageRouter.superScouting,
-                      ),
-                  routes: [
-                    GoRoute(
-                      path: ':hash',
-                      builder: (context, state) => ScoutingDataDetailsPage(
-                          hash: state.pathParameters['hash']),
-                    ),
-                  ]),
-            ]),
+          name: GarageRouter.event.urlPath,
+          path: GarageRouter.event.urlPath,
+          builder: (context, state) => const EventSelectionPage(),
+        ),
         GoRoute(
           name: GarageRouter.settings.urlPath,
           path: GarageRouter.settings.urlPath,

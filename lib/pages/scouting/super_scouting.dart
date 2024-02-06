@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:garagescouter/utils/may_pop_scope.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:garagescouter/database/scouting.database.dart';
@@ -67,11 +68,11 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
 
     SuperScoutingEntry entry = await _isarModel.getSuperDataByUUID(widget.uuid);
 
-    bool wasDraft = entry.isDraft ?? false;
+    bool wasDraft = entry.isDraft;
 
     entry
       ..isDraft = false
-      ..teamNumber = int.tryParse(teamNumber)
+      ..teamNumber = int.tryParse(teamNumber) ?? 0
       ..b64String = encodeJsonToB64(state, urlSafe: true);
 
     await _isarModel.putScoutingData(entry).then((value) {
@@ -170,23 +171,6 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
       return true;
     }
 
-    // final SuperScoutingEntry entry = SuperScoutingEntry()
-    //   ..isDraft = true
-    //   ..teamNumber = teamNumber
-    //   ..b64String = encodeJsonToB64(state, urlSafe: true);
-
-    // if (entry.teamNumber == null) {
-    //   return true;
-    // }
-
-    // await _isar
-    //     .writeTxn(() => _isar.superScoutingEntrys.put(entry))
-    //     .then((value) {
-    //   successMessageSnackbar(context, "Saved Super Scouting Data");
-    // }).catchError((error) {
-    //   errorMessageSnackbar(context, error);
-    // });
-
     SuperScoutingEntry entry = await _isarModel.getSuperDataByUUID(widget.uuid);
 
     String currentb64String = encodeJsonToB64(state, urlSafe: true);
@@ -194,6 +178,8 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     if (currentb64String == entry.b64String) {
       return true;
     }
+
+    if (!mounted) return false;
 
     bool keepDraft =
         await canSaveDraft(context, exists: entry.isDraft) ?? false;
@@ -222,7 +208,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
 
     SuperScoutingEntry? entry = _isarModel.getSuperDataByUUIDSync(widget.uuid);
 
-    _initialValue = decodeJsonFromB64(entry.b64String ?? "");
+    _initialValue = decodeJsonFromB64(entry.b64String);
   }
 
   /// Clean up the component, but also the FormBuilderController
@@ -236,12 +222,10 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Super Scouting",
-          textAlign: TextAlign.center,
-        ),
+        title: const Text("Super Scouting"),
+        centerTitle: true,
       ),
-      body: WillPopScope(
+      body: MayPopScope(
         onWillPop: _onWillPop,
         child: FormBuilder(
             initialValue: _initialValue,

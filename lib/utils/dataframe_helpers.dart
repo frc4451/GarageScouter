@@ -33,20 +33,6 @@ DataFrame convertFormStateToDataFrame(FormBuilderState state) {
   return DataFrame([headers, row]);
 }
 
-/// Helper function to print out the data from a dataframe. Useful for debugging
-///
-/// @param path - path to CSV
-Future<DataFrame> listDataFromCSV(String path) async {
-  final DataFrame csvdata = await fromCsv(path, headerExists: true);
-  print("csv data shape :: ${csvdata.shape}");
-  print("csv headers :: ${csvdata.header}");
-  for (final element in csvdata.rows) {
-    print("csv row data :: $element");
-  }
-
-  return csvdata;
-}
-
 /// Accepts a list of DataFrame objects and returns a list of unique headers
 /// that can be assigned to a new DataFrame
 List<String> joinDataFrameHeaders(List<DataFrame> dfs) {
@@ -113,8 +99,8 @@ Future<DataFrame> joinContentOfFilesToDataFrame(
     } else {
       finaldata = DataFrame([
         finaldata.header.toList(),
-        ...finaldata.rows.toList(),
-        ...csvData.rows.toList(),
+        ...finaldata.rows,
+        ...csvData.rows,
       ]);
     }
 

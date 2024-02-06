@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:garagescouter/constants/platform_check.dart';
+import 'package:garagescouter/utils/may_pop_scope.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:garagescouter/database/scouting.database.dart';
@@ -8,11 +9,11 @@ import 'package:garagescouter/models/isar_model.dart';
 import 'package:garagescouter/models/input_helper_model.dart';
 import 'package:garagescouter/models/scroll_model.dart';
 import 'package:garagescouter/models/theme_model.dart';
-import 'package:garagescouter/pages/match_scouting/match_auto.dart';
-import 'package:garagescouter/pages/match_scouting/match_initial.dart';
-import 'package:garagescouter/pages/match_scouting/match_summary.dart';
-import 'package:garagescouter/pages/match_scouting/match_endgame.dart';
-import 'package:garagescouter/pages/match_scouting/match_teleop.dart';
+import 'package:garagescouter/pages/scouting/match_scouting_subpages/match_auto.dart';
+import 'package:garagescouter/pages/scouting/match_scouting_subpages/match_initial.dart';
+import 'package:garagescouter/pages/scouting/match_scouting_subpages/match_summary.dart';
+import 'package:garagescouter/pages/scouting/match_scouting_subpages/match_endgame.dart';
+import 'package:garagescouter/pages/scouting/match_scouting_subpages/match_teleop.dart';
 
 import 'package:garagescouter/utils/enums.dart';
 import 'package:garagescouter/utils/hash_helpers.dart';
@@ -97,10 +98,10 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
 
     MatchScoutingEntry entry = await _isarModel.getMatchDataByUUID(widget.uuid);
 
-    bool wasDraft = entry.isDraft ?? false;
+    bool wasDraft = entry.isDraft;
 
     entry
-      ..teamNumber = int.tryParse(teamNumber)
+      ..teamNumber = int.tryParse(teamNumber) ?? 0
       ..matchNumber = int.tryParse(matchNumber)
       ..alliance =
           alliance.toLowerCase() == "red" ? TeamAlliance.red : TeamAlliance.blue
@@ -229,7 +230,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
 
     MatchScoutingEntry entry = _isarModel.getMatchDataByUUIDSync(widget.uuid);
 
-    _initialValue = decodeJsonFromB64(entry.b64String ?? "");
+    _initialValue = decodeJsonFromB64(entry.b64String);
   }
 
   /// We safely save the state of the form when the user pops the Widget from
@@ -261,6 +262,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     if (currentb64String == entry.b64String) {
       return true;
     }
+
+    if (!mounted) return false;
 
     bool? keepDraft = await canSaveDraft(context, exists: entry.isDraft);
 
@@ -310,29 +313,8 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
             title: const Text("Match Scouting"),
             centerTitle: true,
           ),
-          // We're aware that WillPopScope is deprecated, however, as
-          // of writing, we do not have an asynchronous way to handle user
-          // dialogs with `PopScope` or `PopEntry` without a dedicated
-          // NavigatorState. Please follow the following GitHub discussion
-          // in case this changes.
-          // https://github.com/flutter/flutter/issues/138614
-          // body: WillPopScope(
-          //     onWillPop: _onWillPop,
-          body: PopScope(
-              canPop: false,
-              onPopInvoked: (didPop) async {
-                if (didPop) {
-                  return;
-                }
-
-                final NavigatorState navigator = Navigator.of(context);
-                final bool shouldPop = await _onWillPop();
-
-                if (shouldPop) {
-                  navigator.pop();
-                }
-              },
-              // onWillPop: _onWillPop,
+          body: MayPopScope(
+              onWillPop: () async => _onWillPop(),
               child: FormBuilder(
                   initialValue: _initialValue,
                   key: _formKey,

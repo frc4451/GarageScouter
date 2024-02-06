@@ -56,13 +56,13 @@ class ThemeModel extends ChangeNotifier {
   ThemeData mat3LightTheme = ThemeData(
       colorSchemeSeed: Colors.red,
       useMaterial3: true,
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
           backgroundColor: Colors.red, foregroundColor: Colors.white));
 
   ThemeData mat3HighContrastLightTheme = ThemeData(
       colorSchemeSeed: Colors.red,
       useMaterial3: true,
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
           backgroundColor: Colors.red, foregroundColor: Colors.white));
 
   ThemeData getLightTheme() =>
