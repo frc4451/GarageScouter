@@ -122,14 +122,14 @@ jobs:
       - name: Build Isar
         run: dart run build_runner build
       
-      - name: Set dev version env
-        if: ${{ github.event_name != 'workflow_dispatch' && matrix.build-option != 'windows' }}
-        run: echo "VERSION_NAME=0.0.0-dev-${{ github.run_number }}" >> $GITHUB_ENV
+      # - name: Set dev version env
+      #   if: ${{ github.event_name != 'workflow_dispatch' && matrix.build-option != 'windows' }}
+      #   run: echo "VERSION_NAME=0.0.0-dev-${{ github.run_number }}" >> $GITHUB_ENV
  
-      - name: Set pubspec version
-        run: |
-          flutter pub global activate cider
-          dart run cider version "${{ env.VERSION_NAME }}+${{ github.run_number }}"
+      # - name: Set pubspec version
+      #   run: |
+      #     flutter pub global activate cider
+      #     dart run cider version "${{ env.VERSION_NAME }}+${{ github.run_number }}"
       
       - name: Build app
         run: flutter build ${{ matrix.build-option }}
