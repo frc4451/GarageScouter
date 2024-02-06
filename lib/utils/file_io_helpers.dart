@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:file_saver/file_saver.dart';
+// import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
@@ -187,20 +187,20 @@ Future<FilePickerResult?> selectCSVFiles(
 /// There's the possibility we can integrate this within
 /// `saveFileToDevice` since we can read a Uint8List from File.readAsBytes,
 /// but that can be done later. We don't want to break something we know works.
-Future<File> saveFileFromWeb(
-    {required String contents, required String filePath}) async {
-  final Uint8List uint8list = Uint8List.fromList(utf8.encode(contents));
+// Future<File> saveFileFromWeb(
+//     {required String contents, required String filePath}) async {
+//   final Uint8List uint8list = Uint8List.fromList(utf8.encode(contents));
 
-  final String name = p.basename(filePath);
-  final String ext = p.extension(name);
-  final Map<String, MimeType> knownMimeTypes = {
-    'csv': MimeType.csv,
-  };
+//   final String name = p.basename(filePath);
+//   final String ext = p.extension(name);
+//   final Map<String, MimeType> knownMimeTypes = {
+//     'csv': MimeType.csv,
+//   };
 
-  final MimeType mimeType = knownMimeTypes[ext] ?? MimeType.other;
+//   final MimeType mimeType = knownMimeTypes[ext] ?? MimeType.other;
 
-  final String newFilePath = await FileSaver.instance
-      .saveFile(name: name, ext: ext, mimeType: mimeType, bytes: uint8list);
+//   final String newFilePath = await FileSaver.instance
+//       .saveFile(name: name, ext: ext, mimeType: mimeType, bytes: uint8list);
 
-  return File(newFilePath);
-}
+//   return File(newFilePath);
+// }
