@@ -27,7 +27,6 @@
 		33CC10F32044A3C60003C045 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F22044A3C60003C045 /* Assets.xcassets */; };
 		33CC10F62044A3C60003C045 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F42044A3C60003C045 /* MainMenu.xib */; };
 		33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC11122044BFA00003C045 /* MainFlutterWindow.swift */; };
-		F186FD05D166AFBF2D03852D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 290B95AE279725584C9AB164 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,7 +53,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		290B95AE279725584C9AB164 /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Runner/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		333000ED22D3DE5D00554162 /* Warnings.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Warnings.xcconfig; sourceTree = "<group>"; };
 		335BBD1A22A9A15E00E9071D /* GeneratedPluginRegistrant.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeneratedPluginRegistrant.swift; sourceTree = "<group>"; };
 		33CC10ED2044A3C60003C045 /* garagescouter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = garagescouter.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -108,7 +106,6 @@
 				33CC10EE2044A3C60003C045 /* Products */,
 				D73912EC22F37F3D000D13A0 /* Frameworks */,
 				BFC8E3F5283FFCA2F35004A1 /* Pods */,
-				290B95AE279725584C9AB164 /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -251,7 +248,6 @@
 			files = (
 				33CC10F32044A3C60003C045 /* Assets.xcassets in Resources */,
 				33CC10F62044A3C60003C045 /* MainMenu.xib in Resources */,
-				F186FD05D166AFBF2D03852D /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
