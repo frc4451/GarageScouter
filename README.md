@@ -1,16 +1,9 @@
-# garagescouter
+![garage_scouter_icon_square](https://github.com/frc4451/GarageScouter/assets/16809002/68dbdb2f-303f-4dda-bc29-4dad6b599d9d)
 
-A new Flutter project.
+# GarageScouter
+An offline-first FIRST Robotics Competition Scouting App.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Contributing
+- Fork this repository
+- Make edits in your own fork
+- Pull request as needed
