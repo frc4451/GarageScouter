@@ -1,6 +1,6 @@
 {
-    "name": "robotz_garage_scouting",
-    "short_name": "robotz_garage_scouting",
+    "name": "garagescouter",
+    "short_name": "garagescouter",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

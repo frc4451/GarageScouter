@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:robotz_garage_scouting/utils/enums.dart';
+import 'package:garagescouter/utils/enums.dart';
 
 /// IncrementFormBuilderField is used for any -1/+1 operations such
 /// as score counting for Match Scouting. This extends the
 /// flutter_form_builder package so we can use the state management
 /// layer when it comes to form validation and converting to DataFrames
 class IncrementFormBuilderField extends FormBuilderField<int> {
-  /// Name of the field when pulling it from currentState
-  @override
-  final String name;
-
   /// Display name for the counter. This is optional so we can default to `name`
   final String? label;
 
@@ -29,61 +25,50 @@ class IncrementFormBuilderField extends FormBuilderField<int> {
   /// defalt color allowed. default is amber.
   final MaterialColor? color;
 
-  @override
-  final int initialValue;
+  IncrementFormBuilderField({
+    super.key,
+    super.initialValue,
+    required super.name,
+    this.label,
+    this.spaceBetween = 20,
+    this.spaceOutside = 10,
+    this.min = 0,
+    this.max = 9,
+    this.color,
+  }) : super(builder: (FormFieldState<int> field) {
+          final Color background =
+              color ?? Theme.of(field.context).colorScheme.primary;
 
-  /// internal state counter to keep track of number of +1's
-  int _counter = 0;
-
-  IncrementFormBuilderField(
-      {super.key,
-      required this.name,
-      this.label,
-      this.spaceBetween = 20,
-      this.spaceOutside = 10,
-      this.min = 0,
-      this.max = 9,
-      this.initialValue = 0,
-      this.color})
-      : super(
-            name: name,
-            initialValue: initialValue,
-            builder: (FormFieldState<int> field) {
-              final Color background =
-                  color ?? Theme.of(field.context).colorScheme.primary;
-
-              return Padding(
-                  padding:
-                      EdgeInsets.fromLTRB(spaceOutside, 0, spaceOutside, 0),
-                  child: Row(
-                    children: [
-                      Text(label ?? name),
-                      const Spacer(),
-                      ElevatedButton(
-                          style: ButtonStyle(
-                              backgroundColor:
-                                  MaterialStateProperty.all<Color>(background)),
-                          onPressed: () {
-                            field.didChange(PageDirection.left.value);
-                          },
-                          child: const Icon(Icons.exposure_minus_1)),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                            spaceBetween, 0, spaceBetween, 0),
-                        child: Text(field.value.toString()),
-                      ),
-                      ElevatedButton(
-                          style: ButtonStyle(
-                              backgroundColor:
-                                  MaterialStateProperty.all<Color>(background)),
-                          // ElevatedButton.styleFrom(primary: Colors.amber),
-                          onPressed: () {
-                            field.didChange(PageDirection.right.value);
-                          },
-                          child: const Icon(Icons.exposure_plus_1)),
-                    ],
-                  ));
-            });
+          return Padding(
+              padding: EdgeInsets.fromLTRB(spaceOutside, 0, spaceOutside, 0),
+              child: Row(
+                children: [
+                  Text(label ?? name),
+                  const Spacer(),
+                  ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(background)),
+                      onPressed: () {
+                        field.didChange(PageDirection.left.value);
+                      },
+                      child: const Icon(Icons.exposure_minus_1)),
+                  Padding(
+                    padding:
+                        EdgeInsets.fromLTRB(spaceBetween, 0, spaceBetween, 0),
+                    child: Text(field.value.toString()),
+                  ),
+                  ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(background)),
+                      onPressed: () {
+                        field.didChange(PageDirection.right.value);
+                      },
+                      child: const Icon(Icons.exposure_plus_1)),
+                ],
+              ));
+        });
 
   @override
   FormBuilderFieldState<IncrementFormBuilderField, int> createState() =>
@@ -98,15 +83,13 @@ class _IncrementFormBuilderFieldState
   @override
   void didChange(int? change) {
     setState(() {
-      if (change == PageDirection.right.value && widget._counter < widget.max) {
-        widget._counter += PageDirection.right.value;
-      } else if (change == PageDirection.left.value &&
-          widget._counter > widget.min) {
-        widget._counter += PageDirection.left.value;
+      if (change == PageDirection.right.value && value! < widget.max) {
+        setValue(value! + PageDirection.right.value);
+      } else if (change == PageDirection.left.value && value! > widget.min) {
+        setValue(value! + PageDirection.left.value);
       } else if (change == PageDirection.none.value) {
-        widget._counter = PageDirection.none.value;
+        setValue(value! + PageDirection.none.value);
       }
-      super.didChange(widget._counter);
     });
   }
 
@@ -119,7 +102,7 @@ class _IncrementFormBuilderFieldState
     super.didUpdateWidget(oldWidget);
     if (widget.initialValue != oldWidget.initialValue) {
       setState(() {
-        widget._counter = 0;
+        setValue(0);
       });
     }
   }
@@ -131,5 +114,14 @@ class _IncrementFormBuilderFieldState
     setState(() {
       didChange(PageDirection.none.value);
     });
+  }
+
+  /// Enforces that the initial value cannot be null.
+  @override
+  void initState() {
+    super.initState();
+    if (value == null) {
+      setValue(0);
+    }
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
-import 'package:robotz_garage_scouting/validators/custom_text_validators.dart';
+import 'package:garagescouter/validators/custom_text_validators.dart';
 
 /// Text Field component that utilizes Visibility to show in the display
 /// only when `showWhen` passed to the component is `true`.
@@ -25,9 +25,9 @@ class ConditionalHiddenTextField extends StatefulWidget {
   final int maxLines;
 
   /// Shows when we want to display input for the field
-  bool showWhen;
+  final bool showWhen;
 
-  ConditionalHiddenTextField(
+  const ConditionalHiddenTextField(
       {super.key,
       required this.name,
       this.label,

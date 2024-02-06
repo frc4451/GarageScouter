@@ -1,10 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.robotz_garage_scouting">
+    package="com.robotzgarage.garagescouter">
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <application
-        android:label="robotz_garage_scouting"
+        android:label="garagescouter"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

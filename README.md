@@ -1,4 +1,4 @@
-# robotz_garage_scouting
+# garagescouter
 
 A new Flutter project.
 

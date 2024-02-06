@@ -7,8 +7,9 @@ import 'package:form_builder_image_picker/form_builder_image_picker.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:robotz_garage_scouting/page_widgets/photo_collecting/photo_form_field.dart';
-import 'package:robotz_garage_scouting/utils/file_io_helpers.dart';
+import 'package:garagescouter/components/forms/photo_form_field.dart';
+import 'package:garagescouter/utils/file_io_helpers.dart';
+import 'package:garagescouter/utils/notification_helpers.dart';
 
 class PhotoCollectionPage extends StatefulWidget {
   const PhotoCollectionPage({super.key});
@@ -23,24 +24,6 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
   final Map<String, PhotoFormField> _optionalPhotosHash = {};
 
   final _formKey = GlobalKey<FormBuilderState>();
-
-  void _kSuccessFileSaveMessage(File file) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.green,
-        content: Text(
-          "Successfully wrote file ${file.path}",
-          textAlign: TextAlign.center,
-        )));
-  }
-
-  void _kFailureMessage(error) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.red,
-        content: Text(
-          error.toString(),
-          textAlign: TextAlign.center,
-        )));
-  }
 
   Future<File> _convertXFileToFile(
       {required XFile xfile, required String tag}) async {
@@ -156,7 +139,10 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
     if (fieldName != null && fieldName.isNotEmpty) {
       _addPhotoFormField(fieldName: fieldName);
     } else {
-      _kFailureMessage("No input was provided. No new fields added.");
+      if (!mounted) return;
+
+      errorMessageSnackbar(
+          context, "No input was provided. No new fields added.");
     }
   }
 
@@ -173,7 +159,7 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
       bool isValid = _formKey.currentState?.saveAndValidate() ?? false;
 
       if (!isValid) {
-        _kFailureMessage(
+        errorMessageSnackbar(context,
             "Not all fields are completed, please fill the form and resubmit.");
         return;
       }
@@ -182,7 +168,7 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
           _formKey.currentState?.value['team_number'] ?? '';
 
       if (teamNumber.isEmpty) {
-        _kFailureMessage("Team Number cannot be empty.");
+        errorMessageSnackbar(context, "Team Number cannot be empty.");
         return;
       }
 
@@ -199,7 +185,9 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
       }
 
       if (files.isEmpty) {
-        _kFailureMessage("No images were provided.");
+        if (!mounted) return;
+
+        errorMessageSnackbar(context, "No images were provided.");
         return;
       }
 
@@ -216,10 +204,14 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
         setState(() {
           _resetForm();
         });
-        _kSuccessFileSaveMessage(file);
-      }).catchError(_kFailureMessage);
+        errorMessageSnackbar(context, file);
+      }).catchError((exception) {
+        errorMessageSnackbar(context, exception);
+      });
     } catch (e) {
-      _kFailureMessage(e.toString());
+      if (!mounted) return;
+
+      errorMessageSnackbar(context, e.toString());
     }
   }
 
@@ -227,9 +219,9 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
   /// Includes deleting photos not needed.
   void _resetForm() {
     _formKey.currentState?.reset();
-    _photos.values.forEach((file) {
+    for (final file in _photos.values) {
       file.deleteSync();
-    });
+    }
     _photos.clear();
   }
 
@@ -243,10 +235,8 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Photo Collection",
-          textAlign: TextAlign.center,
-        ),
+        title: const Text("Photo Collection"),
+        centerTitle: true,
         actions: [
           IconButton(
               onPressed: _showAddPictureDialog,

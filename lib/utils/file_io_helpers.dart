@@ -1,18 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:ml_dataframe/ml_dataframe.dart';
-import 'package:robotz_garage_scouting/constants/platform_check.dart';
+import 'package:garagescouter/constants/platform_check.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:robotz_garage_scouting/utils/dataframe_helpers.dart';
-import 'package:robotz_garage_scouting/utils/hash_helpers.dart';
+import 'package:garagescouter/utils/dataframe_helpers.dart';
+import 'package:garagescouter/utils/hash_helpers.dart';
 import 'package:sanitize_filename/sanitize_filename.dart';
 
 /// Helper method to get the extension of a file
@@ -77,7 +77,7 @@ Future<String?> getNewFilePath(File file) async {
   return FilePicker.platform.saveFile(
       dialogTitle: "Select where you want to save the file",
       fileName: p.basename(file.path),
-      initialDirectory: (await getDownloadsDirectory())!.path,
+      initialDirectory: (await getDownloadsDirectory())?.path,
       type: FileType.custom,
       allowedExtensions: ["csv"]);
 }
@@ -146,7 +146,7 @@ Future<File> saveFileToDevice(File file) async {
   } else if (isMobilePlatform()) {
     return saveFilesForMobileApplication(file);
   } else {
-    throw Exception("Platform not supported yet");
+    throw PlatformException(code: "Platform not supported yet");
   }
 }
 

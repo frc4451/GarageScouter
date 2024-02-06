@@ -188,3 +188,14 @@ coverage/
 .ionide
 ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
+
+
+# Flutter Database stuff
+*.isar*
+*.g.dart
+
+# https://github.com/direnv/direnv
+/.direnv/
+
+# See devshell.toml's `link-isar-linux`
+/libisar.so

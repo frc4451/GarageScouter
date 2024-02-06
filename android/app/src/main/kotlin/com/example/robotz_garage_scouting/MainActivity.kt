@@ -1,4 +1,4 @@
-package com.example.robotz_garage_scouting
+package com.robotzgarage.garagescouter
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,150 +1,119 @@
-// ignore: file_names
 import 'package:flutter/material.dart';
-import 'package:robotz_garage_scouting/components/drawer/navigation_tile.dart';
-import 'package:robotz_garage_scouting/pages/export_manager.dart';
-import 'package:robotz_garage_scouting/pages/match_scouting.dart';
-import 'package:robotz_garage_scouting/pages/photo_collecting.dart';
-import 'package:robotz_garage_scouting/pages/settings.dart';
-import 'package:robotz_garage_scouting/pages/super_scouting.dart';
+import 'package:go_router/go_router.dart';
+import 'package:garagescouter/components/drawer/drawer_tile.dart';
+import 'package:garagescouter/router.dart';
 
-import 'import_manager.dart';
-import 'pit_scouting_form.dart';
-
-GlobalKey<ScaffoldState> _key = new GlobalKey<ScaffoldState>();
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _navigateToFormsPage() {
-    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => const FormsTest()));
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  void _decrementCounter() {
-    setState(() {
-      _counter--;
-    });
-  }
-
-  void showSnackbar() {
-    const SnackBar(content: Text("Some Popup"));
-  }
-
-  void _gotToPhotoCollection() {
-    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const PhotoCollectionPage()));
-  }
-
-  void _gotToExportManager() {
-    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const ExportManagerPage()));
-  }
-
-  void _gotToImportManager() {
-    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const ImportManagerPage()));
-  }
-
-  void _goToMatchScouting() {
-    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const MatchScoutingPage()));
-  }
-
-  void _goToSuperScouting() {
-    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const SuperScoutingPage()));
-  }
-
-  void _goToSettingsPage() {
-    (ModalRoute.of(context)?.canPop ?? false) ? Navigator.pop(context) : null;
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => const SettingsPage()));
+class _HomePageState extends State<HomePage> {
+  /// Goes to a given GoRouter path after closing the Drawer.
+  void _route(String path) {
+    if (Navigator.canPop(context)) {
+      Navigator.of(context).pop();
+    }
+    // context.go(path);
+    context.goNamed(path);
   }
 
   @override
   Widget build(BuildContext context) {
+    // final ThemeData themeData = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-            child: Text(
-          widget.title,
-          textAlign: TextAlign.center,
-        )),
+        // backgroundColor: themeData.primaryColor,
+        title: const Text("Garage Scouter"),
+        centerTitle: true,
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: const Center(
-                child: Text(
-                  "Robotz Garage Scouting",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
+        child: Column(children: [
+          DrawerHeader(
+            margin: EdgeInsets.zero,
+            padding: EdgeInsets.zero,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              // image: const DecorationImage(
+              //     fit: BoxFit.fitWidth,
+              //     image:
+              //         AssetImage("assets/garage_scouter_icon_square.png"))
             ),
-            DrawerTile(
-                tileText: "Pit Scouting Form", onTap: _navigateToFormsPage),
-            // DrawerTile(
-            //     tileText: "Supposed to show snack bar", onTap: showSnackbar),
-            // DrawerTile(tileText: "CSV Test Page", onTap: _gotoCsvTestPage),
-            DrawerTile(
-                tileText: "Match Scouting Form", onTap: _goToMatchScouting),
-            DrawerTile(
-                tileText: "Super Scouting Form", onTap: _goToSuperScouting),
-            // DrawerTile(tileText: "CSV Manager", onTap: _goToCSVManager),
-            DrawerTile(tileText: "Export Manager", onTap: _gotToExportManager),
-            DrawerTile(tileText: "Import Manager", onTap: _gotToImportManager),
-            DrawerTile(
-                tileText: "Photo Collection", onTap: _gotToPhotoCollection),
-
-            DrawerTile(tileText: "Settings", onTap: _goToSettingsPage),
-          ],
-        ),
+            child: Image.asset(
+              "assets/garage_scouter_icon_square.png",
+              // This is a hacky workaround. Please investigate this in a
+              // future Flutter release.
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+          ),
+          Expanded(
+              child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              ExpansionTile(
+                  title: const Text("Data Collection"),
+                  initiallyExpanded: true,
+                  children: ListTile.divideTiles(context: context, tiles: [
+                    ListTile(
+                        title: const Text("Pit Scouting"),
+                        onTap: () => _route(GarageRouter.pitScouting.urlPath)),
+                    ListTile(
+                        title: const Text("Match Scouting"),
+                        onTap: () =>
+                            _route(GarageRouter.matchScouting.urlPath)),
+                    ListTile(
+                        title: const Text("Super Scouting"),
+                        onTap: () =>
+                            _route(GarageRouter.superScouting.urlPath)),
+                    ListTile(
+                        title: const Text("Event Management"),
+                        onTap: () => _route(GarageRouter.event.urlPath)),
+                    ListTile(
+                        title: const Text("Photo Collection"),
+                        onTap: () =>
+                            _route(GarageRouter.photoCollection.urlPath)),
+                  ]).toList()),
+              // ExpansionTile(
+              //   title: const Text("Data Management"),
+              //   initiallyExpanded: true,
+              //   children: [
+              //     DrawerTile(
+              //       tileText: "Database Tester",
+              //       onTap: () => _route("database_tester"),
+              //     ),
+              //     DrawerTile(
+              //       tileText: "Data Explorer",
+              //       onTap: () => _route("data"),
+              //     ),
+              //     if (!isWebPlatform()) ...[
+              //       DrawerTile(
+              //           tileText: "Export Manager",
+              //           onTap: () => _route('export_manager')),
+              //       DrawerTile(
+              //           tileText: "Import Manager",
+              //           onTap: () => _route('import_manager')),
+              //     ] else
+              //       const DrawerTile(
+              //           tileText: "Not available on Web at this time.")
+              //   ],
+              // ),
+              DrawerTile(tileText: "Settings", onTap: () => _route('settings')),
+            ],
+          ))
+        ]),
       ),
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Padding(
               padding: EdgeInsets.all(25),
-              child: Text("Welcome to the Robotz Garage Scouting App!"),
+              child: Text("Welcome to GarageScouter!"),
             ),
             Padding(
               padding: EdgeInsets.all(25),
@@ -152,38 +121,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   "Open the Navigation Button in the Top Left to access different parts of the app."),
             ),
           ],
-          // children: <Widget>[
-          //   const Text(
-          //     'You have pushed the button this many times ashbie:',
-          //   ),
-          //   Text(
-          //     '$_counter',
-          //     style: Theme.of(context).textTheme.headline4,
-          //   ),
-          //   ButtonBar(
-          //     alignment: MainAxisAlignment.center,
-          //     children: <Widget>[
-          //       IconButton(
-          //         onPressed: _incrementCounter,
-          //         tooltip: 'Increment',
-          //         icon: const Icon(Icons.exposure_plus_1),
-          //         // icon: const Icon(Icons.access_alarms),
-          //       ),
-          //       IconButton(
-          //         onPressed: _decrementCounter,
-          //         tooltip: 'decrement',
-          //         style: IconButton.styleFrom(
-          //             foregroundColor: Colors.purple,
-          //             backgroundColor: Colors.purpleAccent),
-          //         icon: const Icon(Icons.exposure_minus_1),
-          //         // icon: const Icon(Icons.bed),
-          //       ),
-          //     ],
-          // ),
-          // ],
         ),
       ),
-      // This trailing comma makes auto-formatting nicer for build methods. // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

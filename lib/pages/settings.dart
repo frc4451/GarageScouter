@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:robotz_garage_scouting/models/input_helper_model.dart';
-import 'package:robotz_garage_scouting/models/retain_info_model.dart';
-import 'package:robotz_garage_scouting/models/scroll_model.dart';
-import 'package:robotz_garage_scouting/models/theme_model.dart';
+import 'package:garagescouter/models/input_helper_model.dart';
+import 'package:garagescouter/models/scroll_model.dart';
+import 'package:garagescouter/models/theme_model.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 /// Handles Settings for the Scouting App. Heavily relies on formatting from
@@ -23,14 +22,11 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text(
-            "Settings",
-            textAlign: TextAlign.center,
-          ),
+          title: const Text("Settings"),
+          centerTitle: true,
         ),
-        body: Consumer4<ThemeModel, ScrollModel, RetainInfoModel,
-            InputHelperModel>(
-          builder: (context, theme, scroll, retainInfo, inputHelperModel, __) =>
+        body: Consumer3<ThemeModel, ScrollModel, InputHelperModel>(
+          builder: (context, theme, scroll, inputHelperModel, __) =>
               SettingsList(
             sections: [
               SettingsSection(
@@ -71,16 +67,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     SettingsTile.switchTile(
                       onToggle: (value) {
-                        setState(() => retainInfo.setRetainInfo(value));
-                      },
-                      initialValue: retainInfo.doesRetainInfo(),
-                      leading: const Icon(Icons.cached),
-                      title: const Text('Retain Form Data'),
-                      description: const Text(
-                          "Retains data from forms when you press the back button. Enables the 'Clear' button."),
-                    ),
-                    SettingsTile.switchTile(
-                      onToggle: (value) {
                         setState(() =>
                             inputHelperModel.setIterativeMatchInput(value));
                       },
@@ -88,7 +74,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       leading: const Icon(Icons.repeat_one),
                       title: const Text('Iterative Match Input'),
                       description: const Text(
-                          "On Match Scouting, retain Team Alliance and Position, increment Match Number."),
+                          "On Match Scouting, retain Team Alliance and Position, increment Match Number. Does not apply when editing drafts."),
                     )
                   ]),
             ],

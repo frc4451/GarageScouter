@@ -53,10 +53,26 @@ class ThemeModel extends ChangeNotifier {
   ThemeData getCurrentTheme() =>
       isDarkMode() ? getDarkTheme() : getLightTheme();
 
-  ThemeData getLightTheme() => ThemeData.from(
-      colorScheme: highContrast
-          ? const ColorScheme.highContrastLight()
-          : const ColorScheme.light(primary: Colors.red));
+  ThemeData mat3LightTheme = ThemeData(
+      colorSchemeSeed: Colors.red,
+      useMaterial3: true,
+      appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.red, foregroundColor: Colors.white));
+
+  ThemeData mat3HighContrastLightTheme = ThemeData(
+      colorSchemeSeed: Colors.red,
+      useMaterial3: true,
+      appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.red, foregroundColor: Colors.white));
+
+  ThemeData getLightTheme() =>
+      highContrast ? mat3HighContrastLightTheme : mat3LightTheme;
+  // ThemeData getLightTheme() => ThemeData.from(
+  //     colorScheme: highContrast
+  //         ? const ColorScheme.highContrastLight()
+  //         : const ColorScheme.light(
+  //             primary: Colors.red,
+  //             background: Color.fromARGB(235, 255, 255, 255)));
 
   ThemeData getDarkTheme() => ThemeData.from(
       colorScheme: highContrast

@@ -1,0 +1,31 @@
+# https://numtide.github.io/devshell
+
+# Packages can be found on: https://search.nixos.org/packages?channel=unstable
+
+# These aren't added to the menu
+[devshell]
+packages = [
+  "gnome.zenity", # File Picking on Linux
+  "xdg-user-dirs", # Finding Certain Directories
+]
+
+# These are added to the menu
+[[commands]]
+package = "flutter"
+name = "flutter"
+
+[[commands]]
+package = "gnumake"
+name = "make"
+
+[[commands]]
+package = "fastlane"
+
+[[commands]]
+package = "nodePackages_latest.firebase-tools"
+name = "firebase"
+
+[[commands]]
+name = "link-isar-linux"
+help = "Links built libisar.so to the project root to workaround a bug (requires direnv)"
+command = 'ln -srf "$PRJ_ROOT"/build/linux/x64/debug/bundle/lib/libisar.so "$PRJ_ROOT"/libisar.so'

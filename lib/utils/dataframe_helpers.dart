@@ -33,27 +33,13 @@ DataFrame convertFormStateToDataFrame(FormBuilderState state) {
   return DataFrame([headers, row]);
 }
 
-/// Helper function to print out the data from a dataframe. Useful for debugging
-///
-/// @param path - path to CSV
-Future<DataFrame> listDataFromCSV(String path) async {
-  final DataFrame csvdata = await fromCsv(path, headerExists: true);
-  print("csv data shape :: ${csvdata.shape}");
-  print("csv headers :: ${csvdata.header}");
-  csvdata.rows.forEach((element) {
-    print("csv row data :: $element");
-  });
-
-  return csvdata;
-}
-
 /// Accepts a list of DataFrame objects and returns a list of unique headers
 /// that can be assigned to a new DataFrame
 List<String> joinDataFrameHeaders(List<DataFrame> dfs) {
   final List<String> headers = [];
-  dfs.forEach((element) {
+  for (final element in dfs) {
     headers.addAll(element.header.toList());
-  });
+  }
   return <String>{...headers}.toList();
 }
 
@@ -107,14 +93,14 @@ Future<DataFrame> joinContentOfFilesToDataFrame(
   // This is crude, and will not work when we scale up and change the data
   // between versions of CSVs. Please be wary of this and adjust when we get
   // to that point.
-  results.forEach((csvData) {
+  for (final csvData in results) {
     if (finaldata.header.toList().isEmpty) {
       finaldata = csvData;
     } else {
       finaldata = DataFrame([
         finaldata.header.toList(),
-        ...finaldata.rows.toList(),
-        ...csvData.rows.toList(),
+        ...finaldata.rows,
+        ...csvData.rows,
       ]);
     }
 
@@ -132,7 +118,7 @@ Future<DataFrame> joinContentOfFilesToDataFrame(
     //   // finaldata = DataFrame(
     //   //     [newHeaders, ...finaldata.rows.toList(), ...csvData.rows.toList()]);
     // }
-  });
+  }
 
   return finaldata;
 }

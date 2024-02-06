@@ -3,4 +3,4 @@ apple_id(ENV["APPLE_ID"]) # Your Apple Developer Portal username
 itc_team_id(ENV["ITC_TEAM_ID"]) # App Store Connect Team ID
 team_id(ENV["TEAM_ID"]) # Developer Portal Team ID
 # output_directory("../build/ios/ipa")
-# output_name("robotz_garage_scouting")
+# output_name("garagescouter")
