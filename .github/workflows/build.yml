@@ -148,7 +148,7 @@ jobs:
         if: ${{ matrix.build-option == 'linux' }}
         run: |
           cd build/linux/x64/release/bundle
-          tar -czvf ${{ artifact-name }}.tar.gz ${{ matrix.artifact-path }}
+          tar -czvf ${{ matrix.artifact-name }}.tar.gz ${{ matrix.artifact-path }}
 
 
       - name: Upload artifact
