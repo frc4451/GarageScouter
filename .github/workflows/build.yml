@@ -146,7 +146,8 @@ jobs:
       - name: Zip release (Windows)
         if: ${{ matrix.build-option == 'windows' }}
         run: |
-          Compress-Archive -Path ${{ matrix.build-path }} -DestinationPath ${{ matrix.artifact-name }}
+          run: Compress-Archive -Path (Get-ChildItem -Path ${{ matrix.build-path }}\* | Select-Object -ExpandProperty FullName) -DestinationPath ${{ matrix.artifact-name }} -Update
+        # Compress-Archive -Path ${{ matrix.build-path }} -DestinationPath ${{ matrix.artifact-name }}
 
       - name: Zip release (Linux)
         if: ${{ matrix.build-option == 'linux' }}
