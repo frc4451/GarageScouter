@@ -154,7 +154,7 @@ jobs:
           tar -czvf ${{ matrix.artifact-path }} ${{ matrix.build-path }}
       
       - name: Rename release (Android)
-        if: ${{ matrix.build-option == 'android' }}
+        if: ${{ matrix.build-option == 'apk' }}
         run: |
           mv ${{ matrix.build-path }} ${{ matrix.artifact-path }}
 
