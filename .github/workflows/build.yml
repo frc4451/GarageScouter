@@ -70,28 +70,28 @@ jobs:
       #     token: ${{ secrets.CODECOV_TOKEN }}
       #     name: flutter-coverage
       #     files: coverage/lcov.info
-  matrix:
-    include:
-      - os: windows-2022
-        build-option: "windows"
-        artifact-path: "build/windows/x64/runner/Release"
-        artifact-name: GarageScouter-Windows
-      - os: macos-14
-        build-option: "macos"
-        artifact-path: "build/macos/Build/Products/Release/GarageScouter-macOS.zip"
-        artifact-name: GarageScouter-macOS
-      - os: ubuntu-22.04
-        build-option: "linux"
-        artifact-path: "build/linux/x64/release/bundle"
-        artifact-name: GarageScouter-Linux
-      - os: ubuntu-22.04
-        build-option: "apk"
-        artifact-path: "build/app/outputs/flutter-apk/app-release.apk"
-        artifact-name: GarageScouter-Android
 
   build:
     strategy:
       fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            build-option: "windows"
+            artifact-path: "build/windows/x64/runner/Release"
+            artifact-name: GarageScouter-Windows
+          - os: macos-14
+            build-option: "macos"
+            artifact-path: "build/macos/Build/Products/Release/GarageScouter-macOS.zip"
+            artifact-name: GarageScouter-macOS
+          - os: ubuntu-22.04
+            build-option: "linux"
+            artifact-path: "build/linux/x64/release/bundle"
+            artifact-name: GarageScouter-Linux
+          - os: ubuntu-22.04
+            build-option: "apk"
+            artifact-path: "build/app/outputs/flutter-apk/app-release.apk"
+            artifact-name: GarageScouter-Android
 
     name: "Build - ${{ matrix.artifact-name }}"
     needs: [formatting-analysis, test]
@@ -147,31 +147,44 @@ jobs:
           path: ${{ matrix.artifact-path }}
 
   release:
-      name: "Release"
-      needs: [build]
-      runs-on: ubuntu-22.04
-      steps:
-        - name: Create Release
-          id: create_release
-          uses: actions/create-release@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag_name: dev
-            release_name: Development Release
-            draft: false
-            prerelease: false
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - artifact-path: "build/windows/x64/runner/Release"
+            artifact-name: GarageScouter-Windows
+          - artifact-path: "build/macos/Build/Products/Release/GarageScouter-macOS.zip"
+            artifact-name: GarageScouter-macOS
+          - artifact-path: "build/linux/x64/release/bundle"
+            artifact-name: GarageScouter-Linux
+          - artifact-path: "build/app/outputs/flutter-apk/app-release.apk"
+            artifact-name: GarageScouter-Android
+    name: "Release"
+    needs: [build]
+    runs-on: ubuntu-22.04
 
-      - name: Upload Release ${{ matrix.artifact-name }}
-        uses: actions/upload-release-asset@v1
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ matrix.artifact-path }}
-          asset_name: ${{ matrix.artifiact-name }}
-          asset_content_type: application/zip
-        # steps:
+          tag_name: dev
+          release_name: Development Release
+          draft: false
+          prerelease: false
+
+    - name: Upload Release ${{ matrix.artifact-name }}
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ matrix.artifact-path }}
+        asset_name: ${{ matrix.artifiact-name }}
+        asset_content_type: application/zip
+      # steps:
       #   - uses: actions/download-artifact@v4
       #   - run: find
       #   - uses: pyTooling/Actions/releaser@r0
