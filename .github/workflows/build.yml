@@ -93,7 +93,7 @@ jobs:
           - os: ubuntu-22.04
             build-option: "apk"
             build-path: "build/app/outputs/flutter-apk/app-release.apk"
-            artifact-path: "build/app/outputs/flutter-apk/app-release.apk"
+            artifact-path: "build/app/outputs/flutter-apk/GarageScouter-Android.apk"
             artifact-name: GarageScouter-Android
 
     name: "Build - ${{ matrix.artifact-name }}"
@@ -152,6 +152,11 @@ jobs:
         if: ${{ matrix.build-option == 'linux' }}
         run: |
           tar -czvf ${{ matrix.artifact-path }} ${{ matrix.build-path }}
+      
+      - name: Rename release (Android)
+        if: ${{ matrix.build-option == 'android' }}
+        run: |
+          mv ${{ matrix.build-path }} ${{ matrix.artifact-path }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
