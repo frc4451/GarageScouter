@@ -146,7 +146,7 @@ jobs:
       - name: Zip release (Windows)
         if: ${{ matrix.build-option == 'windows' }}
         run: |
-          Compress-Archive -Path ${{ matrix.build-path }\* -DestinationPath ${{ matrix.artifact-name }}
+          Compress-Archive -Path ${{ matrix.build-path }}\* -DestinationPath ${{ matrix.artifact-name }}
 
       - name: Zip release (Linux)
         if: ${{ matrix.build-option == 'linux' }}
