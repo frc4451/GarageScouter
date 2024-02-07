@@ -133,12 +133,24 @@ jobs:
       - name: Build app
         run: flutter build ${{ matrix.build-option }}
       
-      - name: Zip release
+      - name: Zip release (Mac)
         if: ${{ matrix.build-option == 'macos' }}
         run: |
           cd build/macos/Build/Products/Release
-          zip -r GarageScouter-macOS.zip GarageScouter.app --symlinks
+          zip -r ${{ matrix.artifact-name }}.zip GarageScouter.app --symlinks
       
+      - name: Zip release (Windows)
+        if: ${{ matrix.build-option == 'windows' }}
+        run: |
+          Compress-Archive -Path ${{ matrix.artifact-path }} -DestinationPath ${{ matrix.artifact-name }}.zip
+
+      - name: Zip release (Linux)
+        if: ${{ matrix.build-option == 'linux' }}
+        run: |
+          cd build/linux/x64/release/bundle
+          tar -czvf ${{ artifact-name }}.tar.gz ${{ matrix.artifact-path }}
+
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
