@@ -93,7 +93,7 @@ jobs:
           - os: ubuntu-22.04
             build-option: "apk"
             build-path: "build/app/outputs/flutter-apk/app-release.apk"
-            artifact-path: "build/app/outputs/flutter-apk/GarageScouter-Android.apk"
+            artifact-path: "GarageScouter-Android.apk"
             artifact-name: GarageScouter-Android
 
     name: "Build - ${{ matrix.artifact-name }}"
