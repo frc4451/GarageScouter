@@ -70,7 +70,6 @@ jobs:
       #     token: ${{ secrets.CODECOV_TOKEN }}
       #     name: flutter-coverage
       #     files: coverage/lcov.info
-
   build:
     strategy:
       fail-fast: false
@@ -145,60 +144,30 @@ jobs:
         with:
           name: ${{ matrix.artifact-name }}
           path: ${{ matrix.artifact-path }}
+
   release:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - artifact-path: "build/windows/x64/runner/Release"
-            artifact-name: GarageScouter-Windows
-          - artifact-path: "build/macos/Build/Products/Release/GarageScouter-macOS.zip"
-            artifact-name: GarageScouter-macOS
-          - artifact-path: "build/linux/x64/release/bundle"
-            artifact-name: GarageScouter-Linux
-          - artifact-path: "build/app/outputs/flutter-apk/app-release.apk"
-            artifact-name: GarageScouter-Android
-    name: "Release"
     needs: [build]
     runs-on: ubuntu-22.04
-
     steps:
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - uses: actions/download-artifact@v4
+      - run: find
+      - uses: pyTooling/Actions/releaser@r0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: 'dev'
+          rm: true
+          files: |
+            **/*.zip
+            **/*.app
+            **/*.apk
+        if: github.event_name == 'push'
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: |
+          files: |
+            **/*.zip
+            **/*.app
+            **/*.apk
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: dev
-          release_name: Development Release
-          draft: false
-          prerelease: false
-
-    - name: Upload Release ${{ matrix.artifact-name }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ matrix.artifact-path }}
-        asset_name: ${{ matrix.artifiact-name }}
-        asset_content_type: application/zip
-      # steps:
-      #   - uses: actions/download-artifact@v4
-      #   - run: find
-      #   - uses: pyTooling/Actions/releaser@r0
-      #     with:
-      #       token: ${{ secrets.GITHUB_TOKEN }}
-      #       tag: 'dev'
-      #       rm: true
-      #       files: |
-      #         **/*.*
-      #     if: github.event_name == 'push'
-
-      #   - uses: softprops/action-gh-release@v1
-      #     with:
-      #       files: |
-      #         **/*.*
-      #     if: startsWith(github.ref, 'refs/tags/v')
-      #     env:
-      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
