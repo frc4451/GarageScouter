@@ -27,7 +27,7 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
 
   Future<File> _convertXFileToFile(
       {required XFile xfile, required String tag}) async {
-    String teamNumber = _formKey.currentState?.value["team_number"];
+    String teamNumber = _formKey.currentState?.value["team.number"];
 
     // We have to provide the name of the new file.
     File tempFile = File(xfile.path);
@@ -165,7 +165,7 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
       }
 
       final String teamNumber =
-          _formKey.currentState?.value['team_number'] ?? '';
+          _formKey.currentState?.value['team.number'] ?? '';
 
       if (teamNumber.isEmpty) {
         errorMessageSnackbar(context, "Team Number cannot be empty.");
@@ -251,7 +251,7 @@ class _PhotoCollectionPageState extends State<PhotoCollectionPage> {
               child: Column(
                 children: [
                   FormBuilderTextField(
-                    name: "team_number",
+                    name: "team.number",
                     decoration: const InputDecoration(
                         label: Text("Team Number"), icon: Icon(Icons.numbers)),
                     autovalidateMode: AutovalidateMode.onUserInteraction,

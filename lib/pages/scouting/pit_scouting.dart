@@ -80,7 +80,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
 
     state['timestamp'] = DateTime.now().toString();
 
-    final String teamNumber = state["team_number"].toString();
+    final String teamNumber = state["team.number"].toString();
 
     PitScoutingEntry entry = await _isarModel.getPitDataByUUID(widget.uuid);
 
@@ -147,14 +147,14 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
   /// the Widget Tree. Assuming that we're using imperative routing, this should
   /// pop from the widget tree.
   ///
-  /// The only form validation we do is check if the `team_number` form field
+  /// The only form validation we do is check if the `team.number` form field
   /// is not null, and if it is not null, save the entry as a draft.
   Future<bool> _onWillPop() async {
     _formKey.currentState?.save();
 
     Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
 
-    if (state.isEveryValueEmpty() || state.valueForKeyIsNull('team_number')) {
+    if (state.isEveryValueEmpty() || state.valueForKeyIsNull('team.number')) {
       return true;
     }
 
@@ -172,7 +172,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
         await canSaveDraft(context, exists: entry.isDraft) ?? false;
 
     entry
-      ..teamNumber = int.tryParse(state['team_number']) ?? 0
+      ..teamNumber = int.tryParse(state['team.number']) ?? 0
       ..b64String = currentb64String
       ..isDraft = true;
 
@@ -232,7 +232,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                           ]),
                         ),
                         FormBuilderTextField(
-                          name: "team_number",
+                          name: "team.number",
                           decoration: const InputDecoration(
                               labelText: "What is the Team Number?",
                               prefixIcon: Icon(Icons.numbers)),

@@ -11,7 +11,6 @@ import 'package:garagescouter/models/scroll_model.dart';
 import 'package:garagescouter/models/theme_model.dart';
 import 'package:garagescouter/pages/scouting/match_scouting_subpages/match_auto.dart';
 import 'package:garagescouter/pages/scouting/match_scouting_subpages/match_initial.dart';
-import 'package:garagescouter/pages/scouting/match_scouting_subpages/match_summary.dart';
 import 'package:garagescouter/pages/scouting/match_scouting_subpages/match_endgame.dart';
 import 'package:garagescouter/pages/scouting/match_scouting_subpages/match_teleop.dart';
 
@@ -63,9 +62,9 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     String timestamp = DateTime.now().toString();
     state['timestamp'] = timestamp;
 
-    final String matchNumber = state["match_number"].toString();
-    final String teamNumber = state["team_number"].toString();
-    final String alliance = state["team_alliance"].toString();
+    final String matchNumber = state["match.number"].toString();
+    final String teamNumber = state["team.number"].toString();
+    final String alliance = state["team.alliance"].toString();
 
     // final String filePath = await generateUniqueFilePath(
     //     extension: "csv",
@@ -178,14 +177,14 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     Map<String, dynamic> patchedValues = {};
 
     if (context.read<InputHelperModel>().isIterativeMatchInput()) {
-      patchedValues['team_alliance'] =
-          _formKey.currentState?.value['team_alliance'];
+      patchedValues['team.alliance'] =
+          _formKey.currentState?.value['team.alliance'];
 
       patchedValues['team_position'] =
           _formKey.currentState?.value['team_position'];
 
-      patchedValues['match_number'] =
-          (int.parse(_formKey.currentState?.value['match_number'] ?? "0") +
+      patchedValues['match.number'] =
+          (int.parse(_formKey.currentState?.value['match.number'] ?? "0") +
                   (isSubmission ? 1 : 0))
               .toString();
     }
@@ -215,7 +214,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       const MatchAutonomousScreen(),
       const MatchTeleopScreen(),
       const MatchEndgameScreen(),
-      const MatchSummaryScreen()
+      // const MatchSummaryScreen()
     ]);
 
     _tabController = TabController(length: pages.length, vsync: this);
@@ -237,16 +236,16 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
   /// the Widget Tree. Assuming that we're using imperative routing, this should
   /// pop from the widget tree.
   ///
-  /// The only form validation we do is check if the `team_number` and
-  /// `match_number` form field are not null, and if it is not null, save
+  /// The only form validation we do is check if the `team.number` and
+  /// `match.number` form field are not null, and if it is not null, save
   /// the entry as a draft.
   Future<bool> _onWillPop() async {
     _formKey.currentState?.save();
 
     final Map<String, dynamic> state = Map.from(_formKey.currentState!.value);
-    final int? teamNumber = int.tryParse(state['team_number'] ?? "");
-    final int? matchNumber = int.tryParse(state['match_number'] ?? "");
-    final String? alliance = state['team_alliance'];
+    final int? teamNumber = int.tryParse(state['team.number'] ?? "");
+    final int? matchNumber = int.tryParse(state['match.number'] ?? "");
+    final String? alliance = state['team.alliance'];
 
     if (state.isEmpty ||
         teamNumber == null ||
@@ -335,7 +334,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
                                 Text('Auto'),
                                 Text('Teleop'),
                                 Text('End'),
-                                Text('Summary')
+                                // Text('Summary')
                               ],
                               tabAlignment: TabAlignment.center,
                             )),

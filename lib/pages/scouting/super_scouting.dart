@@ -64,7 +64,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     final String timestamp = DateTime.now().toString();
     state['timestamp'] = timestamp;
 
-    final String teamNumber = state["team_number"].toString();
+    final String teamNumber = state["team.number"].toString();
 
     SuperScoutingEntry entry = await _isarModel.getSuperDataByUUID(widget.uuid);
 
@@ -154,7 +154,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
   /// the Widget Tree. Assuming that we're using imperative routing, this should
   /// pop from the widget tree.
   ///
-  /// The only form validation we do is check if the `team_number` form field
+  /// The only form validation we do is check if the `team.number` form field
   /// is not null, and if it is not null, save the entry as a draft.
   Future<bool> _onWillPop() async {
     _formKey.currentState?.save();
@@ -165,7 +165,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
       return true;
     }
 
-    int? teamNumber = int.tryParse(state['team_number'] ?? "");
+    int? teamNumber = int.tryParse(state['team.number'] ?? "");
 
     if (state.isEmpty || teamNumber == null) {
       return true;
@@ -236,7 +236,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                   child: Column(
                     children: [
                       FormBuilderTextField(
-                        name: "team_number",
+                        name: "team.number",
                         decoration: const InputDecoration(
                             labelText: "Team Number",
                             prefixIcon: Icon(Icons.numbers)),
@@ -250,7 +250,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                       ),
                       FormBuilderTextField(
-                        name: "match_number",
+                        name: "match.number",
                         decoration: const InputDecoration(
                             labelText: "Match Number",
                             prefixIcon: Icon(Icons.numbers)),

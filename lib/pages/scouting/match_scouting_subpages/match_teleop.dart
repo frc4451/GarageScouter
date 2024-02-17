@@ -18,67 +18,86 @@ class _MatchTeleopScreenState extends State<MatchTeleopScreen>
   final double spaceBetween = 10;
   final double spaceOutside = 10;
 
-  final MaterialColor coneColor = Colors.amber;
-  final MaterialColor cubeColor = Colors.deepPurple;
+  final MaterialColor noteColor = Colors.orange;
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-        body: Column(children: [
+
+    final List<Widget> list = [
       IncrementFormBuilderField(
-        name: "teleop_high_cubes",
-        label: "High Cubes",
-        max: 3,
-        color: cubeColor,
+        name: "subwoofer.completed.teleop",
+        label: "Subwoofer Notes Scored",
         spaceBetween: spaceBetween,
+        color: noteColor,
       ),
       IncrementFormBuilderField(
-        name: "teleop_mid_cubes",
-        label: "Mid Cubes",
-        max: 3,
-        color: cubeColor,
+        name: "subwoofer.attempted.teleop",
+        label: "Subwoofer Notes Missed",
         spaceBetween: spaceBetween,
-      ),
-      IncrementFormBuilderField(
-        name: "teleop_hybrid_cubes",
-        label: "Hybrid Cubes",
-        max: 9,
-        color: cubeColor,
-        spaceBetween: spaceBetween,
+        color: noteColor,
       ),
       const Divider(),
       IncrementFormBuilderField(
-        name: "teleop_high_cones",
-        label: "High Cones",
-        max: 6,
-        color: coneColor,
+        name: "podium.completed.teleop",
+        label: "Podium Notes Scored",
         spaceBetween: spaceBetween,
+        color: noteColor,
       ),
       IncrementFormBuilderField(
-        name: "teleop_mid_cones",
-        label: "Mid Cones",
-        max: 6,
-        color: coneColor,
+        name: "podium.attempted.teleop",
+        label: "Podium Notes Missed",
         spaceBetween: spaceBetween,
+        color: noteColor,
+      ),
+      const Divider(),
+      IncrementFormBuilderField(
+        name: "wing.completed.teleop",
+        label: "Wing Notes Scored",
+        spaceBetween: spaceBetween,
+        color: noteColor,
       ),
       IncrementFormBuilderField(
-        name: "teleop_hybrid_cones",
-        label: "Hybrid Cones",
-        max: 9,
-        color: coneColor,
+        name: "wing.attempted.teleop",
+        label: "Wing Notes Missed",
         spaceBetween: spaceBetween,
+        color: noteColor,
       ),
-      FormBuilderCheckbox(
-        name: "teleop_shuttle",
-        title: const Text("Teleop Shuttle"),
-        // initialValue: false,
+      const Divider(),
+      IncrementFormBuilderField(
+        name: "midfield.completed.teleop",
+        label: "Midfield Notes Scored",
+        spaceBetween: spaceBetween,
+        color: noteColor,
       ),
-      FormBuilderCheckbox(
-        name: "teleop_defend",
-        title: const Text("Teleop Defend"),
-        // initialValue: false
+      IncrementFormBuilderField(
+        name: "midfield.attempted.teleop",
+        label: "Midfield Notes Missed",
+        spaceBetween: spaceBetween,
+        color: noteColor,
       ),
-    ]));
+      const Divider(),
+      Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: FormBuilderCheckbox(
+              name: "coopertition",
+              controlAffinity: ListTileControlAffinity.trailing,
+              title: const Text("Did they hit the coopertition button?"))),
+      Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: FormBuilderCheckbox(
+              name: "disabled",
+              controlAffinity: ListTileControlAffinity.trailing,
+              title: const Text("Did the robot get disabled?"))),
+    ];
+
+    return Scaffold(
+        body: ListView(
+            children: list
+                .map((child) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      child: child,
+                    ))
+                .toList()));
   }
 }

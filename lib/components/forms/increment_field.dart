@@ -47,6 +47,8 @@ class IncrementFormBuilderField extends FormBuilderField<int> {
                   const Spacer(),
                   ElevatedButton(
                       style: ButtonStyle(
+                          iconColor:
+                              MaterialStateProperty.all<Color>(Colors.white),
                           backgroundColor:
                               MaterialStateProperty.all<Color>(background)),
                       onPressed: () {
@@ -60,6 +62,8 @@ class IncrementFormBuilderField extends FormBuilderField<int> {
                   ),
                   ElevatedButton(
                       style: ButtonStyle(
+                          iconColor:
+                              MaterialStateProperty.all<Color>(Colors.white),
                           backgroundColor:
                               MaterialStateProperty.all<Color>(background)),
                       onPressed: () {

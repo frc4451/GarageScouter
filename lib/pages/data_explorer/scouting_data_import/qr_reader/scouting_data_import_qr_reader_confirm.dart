@@ -46,8 +46,7 @@ class _ScoutingDataQRConfirmationPageState
       final List<PitScoutingEntry> entries = _entries
           .map((row) => PitScoutingEntry()
             ..b64String = encodeJsonToB64(row, urlSafe: true)
-            ..teamNumber =
-                int.tryParse(row['team_number'] ?? row['Team Number']) ?? 0
+            ..teamNumber = int.tryParse(row['team.number']) ?? 0
             ..isDraft = false)
           .toList();
 
@@ -62,7 +61,7 @@ class _ScoutingDataQRConfirmationPageState
     // Match Scouting logic
     else if (_importType == GarageRouter.matchScouting.displayName) {
       final List<MatchScoutingEntry> entries = _entries.map((row) {
-        String comparison = (row['team_alliance'] ?? row['Team Alliance'] ?? "")
+        String comparison = (row['team.alliance'] ?? row['Team Alliance'] ?? "")
             .toString()
             .toLowerCase();
         TeamAlliance alliance = comparison == "blue"
@@ -73,10 +72,8 @@ class _ScoutingDataQRConfirmationPageState
 
         MatchScoutingEntry entry = MatchScoutingEntry()
           ..b64String = encodeJsonToB64(row, urlSafe: true)
-          ..teamNumber =
-              int.tryParse(row['team_number'] ?? row['Team Number']) ?? 0
-          ..matchNumber =
-              int.tryParse(row['match_number'] ?? row['Match Number'])
+          ..teamNumber = int.tryParse(row['team.number']) ?? 0
+          ..matchNumber = int.tryParse(row['team.number'])
           ..alliance = alliance
           ..isDraft = false;
 
@@ -96,8 +93,7 @@ class _ScoutingDataQRConfirmationPageState
       final List<SuperScoutingEntry> entries = _entries
           .map((row) => SuperScoutingEntry()
             ..b64String = encodeJsonToB64(row, urlSafe: true)
-            ..teamNumber =
-                int.tryParse(row['team_number'] ?? row['Team Number']) ?? 0
+            ..teamNumber = int.tryParse(row['team.number']) ?? 0
             ..isDraft = false)
           .toList();
 
@@ -118,11 +114,11 @@ class _ScoutingDataQRConfirmationPageState
   @override
   Widget build(BuildContext context) {
     List<String> cols = ["Team Number"];
-    List<String> rows = ["team_number"];
+    List<String> rows = ["team.number"];
 
     if (_importType == GarageRouter.matchScouting.displayName) {
       cols.add("Match Number");
-      rows.add("match_number");
+      rows.add("match.number");
     }
 
     return Scaffold(

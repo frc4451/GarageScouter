@@ -23,7 +23,7 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
     return Scaffold(
         body: Column(children: [
       FormBuilderTextField(
-        name: "team_number",
+        name: "team.number",
         decoration: const InputDecoration(
             labelText: "Team Number", prefixIcon: Icon(Icons.numbers)),
         textInputAction: TextInputAction.next,
@@ -37,7 +37,7 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
         autovalidateMode: AutovalidateMode.onUserInteraction,
       ),
       FormBuilderTextField(
-        name: "match_number",
+        name: "match.number",
         decoration: const InputDecoration(
             labelText: "Match Number", prefixIcon: Icon(Icons.numbers)),
         textInputAction: TextInputAction.next,
@@ -51,7 +51,7 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
         autovalidateMode: AutovalidateMode.onUserInteraction,
       ),
       FormBuilderDropdown(
-        name: "team_alliance",
+        name: "team.alliance",
         decoration: const InputDecoration(
             labelText: "Team Alliance", prefixIcon: Icon(Icons.color_lens)),
         validator: FormBuilderValidators.required(),
@@ -60,26 +60,43 @@ class _MatchInitialScreenState extends State<MatchInitialScreen>
             .map((e) => DropdownMenuItem(value: e, child: Text(e)))
             .toList(),
       ),
-      FormBuilderDropdown(
-        name: "team_position",
+      FormBuilderTextField(
+        name: "initials",
         decoration: const InputDecoration(
-            labelText: "Team Position", prefixIcon: Icon(Icons.map)),
-        validator: FormBuilderValidators.required(),
+            labelText: "Initials for Record Keeping",
+            prefixIcon: Icon(Icons.account_circle)),
+        textInputAction: TextInputAction.next,
+        keyboardType: TextInputType.name,
+        maxLength: 3,
+        validator: FormBuilderValidators.compose([
+          FormBuilderValidators.required(),
+          CustomTextValidators.doesNotHaveCommas(),
+        ]),
         autovalidateMode: AutovalidateMode.onUserInteraction,
-        items: [1, 2, 3]
-            .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
-            .toList(),
+      ),
+      FormBuilderCheckbox(
+        name: "team.present",
+        title: const Text("Team is Present"),
+        decoration:
+            const InputDecoration(prefixIcon: Icon(Icons.present_to_all)),
       ),
       FormBuilderDropdown(
-        name: "field_position",
+        name: "starting.position",
         decoration: const InputDecoration(
             labelText: "Field Position", prefixIcon: Icon(Icons.map)),
         validator: FormBuilderValidators.required(),
         autovalidateMode: AutovalidateMode.onUserInteraction,
-        items: ["Bump", "Center", "Lane"]
+        items: [
+          "Touching Subwoofer, Centered",
+          "Touching Subwoofer, Facing AMP",
+          "Touching Subwoofer, Facing Human Player",
+          "In front of single Driver Station",
+          "In front of double Driver Station",
+          "Other"
+        ]
             .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
             .toList(),
-      )
+      ),
     ]));
   }
 }

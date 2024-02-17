@@ -54,27 +54,25 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
           row[key] = df[key].data.elementAt(i);
         }
 
-        if (row["team_number"] == null && row["Team Number"] == null) {
+        if (row["team.number"] == null) {
           if (!mounted) return;
 
           errorMessageSnackbar(context,
-              "`Team Number` or `team_number` column is missing from ${getBaseName(file)}");
+              "`Team Number` or `team.number` column is missing from ${getBaseName(file)}");
           return;
         }
 
         String b64String = encodeJsonToB64(row);
 
         ScoutingDataEntry entry = ScoutingDataEntry()
-          ..teamNumber = row['team_number'] ?? row['Team Number']
+          ..teamNumber = row['team.number']
           ..isDraft = false
           ..b64String = b64String;
 
         if (row.keys
             .map((e) => e.toLowerCase().replaceAll(" ", "_"))
-            .contains("match_number")) {
-          if (row["alliance"] == null &&
-              row["Alliance"] == null &&
-              row["team_alliance"] == null) {
+            .contains("match.number")) {
+          if (row["alliance"] == null && row["team.alliance"] == null) {
             if (!mounted) return;
 
             errorMessageSnackbar(context,
@@ -85,13 +83,10 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
           MatchScoutingEntry matchScoutingEntry =
               MatchScoutingEntry.fromScoutingDataEntry(entry);
 
-          String rawAlliance = (row["alliance"] ??
-                  row["Alliance"] ??
-                  row["team_alliance"] ??
-                  row["Team Alliance"] ??
-                  "unassigned")
-              .toString()
-              .toLowerCase();
+          String rawAlliance =
+              (row["alliance"] ?? row["team.alliance"] ?? "unassigned")
+                  .toString()
+                  .toLowerCase();
 
           TeamAlliance alliance = rawAlliance == "red"
               ? TeamAlliance.red
@@ -101,7 +96,7 @@ class _ScoutingDataImportPageState extends State<ScoutingDataImportPage> {
 
           matchScoutingEntry = matchScoutingEntry
             ..alliance = alliance
-            ..matchNumber = row["match_number"] ?? row["Match Number"];
+            ..matchNumber = row["match.number"];
 
           entry = matchScoutingEntry;
         }

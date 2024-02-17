@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import 'package:garagescouter/components/forms/increment_field.dart';
 
@@ -16,9 +15,7 @@ class _MatchAutonomousScreenState extends State<MatchAutonomousScreen>
   final double spaceBetween = 10;
   final double spaceOutside = 10;
 
-  final MaterialColor coneColor = Colors.amber;
-  final MaterialColor cubeColor = Colors.deepPurple;
-
+  final MaterialColor noteColor = Colors.orange;
   @override
   bool get wantKeepAlive => true;
 
@@ -26,63 +23,74 @@ class _MatchAutonomousScreenState extends State<MatchAutonomousScreen>
   Widget build(BuildContext context) {
     super.build(context);
 
-    return Scaffold(
-        body: Column(children: [
+    final List<Widget> list = [
       IncrementFormBuilderField(
-        name: "auto_high_cubes",
-        label: "High Cubes",
-        max: 3,
+        name: "subwoofer.completed.auto",
+        label: "Subwoofer Notes Scored",
+        max: 8,
         spaceBetween: spaceBetween,
-        color: cubeColor,
+        color: noteColor,
       ),
       IncrementFormBuilderField(
-        name: "auto_mid_cubes",
-        label: "Mid Cubes",
-        max: 3,
+        name: "subwoofer.attempted.auto",
+        label: "Subwoofer Notes Missed",
+        max: 8,
         spaceBetween: spaceBetween,
-        color: cubeColor,
-      ),
-      IncrementFormBuilderField(
-        name: "auto_hybrid_cubes",
-        label: "Hybrid Cubes",
-        max: 9,
-        spaceBetween: spaceBetween,
-        color: cubeColor,
+        color: noteColor,
       ),
       const Divider(),
       IncrementFormBuilderField(
-        name: "auto_high_cones",
-        label: "High Cones",
-        max: 6,
-        color: coneColor,
+        name: "podium.completed.auto",
+        label: "Podium Notes Scored",
+        max: 8,
         spaceBetween: spaceBetween,
+        color: noteColor,
       ),
       IncrementFormBuilderField(
-        name: "auto_mid_cones",
-        label: "Mid Cones",
-        max: 6,
-        color: coneColor,
+        name: "podium.attempted.auto",
+        label: "Podium Notes Missed",
+        max: 8,
         spaceBetween: spaceBetween,
+        color: noteColor,
+      ),
+      const Divider(),
+      IncrementFormBuilderField(
+        name: "wing.completed.auto",
+        label: "Wing Notes Scored",
+        max: 8,
+        spaceBetween: spaceBetween,
+        color: noteColor,
       ),
       IncrementFormBuilderField(
-        name: "auto_hybrid_cones",
-        label: "Hybrid Cones",
-        max: 9,
-        color: coneColor,
+        name: "wing.attempted.auto",
+        label: "Wing Notes Missed",
+        max: 8,
         spaceBetween: spaceBetween,
+        color: noteColor,
       ),
-      FormBuilderCheckbox(
-        name: "auto_balance",
-        title: const Text("Auto Balance"),
+      const Divider(),
+      IncrementFormBuilderField(
+        name: "midfield.completed.auto",
+        label: "Midfield Notes Scored",
+        max: 8,
+        spaceBetween: spaceBetween,
+        color: noteColor,
       ),
-      FormBuilderCheckbox(
-        name: "auto_dock",
-        title: const Text("Auto Dock"),
+      IncrementFormBuilderField(
+        name: "midfield.attempted.auto",
+        label: "Midfield Notes Missed",
+        max: 8,
+        spaceBetween: spaceBetween,
+        color: noteColor,
       ),
-      FormBuilderCheckbox(
-        name: "auto_mobility",
-        title: const Text("Auto Mobility"),
-      ),
-    ]));
+    ];
+
+    return Scaffold(
+        body: ListView(
+            children: list
+                .map((child) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: child))
+                .toList()));
   }
 }
