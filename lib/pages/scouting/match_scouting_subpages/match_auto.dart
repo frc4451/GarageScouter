@@ -25,15 +25,30 @@ class _MatchAutonomousScreenState extends State<MatchAutonomousScreen>
 
     final List<Widget> list = [
       IncrementFormBuilderField(
+        name: "amp.completed.auto",
+        label: "Amp Scored",
+        max: 8,
+        spaceBetween: spaceBetween,
+        color: noteColor,
+      ),
+      IncrementFormBuilderField(
+        name: "amp.attempted.auto",
+        label: "Amp Missed",
+        max: 8,
+        spaceBetween: spaceBetween,
+        color: noteColor,
+      ),
+      const Divider(),
+      IncrementFormBuilderField(
         name: "subwoofer.completed.auto",
-        label: "Subwoofer Notes Scored",
+        label: "Subwoofer Scored",
         max: 8,
         spaceBetween: spaceBetween,
         color: noteColor,
       ),
       IncrementFormBuilderField(
         name: "subwoofer.attempted.auto",
-        label: "Subwoofer Notes Missed",
+        label: "Subwoofer Missed",
         max: 8,
         spaceBetween: spaceBetween,
         color: noteColor,
@@ -41,14 +56,14 @@ class _MatchAutonomousScreenState extends State<MatchAutonomousScreen>
       const Divider(),
       IncrementFormBuilderField(
         name: "podium.completed.auto",
-        label: "Podium Notes Scored",
+        label: "Podium Scored",
         max: 8,
         spaceBetween: spaceBetween,
         color: noteColor,
       ),
       IncrementFormBuilderField(
         name: "podium.attempted.auto",
-        label: "Podium Notes Missed",
+        label: "Podium Missed",
         max: 8,
         spaceBetween: spaceBetween,
         color: noteColor,
@@ -56,14 +71,14 @@ class _MatchAutonomousScreenState extends State<MatchAutonomousScreen>
       const Divider(),
       IncrementFormBuilderField(
         name: "wing.completed.auto",
-        label: "Wing Notes Scored",
+        label: "Wing Scored",
         max: 8,
         spaceBetween: spaceBetween,
         color: noteColor,
       ),
       IncrementFormBuilderField(
         name: "wing.attempted.auto",
-        label: "Wing Notes Missed",
+        label: "Wing Missed",
         max: 8,
         spaceBetween: spaceBetween,
         color: noteColor,
@@ -71,14 +86,14 @@ class _MatchAutonomousScreenState extends State<MatchAutonomousScreen>
       const Divider(),
       IncrementFormBuilderField(
         name: "midfield.completed.auto",
-        label: "Midfield Notes Scored",
+        label: "Midfield Scored",
         max: 8,
         spaceBetween: spaceBetween,
         color: noteColor,
       ),
       IncrementFormBuilderField(
         name: "midfield.attempted.auto",
-        label: "Midfield Notes Missed",
+        label: "Midfield Missed",
         max: 8,
         spaceBetween: spaceBetween,
         color: noteColor,

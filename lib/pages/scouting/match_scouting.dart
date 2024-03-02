@@ -180,13 +180,14 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       patchedValues['team.alliance'] =
           _formKey.currentState?.value['team.alliance'];
 
-      patchedValues['team_position'] =
-          _formKey.currentState?.value['team_position'];
-
       patchedValues['match.number'] =
           (int.parse(_formKey.currentState?.value['match.number'] ?? "0") +
                   (isSubmission ? 1 : 0))
               .toString();
+
+      patchedValues['initials'] = _formKey.currentState?.value['initials'];
+
+      patchedValues['starting.position'] = null;
     }
 
     setState(() {

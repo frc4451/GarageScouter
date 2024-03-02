@@ -27,7 +27,7 @@ class IncrementFormBuilderField extends FormBuilderField<int> {
 
   IncrementFormBuilderField({
     super.key,
-    super.initialValue,
+    super.initialValue = 0,
     required super.name,
     this.label,
     this.spaceBetween = 20,
@@ -116,7 +116,7 @@ class _IncrementFormBuilderFieldState
   @override
   void reset() {
     setState(() {
-      didChange(PageDirection.none.value);
+      setValue(0);
     });
   }
 

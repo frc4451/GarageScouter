@@ -21,6 +21,18 @@ class _MatchEndgameScreenState extends State<MatchEndgameScreen>
     return Scaffold(
         body: Center(
       child: Column(children: [
+        FormBuilderDropdown(
+            name: "location.end",
+            decoration: const InputDecoration(
+                labelText: "End Game Location",
+                prefixIcon: Icon(Icons.directions)),
+            items: [
+              "Parked at Podium",
+              "Climbed from Center Side",
+              "Climbed from Human Player Side",
+              "Climbed from AMP Side",
+              "Other"
+            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()),
         FormBuilderCheckbox(
           name: "score.trap.end",
           title: const Text("Did they score in the Trap?"),
