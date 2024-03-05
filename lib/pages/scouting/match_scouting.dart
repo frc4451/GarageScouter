@@ -188,6 +188,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
       patchedValues['initials'] = _formKey.currentState?.value['initials'];
 
       patchedValues['starting.position'] = null;
+      patchedValues['location.end'] = null;
     }
 
     setState(() {

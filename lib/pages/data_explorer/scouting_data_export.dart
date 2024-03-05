@@ -208,25 +208,27 @@ class _ScoutingDataExportPageState extends State<ScoutingDataExportPage> {
         title: const Text("Export Data"),
         centerTitle: true,
       ),
-      body: ExpansionTile(
-          title: const Text("Completed"),
-          subtitle: const Text(
-              "Select each completed entry you would like to share, then press 'Export' at the bottom."),
-          leading: const Icon(Icons.done),
-          initiallyExpanded: true,
-          children: ListTile.divideTiles(
-              context: context,
-              tiles: _entries.mapIndexed((index, entry) => ListTile(
-                    title: Text(getScoutingListTileTitle(entry)),
-                    subtitle: Text(getScoutingListTileSubtitle(entry)),
-                    selected: _selectedIndices.contains(index),
-                    leading: Icon(_selectedIndices.contains(index)
-                        ? Icons.check_circle
-                        : Icons.circle_outlined),
-                    onTap: () {
-                      _selectIndex(index);
-                    },
-                  ))).toList()),
+      body: ListView(children: [
+        ExpansionTile(
+            title: const Text("Completed"),
+            subtitle: const Text(
+                "Select each completed entry you would like to share, then press 'Export' at the bottom."),
+            leading: const Icon(Icons.done),
+            initiallyExpanded: true,
+            children: ListTile.divideTiles(
+                context: context,
+                tiles: _entries.mapIndexed((index, entry) => ListTile(
+                      title: Text(getScoutingListTileTitle(entry)),
+                      subtitle: Text(getScoutingListTileSubtitle(entry)),
+                      selected: _selectedIndices.contains(index),
+                      leading: Icon(_selectedIndices.contains(index)
+                          ? Icons.check_circle
+                          : Icons.circle_outlined),
+                      onTap: () {
+                        _selectIndex(index);
+                      },
+                    ))).toList())
+      ]),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
             border:
