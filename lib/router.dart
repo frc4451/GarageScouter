@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:garagescouter/pages/data_explorer/scouting_data_table.dart';
+import 'package:garagescouter/pages/photo_collecting.dart';
 import 'package:go_router/go_router.dart';
 import 'package:garagescouter/database/scouting.database.dart';
 import 'package:garagescouter/pages/event_selection.dart';
@@ -263,6 +264,11 @@ final GoRouter router = GoRouter(routes: <RouteBase>[
           name: GarageRouter.event.urlPath,
           path: GarageRouter.event.urlPath,
           builder: (context, state) => const EventSelectionPage(),
+        ),
+        GoRoute(
+          name: GarageRouter.photoCollection.urlPath,
+          path: GarageRouter.photoCollection.urlPath,
+          builder: (context, state) => const PhotoCollectionPage(),
         ),
         GoRoute(
           name: GarageRouter.settings.urlPath,
