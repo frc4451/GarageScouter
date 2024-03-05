@@ -252,11 +252,10 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                       FormBuilderTextField(
                         name: "match.number",
                         decoration: const InputDecoration(
-                            labelText: "Match Number",
+                            labelText: "Match Number (Optional)",
                             prefixIcon: Icon(Icons.numbers)),
                         textInputAction: TextInputAction.done,
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
                           FormBuilderValidators.integer(),
                           CustomTextValidators.doesNotHaveCommas(),
                           CustomIntegerValidators.notNegative()
@@ -264,93 +263,9 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                       ),
                       FormBuilderTextField(
-                        name: "effective_offense",
+                        name: "notes",
                         decoration: const InputDecoration(
-                          labelText: "Effective Offensive Strategies",
-                        ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "effective_defense",
-                        decoration: const InputDecoration(
-                          labelText: "Effective Defensive Strategies",
-                        ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "ineffective_offense",
-                        decoration: const InputDecoration(
-                          labelText: "Ineffective Offensive Strategies",
-                        ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "ineffective_defense",
-                        decoration: const InputDecoration(
-                          labelText: "Ineffective Defensive Strategies",
-                        ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "counter_strategy_offense",
-                        decoration: const InputDecoration(
-                          labelText: "Offensive Counterstrategies",
-                        ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "counter_strategy_defense",
-                        decoration: const InputDecoration(
-                          labelText: "Defensive Counterstrategies",
-                        ),
-                        maxLength: _maxLength,
-                        maxLines: _maxLines,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.next,
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          CustomTextValidators.doesNotHaveCommas(),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "final_notes",
-                        decoration: const InputDecoration(
-                          labelText: "Final Notes",
+                          labelText: "Notes",
                         ),
                         maxLength: _maxLength,
                         maxLines: _maxLines,
