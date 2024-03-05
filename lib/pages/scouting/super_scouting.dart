@@ -192,7 +192,7 @@ class _SuperScoutingPageState extends State<SuperScoutingPage> {
     if (keepDraft) {
       _isarModel.putScoutingData(entry).then((value) {
         _clearForm();
-        successMessageSnackbar(context, "Saved draft to Isar, Index $value");
+        successMessageSnackbar(context, "Saved Super Scouting Entry");
       }).catchError((error) {
         errorMessageSnackbar(context, error);
       });

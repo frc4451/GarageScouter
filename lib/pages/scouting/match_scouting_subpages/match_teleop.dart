@@ -65,14 +65,14 @@ class _MatchTeleopScreenState extends State<MatchTeleopScreen>
       ),
       const Divider(),
       IncrementFormBuilderField(
-        name: "wing.completed.teleop",
-        label: "Wing Scored",
+        name: "medium.completed.teleop",
+        label: "Medium Scored",
         spaceBetween: spaceBetween,
         color: noteColor,
       ),
       IncrementFormBuilderField(
-        name: "wing.attempted.teleop",
-        label: "Wing Missed",
+        name: "medium.attempted.teleop",
+        label: "Medium Missed",
         spaceBetween: spaceBetween,
         color: noteColor,
       ),

@@ -109,7 +109,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
 
     _isarModel.putScoutingData(entry).then((value) {
       _clearForm(isSubmission: true);
-      successMessageSnackbar(context, "Saved data to Isar, Index $value");
+      successMessageSnackbar(context, "Saved Match Scouting Entry");
 
       if (wasDraft) {
         context.pop();
@@ -288,7 +288,7 @@ class _MatchScoutingPageState extends State<MatchScoutingPage>
     if (keepDraft) {
       _isarModel.putScoutingData(entry).then((value) {
         _clearForm();
-        successMessageSnackbar(context, "Saved draft to Isar, Index $value");
+        successMessageSnackbar(context, "Saved Match Scouting Entry");
       }).catchError((error) {
         errorMessageSnackbar(context, error);
       });
