@@ -104,19 +104,19 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
   /// 1. The user selected "Other" for "drive_train"
   /// 2. It is the first render and the user had selected
   ///    "Other" previously for "drive_train"
-  bool _canShowFieldFromMatch({required String key, required String match}) {
-    final String current = (_formKey.currentState?.value[key] ?? "").toString();
+  // bool _canShowFieldFromMatch({required String key, required String match}) {
+  //   final String current = (_formKey.currentState?.value[key] ?? "").toString();
 
-    // On the first load, the currentState will be empty, so we need
-    // to check if it's empty, but after that we can assume we check
-    // the current field value.
-    if (current.isNotEmpty && current != match) {
-      return false;
-    }
+  //   // On the first load, the currentState will be empty, so we need
+  //   // to check if it's empty, but after that we can assume we check
+  //   // the current field value.
+  //   if (current.isNotEmpty && current != match) {
+  //     return false;
+  //   }
 
-    // Otherwise just find if either contains the match.
-    return [current, _initialValue[key].toString()].contains(match);
-  }
+  //   // Otherwise just find if either contains the match.
+  //   return [current, _initialValue[key].toString()].contains(match);
+  // }
 
   /// This is a fairly hacky workaround to work around form fields that aren't
   /// immediately shown on the screen. For Pit Scouting, the "Other Drive Train"
