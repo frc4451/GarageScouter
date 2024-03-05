@@ -7,7 +7,7 @@ class CustomIntegerValidators {
     String? errorText,
   }) {
     return (String? valueCandidate) {
-      return int.parse(valueCandidate ?? "0") < 0
+      return (int.tryParse(valueCandidate ?? "0") ?? 0) < 0
           ? errorText ?? "Numerical input cannot be less than 0."
           : null;
     };
