@@ -357,7 +357,6 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                               "REV Vortex",
                               "Falcon 500",
                               "Kraken X60",
-                              "Victor SPX",
                               "Brushed (CIM, Mini CIM, 775, etc)",
                             ]
                                 .map((option) => FormBuilderFieldOption(
@@ -481,7 +480,6 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                               "REV Vortex",
                               "Falcon 500",
                               "Kraken X60",
-                              "Victor SPX",
                               "Brushed (CIM, Mini CIM, 775, etc)",
                             ]
                                 .map((option) => FormBuilderFieldOption(
