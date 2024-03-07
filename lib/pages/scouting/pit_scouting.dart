@@ -576,6 +576,7 @@ class _PitScoutingPageState extends State<PitScoutingPage> {
                             options: [
                               "PathPlanner",
                               "PathWeaver",
+                              "Choreo",
                               "Timed Code loop",
                             ]
                                 .map((option) => FormBuilderFieldOption(
